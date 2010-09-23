@@ -1,7 +1,5 @@
 LOCAL_PATH:= $(call my-dir)
 
-$(info "Building lib nfc...")
-
 include $(CLEAR_VARS)
 
 LOCAL_PRELINK_MODULE := false
@@ -12,7 +10,7 @@ LOCAL_SRC_FILES:= \
 	src/phLibNfc.c \
 	src/phLibNfc_discovery.c \
 	src/phLibNfc_initiator.c \
-  src/phLibNfc_llcp.c \
+	src/phLibNfc_llcp.c \
 	src/phLibNfc_Ioctl.c \
 	src/phLibNfc_ndef_raw.c \
 	src/phLibNfc_SE.c \
@@ -121,6 +119,7 @@ LOCAL_CFLAGS += -I$(LOCAL_PATH)/Linux_x86
 LOCAL_CFLAGS += -I$(LOCAL_PATH)/src
 
 LOCAL_MODULE:= libnfc
+LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := libcutils
 
 include $(BUILD_SHARED_LIBRARY)
