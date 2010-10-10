@@ -31,6 +31,8 @@
 
 static phLibNfc_sConfig_t   gDrvCfg;
 static void                 *gHWRef;
+static phNfc_sData_t gInputParam;
+static phNfc_sData_t gOutputParam;
 
 static phLibNfc_Handle              hLlcpHandle;
 static NFCSTATUS                    lastErrorStatus = NFCSTATUS_FAILED;
@@ -657,6 +659,12 @@ static void trustednfc_jni_discover_callback(void *pContext, NFCSTATUS status)
 }
 
 
+static void trustednfc_jni_ioctl_callback(void *pContext, phNfc_sData_t *pOutput, NFCSTATUS status)
+{
+   LOG_CALLBACK("trustednfc_jni_ioctl_callback", status);
+}
+
+
 static void trustednfc_jni_Discovery_notification_callback(void *pContext,
    phLibNfc_RemoteDevList_t *psRemoteDevList,
    uint8_t uNofRemoteDev, NFCSTATUS status)
@@ -1275,6 +1283,79 @@ static void trustednfc_jni_start_discovery(struct trustednfc_jni_native_data *na
       nat->discovery_cfg.NfcIP_Mode, nat->discovery_cfg.Duration, ret);
 } 
 
+static void trustednfc_jni_stop_discovery(struct trustednfc_jni_native_data *nat)
+{
+   phLibNfc_sADD_Cfg_t discovery_cfg;
+   NFCSTATUS ret;
+
+   discovery_cfg.PollDevInfo.PollEnabled = 0;
+   discovery_cfg.Duration = 0xffffffff;
+   /*discovery_cfg.NfcIP_Mode = phNfc_eInvalidP2PMode;*/
+   discovery_cfg.NfcIP_Mode = phNfc_eDefaultP2PMode;
+   discovery_cfg.NfcIP_Tgt_Disable = TRUE;
+ 
+   /* Start Polling loop */
+   LOGD("******  Stop NFC Discovery ******");
+   REENTRANCE_LOCK();
+   ret = phLibNfc_Mgt_ConfigureDiscovery(NFC_DISCOVERY_CONFIG,discovery_cfg, trustednfc_jni_discover_callback, (void *)nat);
+   REENTRANCE_UNLOCK();
+   LOGD("phLibNfc_Mgt_ConfigureDiscovery(%s-%s-%s-%s-%s-%s, %s-%x-%x) returned 0x%08x\n",
+      discovery_cfg.PollDevInfo.PollCfgInfo.EnableIso14443A==TRUE?"3A":"",
+      discovery_cfg.PollDevInfo.PollCfgInfo.EnableIso14443B==TRUE?"3B":"",
+      discovery_cfg.PollDevInfo.PollCfgInfo.EnableFelica212==TRUE?"F2":"",
+      discovery_cfg.PollDevInfo.PollCfgInfo.EnableFelica424==TRUE?"F4":"",
+      discovery_cfg.PollDevInfo.PollCfgInfo.EnableNfcActive==TRUE?"NFC":"",
+      discovery_cfg.PollDevInfo.PollCfgInfo.EnableIso15693==TRUE?"RFID":"",
+      discovery_cfg.PollDevInfo.PollCfgInfo.DisableCardEmulation==FALSE?"CE":"",
+      discovery_cfg.NfcIP_Mode, discovery_cfg.Duration, ret);
+} 
+
+static void trustednfc_jni_reader_discovery(struct trustednfc_jni_native_data *nat)
+{
+   static unsigned char ioctl[2] = {03,00};
+   static unsigned char resp[16];
+   NFCSTATUS ret;
+
+   gInputParam.length = 2;
+   gInputParam.buffer = ioctl;
+   gOutputParam.length = 16;
+   gOutputParam.buffer = resp;
+
+   LOGD("******  Start PRBS Test ******");
+   REENTRANCE_LOCK();
+   ret = phLibNfc_Mgt_IoCtl(gHWRef, DEVMGMT_PRBS_TEST, &gInputParam, &gOutputParam, trustednfc_jni_ioctl_callback, (void *)nat);
+   REENTRANCE_UNLOCK();
+   LOGD("phLibNfc_Mgt_IoCtl(PRBS Test) returned 0x%08x\n", ret);
+} 
+
+static void com_trustedlogic_trustednfc_android_internal_NfcManager_readerDiscovery(JNIEnv *e, jobject o)
+{
+    struct trustednfc_jni_native_data *nat;
+
+    CONCURRENCY_LOCK();
+
+    /* Retrieve native structure address */
+    nat = trustednfc_jni_get_nat(e, o);
+   
+    trustednfc_jni_reader_discovery(nat);
+
+    CONCURRENCY_UNLOCK();
+}
+
+static void com_trustedlogic_trustednfc_android_internal_NfcManager_disableDiscovery(JNIEnv *e, jobject o)
+{
+    struct trustednfc_jni_native_data *nat;
+
+    CONCURRENCY_LOCK();
+
+    /* Retrieve native structure address */
+    nat = trustednfc_jni_get_nat(e, o);
+   
+    trustednfc_jni_stop_discovery(nat);
+
+    CONCURRENCY_UNLOCK();
+}
+    
 static void com_trustedlogic_trustednfc_android_internal_NfcManager_enableDiscovery(
    JNIEnv *e, jobject o, jint mode)
 {
@@ -2218,7 +2299,13 @@ static JNINativeMethod gMethods[] =
       (void *)com_trustedlogic_trustednfc_android_internal_NfcManager_doGetLastError},
       
    {"doSetProperties", "(II)V",
-      (void *)com_trustedlogic_trustednfc_android_internal_NfcManager_doSetProperties},                 
+      (void *)com_trustedlogic_trustednfc_android_internal_NfcManager_doSetProperties},
+
+   {"disableDiscovery", "()V",
+      (void *)com_trustedlogic_trustednfc_android_internal_NfcManager_disableDiscovery},
+
+   {"readerDiscovery", "()V",
+      (void *)com_trustedlogic_trustednfc_android_internal_NfcManager_readerDiscovery},
 };   
   
       

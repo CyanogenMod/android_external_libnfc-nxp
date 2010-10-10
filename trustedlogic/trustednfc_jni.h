@@ -32,6 +32,7 @@
 extern "C" {
 #include <phNfcStatus.h>
 #include <phNfcTypes.h>
+#include <phNfcIoctlCode.h>
 #include <phLibNfc.h>
 #include <phDal4Nfc_messageQueueLib.h>
 }

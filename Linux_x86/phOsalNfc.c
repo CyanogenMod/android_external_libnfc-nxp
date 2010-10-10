@@ -81,7 +81,7 @@ void phOsalNfc_DbgString(const char *pString)
 #ifndef ANDROID
       printf(pString);
 #else
-      LOGD(pString);
+      LOGD("%s", pString);
 #endif
 #endif
 }
@@ -111,14 +111,14 @@ void phOsalNfc_DbgTrace(uint8_t data[], uint32_t size)
    {
       if((i % 10) == 0)
       {
-         LOGD(phOsalNfc_DbgTraceBuffer);
+         LOGD("%s", phOsalNfc_DbgTraceBuffer);
          phOsalNfc_DbgTraceBuffer[0] = '\0';
       }
 
       snprintf(buf, 10, "%02X ", data[i]);
       strncat(phOsalNfc_DbgTraceBuffer, buf, 10);
    }
-   LOGD(phOsalNfc_DbgTraceBuffer);
+   LOGD("%s", phOsalNfc_DbgTraceBuffer);
    LOGD("Block size is: %d", size);
 #endif
 #endif

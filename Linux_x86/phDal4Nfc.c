@@ -864,6 +864,12 @@ int phDal4Nfc_WriterThread(void * pArg)
             gReadWriteContext.nNbOfBytesWritten = gLinkFunc.write(gReadWriteContext.pWriteBuffer, gReadWriteContext.nNbOfBytesToWrite);
             if (gReadWriteContext.nNbOfBytesWritten != gReadWriteContext.nNbOfBytesToWrite)
             {
+                /* controller may be in standby. do it again! */
+                usleep(8000);
+                gReadWriteContext.nNbOfBytesWritten = gLinkFunc.write(gReadWriteContext.pWriteBuffer, gReadWriteContext.nNbOfBytesToWrite);
+            }
+            if (gReadWriteContext.nNbOfBytesWritten != gReadWriteContext.nNbOfBytesToWrite)
+            {
                 /* Report write failure or timeout */
                 DAL_DEBUG("Write error in write thread\n", 0);
                 result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_BOARD_COMMUNICATION_ERROR);

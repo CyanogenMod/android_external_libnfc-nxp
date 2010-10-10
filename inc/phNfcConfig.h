@@ -136,12 +136,12 @@
       */
 
 #ifndef NXP_SYSTEM_PWR_STATUS
-#define NXP_SYSTEM_PWR_STATUS           0x00U
+#define NXP_SYSTEM_PWR_STATUS           0x01U
 #endif
 
 /**< Default Session ID for Initialisation */
 #ifndef DEFAULT_SESSION
-#define DEFAULT_SESSION           "NXP-NFC1"
+#define DEFAULT_SESSION           "NXP-NFCx"
 #endif
 
 
