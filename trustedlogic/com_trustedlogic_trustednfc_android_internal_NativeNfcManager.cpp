@@ -2264,4 +2264,3 @@ int register_com_trustedlogic_trustednfc_android_internal_NativeNfcManager(JNIEn
 }
 
 } /* namespace android */
-

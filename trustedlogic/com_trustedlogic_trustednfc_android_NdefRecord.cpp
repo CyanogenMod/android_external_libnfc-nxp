@@ -91,7 +91,7 @@ static JNINativeMethod gMethods[] =
 int register_com_trustedlogic_trustednfc_android_NdefRecord(JNIEnv *e)
 {
    return jniRegisterNativeMethods(e,
-      "com/trustedlogic/trustednfc/android/NdefRecord",
+      "android/nfc/NdefRecord",
       gMethods, NELEM(gMethods));
 }
 

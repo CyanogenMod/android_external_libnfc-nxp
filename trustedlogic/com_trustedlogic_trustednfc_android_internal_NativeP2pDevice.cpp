@@ -423,4 +423,3 @@ int register_com_trustedlogic_trustednfc_android_internal_NativeP2pDevice(JNIEnv
 }
 
 } // namepspace android
-

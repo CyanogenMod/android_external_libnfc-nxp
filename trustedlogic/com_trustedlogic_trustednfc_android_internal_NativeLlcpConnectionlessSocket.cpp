@@ -224,7 +224,7 @@ static JNINativeMethod gMethods[] =
    {"doSendTo", "(I[B)Z",
       (void *)com_trustedlogic_trustednfc_android_internal_NativeLlcpConnectionlessSocket_doSendTo},
       
-   {"doReceiveFrom", "(I)Lcom/trustedlogic/trustednfc/android/LlcpPacket;",
+   {"doReceiveFrom", "(I)Landroid/nfc/LlcpPacket;",
       (void *)com_trustedlogic_trustednfc_android_internal_NativeLlcpConnectionlessSocket_doReceiveFrom},
       
    {"doClose", "()Z",

@@ -86,7 +86,7 @@ static jint com_trustedlogic_trustednfc_android_NdefMessage_parseNdefMessage(
 
    /* Build NDEF records array */
    record_cls =
-      e->FindClass("com/trustedlogic/trustednfc/android/NdefRecord");
+      e->FindClass("android/nfc/NdefRecord");
    records_array = e->NewObjectArray((jsize)num_of_records, record_cls,
       NULL);
    if(records_array == NULL)
@@ -157,7 +157,7 @@ static jint com_trustedlogic_trustednfc_android_NdefMessage_parseNdefMessage(
    /* Store built array in our NDEFMessage instance */
    msg_cls = e->GetObjectClass(o);
    mrecords = e->GetFieldID(msg_cls, "mRecords",
-      "[Lcom/trustedlogic/trustednfc/android/NdefRecord;");
+      "[Landroid/nfc/NdefRecord;");
 
    e->SetObjectField(o, mrecords, (jobject)records_array);
 
@@ -185,7 +185,7 @@ static JNINativeMethod gMethods[] =
 int register_com_trustedlogic_trustednfc_android_NdefMessage(JNIEnv *e)
 {
    return jniRegisterNativeMethods(e,
-      "com/trustedlogic/trustednfc/android/NdefMessage",
+      "android/nfc/NdefMessage",
       gMethods, NELEM(gMethods));
 }
 

@@ -291,4 +291,3 @@ const char* trustednfc_jni_get_status_name(NFCSTATUS status)
 }
 
 } // namespace android
-
