@@ -1,5 +1,9 @@
 LOCAL_PATH:= $(call my-dir)
 
+#
+# libnfc
+#
+
 include $(CLEAR_VARS)
 
 LOCAL_PRELINK_MODULE := false
@@ -82,9 +86,6 @@ LOCAL_SRC_FILES += src/phFriNfc_MifULFormat.c
 LOCAL_SRC_FILES += src/phFriNfc_MifStdFormat.c
 LOCAL_SRC_FILES += src/phFriNfc_SmtCrdFmt.c
 
-#phFriNfc_NdefRecord
-LOCAL_SRC_FILES += src/phFriNfc_NdefRecord.c
-
 #phFriNfc_OvrHal
 LOCAL_SRC_FILES += src/phFriNfc_OvrHal.c
 
@@ -99,7 +100,7 @@ LOCAL_SRC_FILES += Linux_x86/phDal4Nfc.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_i2c.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_messageQueueLib.c
 
-LOCAL_CFLAGS += -DPHPN54X -DNXP_MESSAGING -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common -fpic
+LOCAL_CFLAGS += -DNXP_MESSAGING -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common -fpic
 
 ifeq ($(NFC_BUILD_VARIANT),debug)
 LOCAL_CFLAGS += -DDEBUG -D_DEBUG
@@ -120,8 +121,26 @@ LOCAL_CFLAGS += -I$(LOCAL_PATH)/src
 
 LOCAL_MODULE:= libnfc
 LOCAL_MODULE_TAGS := optional
+LOCAL_SHARED_LIBRARIES := libcutils libnfc_ndef
+
+include $(BUILD_SHARED_LIBRARY)
+
+#
+# libnfc_ndef
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_PRELINK_MODULE := false
+
+LOCAL_SRC_FILES += src/phFriNfc_NdefRecord.c
+
+LOCAL_CFLAGS += -I$(LOCAL_PATH)/inc
+LOCAL_CFLAGS += -I$(LOCAL_PATH)/src
+
+LOCAL_MODULE:= libnfc_ndef
+LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := libcutils
 
 include $(BUILD_SHARED_LIBRARY)
 
-include external/libnfc-nxp/trustedlogic/Android.mk
