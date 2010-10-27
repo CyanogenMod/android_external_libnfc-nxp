@@ -100,6 +100,7 @@ LOCAL_SRC_FILES += Linux_x86/phDal4Nfc.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_i2c.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_messageQueueLib.c
 
+#LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DDEBUG -DLLC_TRACE -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common -fpic
 LOCAL_CFLAGS += -DNXP_MESSAGING -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common -fpic
 
 ifeq ($(NFC_BUILD_VARIANT),debug)

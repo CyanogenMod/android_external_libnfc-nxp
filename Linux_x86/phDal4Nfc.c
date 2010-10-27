@@ -705,6 +705,8 @@ int phDal4Nfc_ReaderThread(void * pArg)
     phOsalNfc_Message_t      OsalMsg ;
     int i;
 
+    pthread_setname_np(pthread_self(), "reader");
+
     /* Create the overlapped event. Must be closed before exiting
     to avoid a handle leak. This event is used READ API and the Reader thread*/
     pthread_mutex_unlock(&nThreadsEventMutex); /* To indicate thread is ready */
@@ -843,6 +845,8 @@ int phDal4Nfc_WriterThread(void * pArg)
     static int     MsgType=PHDAL4NFC_WRITE_MESSAGE;
     int * pmsgType=&MsgType;
     int i;
+
+    pthread_setname_np(pthread_self(), "writer");
 
     /* Create the overlapped event. Must be closed before exiting
     to avoid a handle leak. This event is used READ API and the Reader thread*/
