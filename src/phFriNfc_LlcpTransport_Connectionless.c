@@ -22,6 +22,7 @@
  *
  */
 /*include files*/
+#include <phOsalNfc.h>
 #include <phLibNfcStatus.h>
 #include <phLibNfc.h>
 #include <phNfcLlcpTypes.h>
@@ -105,11 +106,16 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_Close(phFriNfc_LlcpTransport_Soc
    pLlcpSocket->pfSocketListen_Cb                  = NULL;
    pLlcpSocket->pfSocketConnect_Cb                 = NULL;
    pLlcpSocket->pfSocketDisconnect_Cb              = NULL;
-   pLlcpSocket->pServiceName                       = NULL;
    pLlcpSocket->socket_VS                          = 0;
    pLlcpSocket->socket_VSA                         = 0;
    pLlcpSocket->socket_VR                          = 0;
    pLlcpSocket->socket_VRA                         = 0;
+
+   if (pLlcpSocket->sServiceName.buffer != NULL) {
+       phOsalNfc_FreeMemory(pLlcpSocket->sServiceName.buffer);
+   }
+   pLlcpSocket->sServiceName.buffer = NULL;
+   pLlcpSocket->sServiceName.length = 0;
 
    return NFCSTATUS_SUCCESS;
 }

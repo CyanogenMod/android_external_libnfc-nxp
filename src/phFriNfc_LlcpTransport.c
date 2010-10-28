@@ -23,6 +23,7 @@
  */
 
 /*include files*/
+#include <phOsalNfc.h>
 #include <phLibNfcStatus.h>
 #include <phLibNfc.h>
 #include <phNfcLlcpTypes.h>
@@ -171,7 +172,6 @@ NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpTran
          pLlcpTransport->pSocketTable[i].pfSocketListen_Cb              = NULL;
          pLlcpTransport->pSocketTable[i].pfSocketConnect_Cb             = NULL;
          pLlcpTransport->pSocketTable[i].pfSocketDisconnect_Cb          = NULL;
-         pLlcpTransport->pSocketTable[i].pServiceName                   = NULL;
          pLlcpTransport->pSocketTable[i].socket_VS                      = 0;
          pLlcpTransport->pSocketTable[i].socket_VSA                     = 0;
          pLlcpTransport->pSocketTable[i].socket_VR                      = 0;
@@ -183,6 +183,12 @@ NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpTran
          pLlcpTransport->pSocketTable[i].index                          = 0;
          pLlcpTransport->pSocketTable[i].indexRwRead                    = 0;
          pLlcpTransport->pSocketTable[i].indexRwWrite                   = 0;
+
+         if (pLlcpTransport->pSocketTable[i].sServiceName.buffer != NULL) {
+            phOsalNfc_FreeMemory(pLlcpTransport->pSocketTable[i].sServiceName.buffer);
+         }
+         pLlcpTransport->pSocketTable[i].sServiceName.buffer = NULL;
+         pLlcpTransport->pSocketTable[i].sServiceName.length = 0;
       }
 
       /* Start The Receive Loop */

@@ -22,6 +22,7 @@
  *
  */
 /*include files*/
+#include <phOsalNfc.h>
 #include <phLibNfcStatus.h>
 #include <phLibNfc.h>
 #include <phNfcLlcpTypes.h>
@@ -671,8 +672,8 @@ static void Handle_ConnectionFrame(phFriNfc_LlcpTransport_t      *psTransport,
          {
             /* Test if the socket is in Listen state and if its SN is the good one */
             if(psTransport->pSocketTable[index].bSocketListenPending 
-               &&  (sServiceName.length == psTransport->pSocketTable[index].pServiceName->length) 
-               && !memcmp(sServiceName.buffer,psTransport->pSocketTable[index].pServiceName->buffer,sServiceName.length))
+               &&  (sServiceName.length == psTransport->pSocketTable[index].sServiceName.length) 
+               && !memcmp(sServiceName.buffer,psTransport->pSocketTable[index].sServiceName.buffer,sServiceName.length))
             {
                /* socket with the SN found */
                socketFound = TRUE;
@@ -1896,17 +1897,17 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Listen(phFriNfc_LlcpTranspor
       {
          phFriNfc_LlcpTransport_Socket_t* pCurrentSocket = &pLlcpSocket->psTransport->pSocketTable[index];
 
-         if((pCurrentSocket->pServiceName == NULL) ||
+         if((pCurrentSocket->sServiceName.length == 0) ||
             (pCurrentSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketRegistered))
          {
             /* Do not check inactive or non-SDP registered sockets */
             continue;
          }
-         if(pCurrentSocket->pServiceName->length != psServiceName->length) {
+         if(pCurrentSocket->sServiceName.length != psServiceName->length) {
             /* Service name do not match, check next */
             continue;
          }
-         if(memcmp(pCurrentSocket->pServiceName->buffer, psServiceName->buffer, psServiceName->length) == 0)
+         if(memcmp(pCurrentSocket->sServiceName.buffer, psServiceName->buffer, psServiceName->length) == 0)
          {
             /* Service name already in use */
             return NFCSTATUS_INVALID_PARAMETER;
@@ -1924,7 +1925,13 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Listen(phFriNfc_LlcpTranspor
    pLlcpSocket->bSocketListenPending = TRUE;
 
    /* Store the listen socket SN */
-   pLlcpSocket->pServiceName = psServiceName;
+   pLlcpSocket->sServiceName.length = psServiceName->length;
+   pLlcpSocket->sServiceName.buffer = phOsalNfc_GetMemory(psServiceName->length);
+   if (pLlcpSocket->sServiceName.buffer == NULL)
+   {
+       return NFCSTATUS_NOT_ENOUGH_MEMORY;
+   }
+   memcpy(pLlcpSocket->sServiceName.buffer, psServiceName->buffer, psServiceName->length);
 
    /* Set the socket state*/
    pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketRegistered;
@@ -2404,11 +2411,16 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_DisconnectClose_CB(void*  
       pLlcpSocket->pfSocketListen_Cb                  = NULL;
       pLlcpSocket->pfSocketConnect_Cb                 = NULL;
       pLlcpSocket->pfSocketDisconnect_Cb              = NULL;
-      pLlcpSocket->pServiceName                       = NULL;
       pLlcpSocket->socket_VS                          = 0;
       pLlcpSocket->socket_VSA                         = 0;
       pLlcpSocket->socket_VR                          = 0;
       pLlcpSocket->socket_VRA                         = 0;
+      
+      if (pLlcpSocket->sServiceName.buffer != NULL) {
+          phOsalNfc_FreeMemory(pLlcpSocket->sServiceName.buffer);
+      }
+      pLlcpSocket->sServiceName.buffer = NULL;
+      pLlcpSocket->sServiceName.length = 0;
    }
    else
    {
@@ -2462,11 +2474,16 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Close(phFriNfc_LlcpTransport
       pLlcpSocket->pfSocketListen_Cb                  = NULL;
       pLlcpSocket->pfSocketConnect_Cb                 = NULL;
       pLlcpSocket->pfSocketDisconnect_Cb              = NULL;
-      pLlcpSocket->pServiceName                       = NULL;
       pLlcpSocket->socket_VS                          = 0;
       pLlcpSocket->socket_VSA                         = 0;
       pLlcpSocket->socket_VR                          = 0;
       pLlcpSocket->socket_VRA                         = 0;
+
+      if (pLlcpSocket->sServiceName.buffer != NULL) {
+          phOsalNfc_FreeMemory(pLlcpSocket->sServiceName.buffer);
+      }
+      pLlcpSocket->sServiceName.buffer = NULL;
+      pLlcpSocket->sServiceName.length = 0;
    }
    return NFCSTATUS_SUCCESS;
 } 

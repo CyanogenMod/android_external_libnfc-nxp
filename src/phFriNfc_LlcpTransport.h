@@ -161,7 +161,7 @@ struct phFriNfc_LlcpTransport_Socket
    /* Remote and local socket info */
    uint8_t                                        socket_sSap;
    uint8_t                                        socket_dSap;
-   phNfc_sData_t                                  *pServiceName;
+   phNfc_sData_t                                  sServiceName;
    uint8_t                                        remoteRW;
    uint8_t                                        localRW;
    uint16_t                                       remoteMIU;
