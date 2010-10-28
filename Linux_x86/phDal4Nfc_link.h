@@ -40,6 +40,9 @@ typedef void      (*phDal4Nfc_link_close_CB_t)                (void);
 typedef NFCSTATUS (*phDal4Nfc_link_open_and_configure_CB_t)   (pphDal4Nfc_sConfig_t pConfig, void ** pLinkHandle);
 typedef int       (*phDal4Nfc_link_read_CB_t)                 (uint8_t * pBuffer, int nNbBytesToRead);
 typedef int       (*phDal4Nfc_link_write_CB_t)                (uint8_t * pBuffer, int nNbBytesToWrite);
+typedef int       (*phDal4Nfc_link_download_CB_t)             (long level);
+typedef int       (*phDal4Nfc_link_reset_CB_t)                (long level);
+
 
 typedef struct
 {
@@ -51,6 +54,8 @@ typedef struct
    phDal4Nfc_link_open_and_configure_CB_t      open_and_configure;
    phDal4Nfc_link_read_CB_t                    read;
    phDal4Nfc_link_write_CB_t                   write;
+   phDal4Nfc_link_download_CB_t		       download;
+   phDal4Nfc_link_reset_CB_t                   reset;
 } phDal4Nfc_link_cbk_interface_t;
 
 

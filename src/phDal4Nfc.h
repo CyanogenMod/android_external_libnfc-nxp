@@ -621,6 +621,14 @@ NFCSTATUS
 phDal4Nfc_ConfigRelease(
     void        *pHwRef);
 
+extern 
+NFCSTATUS 
+phDal4Nfc_Reset(long level);
+
+extern 
+NFCSTATUS 
+phDal4Nfc_Download(long level);
+
 /******************** Function declarations *************************/
 
 #endif /* PHDALNFC_H */

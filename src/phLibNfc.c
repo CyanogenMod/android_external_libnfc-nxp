@@ -81,7 +81,6 @@ STATIC void phLibNfc_DefaultHandler(
 *************************** Function Definitions ******************************
 */
 
-
 NFCSTATUS phLibNfc_Mgt_ConfigureDriver (pphLibNfc_sConfig_t     psConfig,
                                         void **                 ppDriverHandle)
 {
@@ -103,13 +102,23 @@ NFCSTATUS phLibNfc_Mgt_UnConfigureDriver (void *                 pDriverHandle)
    return phDal4Nfc_ConfigRelease(pDriverHandle);
 }
 
+NFCSTATUS phLibNfc_HW_Reset (long level)
+{
+   return phDal4Nfc_Reset(level);
+}
+
+NFCSTATUS phLibNfc_Download_Mode (long level)
+{
+   return phDal4Nfc_Download(level);
+}
+
 /**
 *    Initialize the phLibNfc interface.
 */
 
 NFCSTATUS phLibNfc_Mgt_Initialize(void                *pDriverHandle,
-                                 pphLibNfc_RspCb_t   pInitCb,
-                                 void                *pContext)
+                                 pphLibNfc_RspCb_t    pInitCb,
+                                 void                 *pContext)
 {
      NFCSTATUS Status = NFCSTATUS_SUCCESS;     
      if((NULL == pDriverHandle)||(NULL == pInitCb))

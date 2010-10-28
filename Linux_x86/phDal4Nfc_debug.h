@@ -5,7 +5,7 @@
                                    DEBUG CORNER
 ------------------------------------------------------------------------------------*/
 /* Activate for debug */
-//#define DAL_TRACE
+#define DAL_TRACE
 
 #ifdef DAL_TRACE
 #include <stdio.h>

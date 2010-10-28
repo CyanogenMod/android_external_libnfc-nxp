@@ -36,6 +36,9 @@
 #include <string.h>
 #endif
 
+#define PN544_RESET_CMD		0
+#define PN544_DOWNLOAD_CMD	1
+
 typedef struct
 {
    int  nHandle;
@@ -78,7 +81,7 @@ PURPOSE:  The application could have opened the link itself. So we just need
 void phDal4Nfc_i2c_set_open_from_handle(phHal_sHwReference_t * pDalHwContext)
 {
    gI2cPortContext.nHandle = (int) pDalHwContext->p_board_driver;
-   DAL_ASSERT_STR(gComPortContext.nHandle >= 0, "Bad passed com port handle");
+   DAL_ASSERT_STR(gI2cPortContext.nHandle >= 0, "Bad passed com port handle");
    gI2cPortContext.nOpened = 1;
 }
 
@@ -183,7 +186,7 @@ PURPOSE:  Reads nNbBytesToRead bytes and writes them in pBuffer.
 int phDal4Nfc_i2c_read(uint8_t * pBuffer, int nNbBytesToRead)
 {
    int ret;
-   DAL_ASSERT_STR(gComPortContext.nOpened == 1, "read called but not opened!");
+   DAL_ASSERT_STR(gI2cPortContext.nOpened == 1, "read called but not opened!");
 
    DAL_DEBUG("Reading %d bytes\n", nNbBytesToRead);
    ret = read(gI2cPortContext.nHandle, pBuffer, nNbBytesToRead);
@@ -210,7 +213,7 @@ PURPOSE:  Writes nNbBytesToWrite bytes from pBuffer to the link
 int phDal4Nfc_i2c_write(uint8_t * pBuffer, int nNbBytesToWrite)
 {
    int ret;
-   DAL_ASSERT_STR(gComPortContext.nOpened == 1, "write called but not opened!");
+   DAL_ASSERT_STR(gI2cPortContext.nOpened == 1, "write called but not opened!");
 
    DAL_DEBUG("Writing %d bytes\n", nNbBytesToWrite);
    ret = write(gI2cPortContext.nHandle, pBuffer, nNbBytesToWrite);
@@ -224,3 +227,45 @@ int phDal4Nfc_i2c_write(uint8_t * pBuffer, int nNbBytesToWrite)
    }
    return ret;
 }
+
+
+/*-----------------------------------------------------------------------------
+
+FUNCTION: phDal4Nfc_i2c_reset
+
+PURPOSE:  Reset the PN544, using the VEN pin
+
+-----------------------------------------------------------------------------*/
+int phDal4Nfc_i2c_reset(long level)
+{
+   int ret = NFCSTATUS_SUCCESS;   
+
+   DAL_DEBUG("phDal4Nfc_i2c_reset, VEN level = %d",level);
+
+   ret = ioctl(gI2cPortContext.nHandle, PN544_RESET_CMD, level);
+
+   return ret;
+}
+
+/*-----------------------------------------------------------------------------
+
+FUNCTION: phDal4Nfc_i2c_write
+
+PURPOSE:  Put the PN544 in download mode, using the GPIO4 pin
+
+-----------------------------------------------------------------------------*/
+int phDal4Nfc_i2c_download(long level)
+{
+   int ret = NFCSTATUS_SUCCESS;
+
+   DAL_DEBUG("phDal4Nfc_i2c_download, GPIO4 level = %d",level);
+
+   ret = ioctl(gI2cPortContext.nHandle, PN544_DOWNLOAD_CMD, level);
+
+   return ret;
+}
+
+
+
+
+

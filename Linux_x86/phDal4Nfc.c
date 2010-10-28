@@ -80,6 +80,7 @@ typedef struct Dal_RdWr_st
     pthread_t             nWriteThread;            /* Write thread Hanlde */
     pthread_mutex_t       nWriteEventMutex;        /* Mutex to signal a write has been requested */
     uint8_t *             pWriteBuffer;            /* Write local buffer */
+    uint8_t *             pTempWriteBuffer;        /* Temp Write local buffer */
     int                   nNbOfBytesToWrite;       /* Number of bytes to write */
     int                   nNbOfBytesWritten;       /* Number of bytes written */
     char                  nWaitingOnWrite;         /* Write state machine */
@@ -387,10 +388,14 @@ NFCSTATUS phDal4Nfc_Write( void *pContext, void *pHwRef,uint8_t *pBuffer, uint16
         {
             if((!gReadWriteContext.nWriteBusy)&&
                 (!gReadWriteContext.nWaitingOnWrite))
-            {
+            {		
+
+		gReadWriteContext.pTempWriteBuffer = (uint8_t*)malloc(length * sizeof(uint8_t));
+		memcpy(gReadWriteContext.pTempWriteBuffer,pBuffer,length);
+
                 DAL_DEBUG("phDal4Nfc_Write(): %d\n", length);
                 /* Make a copy of the passed arguments */
-                gReadWriteContext.pWriteBuffer = pBuffer;
+                gReadWriteContext.pWriteBuffer = gReadWriteContext.pTempWriteBuffer;
                 gReadWriteContext.nNbOfBytesToWrite  = length;
                 /* Change the write state so that thread can take over the write */
                 gReadWriteContext.nWriteBusy = TRUE;
@@ -596,6 +601,7 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
       case ENUM_DAL_LINK_TYPE_COM5:
       case ENUM_DAL_LINK_TYPE_USB:
       {
+	 DAL_PRINT("UART link Config");
          /* Uart link interface */
          gLinkFunc.init               = phDal4Nfc_uart_initialize;
          gLinkFunc.open_from_handle   = phDal4Nfc_uart_set_open_from_handle;
@@ -605,12 +611,15 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
          gLinkFunc.open_and_configure = phDal4Nfc_uart_open_and_configure;
          gLinkFunc.read               = phDal4Nfc_uart_read;
          gLinkFunc.write              = phDal4Nfc_uart_write;
+	 gLinkFunc.download           = phDal4Nfc_uart_download;
+	 gLinkFunc.reset	      = phDal4Nfc_uart_reset;
       }
       break;
 
       case ENUM_DAL_LINK_TYPE_I2C:
       {
-         /* Uart link interface */
+	 DAL_PRINT("I2C link Config");
+         /* i2c link interface */
          gLinkFunc.init               = phDal4Nfc_i2c_initialize;
          gLinkFunc.open_from_handle   = phDal4Nfc_i2c_set_open_from_handle;
          gLinkFunc.is_opened          = phDal4Nfc_i2c_is_opened;
@@ -619,6 +628,8 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
          gLinkFunc.open_and_configure = phDal4Nfc_i2c_open_and_configure;
          gLinkFunc.read               = phDal4Nfc_i2c_read;
          gLinkFunc.write              = phDal4Nfc_i2c_write;
+	 gLinkFunc.download           = phDal4Nfc_i2c_download;
+	 gLinkFunc.reset	      = phDal4Nfc_i2c_reset;
          break;
       }
 
@@ -666,9 +677,47 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
 
    gDalContext.hw_valid = TRUE;
 
+   phDal4Nfc_Reset(0);
+   phDal4Nfc_Reset(1);
+
    return NFCSTATUS_SUCCESS;
 }
 
+/*-----------------------------------------------------------------------------
+
+FUNCTION: phDal4Nfc_Reset
+
+PURPOSE: Reset the PN544, using the VEN pin
+
+-----------------------------------------------------------------------------*/
+NFCSTATUS phDal4Nfc_Reset(long level)
+{
+   NFCSTATUS	retstatus = NFCSTATUS_SUCCESS;
+
+   DAL_DEBUG("phDal4Nfc_Reset: VEN to %d",level);
+
+   retstatus = gLinkFunc.reset(level);
+
+   return retstatus;
+}
+
+/*-----------------------------------------------------------------------------
+
+FUNCTION: phDal4Nfc_Download
+
+PURPOSE: Put the PN544 in download mode, using the GPIO4 pin
+
+-----------------------------------------------------------------------------*/
+NFCSTATUS phDal4Nfc_Download(long level)
+{
+   NFCSTATUS	retstatus = NFCSTATUS_SUCCESS;
+
+   DAL_DEBUG("phDal4Nfc_Download: GPIO4 to %d",level);
+
+   retstatus = gLinkFunc.download(level);
+
+   return retstatus;
+}
 
 
 
@@ -730,7 +779,7 @@ int phDal4Nfc_ReaderThread(void * pArg)
             memsetRet=memset(gReadWriteContext.pReadBuffer,0,gReadWriteContext.nNbOfBytesToRead);
 
             /* Wait for Write Completion */
-            usleep(2500);
+            usleep(5000);
             gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
             if (gReadWriteContext.nNbOfBytesRead == -1)
             {
@@ -880,6 +929,12 @@ int phDal4Nfc_WriterThread(void * pArg)
             }/*end writeFile*/
             else /* Results ready */
             {
+		// Free TempWriteBuffer 
+		if(gReadWriteContext.pTempWriteBuffer != NULL)
+		{
+		    free(gReadWriteContext.pTempWriteBuffer);
+		}
+
                 /* Write operation completed successfully.*/
                 sMsg.eMsgType = PHDAL4NFC_WRITE_MESSAGE;
                 //sMsg.pContext = pgDalContext;

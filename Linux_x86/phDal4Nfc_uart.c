@@ -324,3 +324,32 @@ int phDal4Nfc_uart_write(uint8_t * pBuffer, int nNbBytesToWrite)
 
    return 0;
 }
+
+/*-----------------------------------------------------------------------------
+
+FUNCTION: phDal4Nfc_uart_reset
+
+PURPOSE:  Reset the PN544, using the VEN pin
+
+-----------------------------------------------------------------------------*/
+int phDal4Nfc_uart_reset()
+{
+   DAL_PRINT("phDal4Nfc_uart_reset");
+
+   return NFCSTATUS_FEATURE_NOT_SUPPORTED;
+}
+
+/*-----------------------------------------------------------------------------
+
+FUNCTION: phDal4Nfc_uart_write
+
+PURPOSE:  Put the PN544 in download mode, using the GPIO4 pin
+
+-----------------------------------------------------------------------------*/
+int phDal4Nfc_uart_download()
+{
+   DAL_PRINT("phDal4Nfc_uart_download");
+
+   return NFCSTATUS_FEATURE_NOT_SUPPORTED;
+}
+

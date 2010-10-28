@@ -146,8 +146,11 @@ typedef enum
 *\brief Defines Secure element event info .
 */
 typedef union phLibNfc_uSeEvtInfo
-{   phNfc_sUiccInfo_t UiccEvtInfo;	/**< Indicates UICC event info for Evt_Transaction event */}phLibNfc_uSeEvtInfo_t;
-/**
+{
+   phNfc_sUiccInfo_t UiccEvtInfo;	/**< Indicates UICC event info for Evt_Transaction event */
+}phLibNfc_uSeEvtInfo_t;
+
+/**
 * \ingroup grp_lib_nfc
 *
 *\brief Types of SE transaction events sent to SE notification handler .
@@ -813,6 +816,10 @@ NFCSTATUS phLibNfc_Mgt_ConfigureDriver (pphLibNfc_sConfig_t     psConfig,
  */
 NFCSTATUS phLibNfc_Mgt_UnConfigureDriver (void *                 pDriverHandle
                                           );
+
+NFCSTATUS phLibNfc_HW_Reset (long level);
+
+NFCSTATUS phLibNfc_Download_Mode (long level);
 
 /**
 * \ingroup grp_lib_nfc
@@ -2199,7 +2206,7 @@ extern NFCSTATUS phLibNfc_Mgt_GetstackCapabilities(phLibNfc_StackCapabilities_t*
 
 
 /**
-* \ingroup grp_lib_nfc
+* \ingroup grp_lib_nfcHW_
 * \brief <b>Interface to configure local LLCP peer</b>.
 *
 * This function configures the parameters of the local LLCP peer. This function must be called

@@ -40,4 +40,5 @@ void phDal4Nfc_uart_close(void);
 NFCSTATUS phDal4Nfc_uart_open_and_configure(pphDal4Nfc_sConfig_t pConfig, void ** pLinkHandle);
 int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead);
 int phDal4Nfc_uart_write(uint8_t * pBuffer, int nNbBytesToWrite);
-
+int phDal4Nfc_uart_reset();
+int phDal4Nfc_uart_download();
