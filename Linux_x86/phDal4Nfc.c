@@ -35,7 +35,7 @@
 #else
 #include <sys/msg.h>
 #endif
-
+#include <semaphore.h>
 #include <phDal4Nfc.h>
 #include <phOsalNfc.h>
 #include <phNfcStatus.h>
@@ -59,7 +59,6 @@ typedef struct Dal_RdWr_st
 {
     /* Read members */
     pthread_t             nReadThread;             /* Read thread Hanlde */
-    pthread_mutex_t       nReadEventMutex;         /* Mutex to signal a read has been requested */
     uint8_t *             pReadBuffer;             /* Read local buffer */
     int                   nNbOfBytesToRead;        /* Number of bytes to read */
     int                   nNbOfBytesRead;          /* Number of read bytes */
@@ -68,7 +67,6 @@ typedef struct Dal_RdWr_st
     char                  nWaitingOnRead;          /* Read state machine */
 
     /* Read wait members */
-    pthread_mutex_t       nReadCancelEventMutex;   /* Mutex to signal a read cancel has been requested */
     uint8_t *             pReadWaitBuffer;         /* Read wait local Buffer */
     int                   nNbOfBytesToReadWait;    /* Number of bytes to read */
     int                   nNbOfBytesReadWait;      /* Number of read bytes */
@@ -78,7 +76,6 @@ typedef struct Dal_RdWr_st
 
     /* Write members */
     pthread_t             nWriteThread;            /* Write thread Hanlde */
-    pthread_mutex_t       nWriteEventMutex;        /* Mutex to signal a write has been requested */
     uint8_t *             pWriteBuffer;            /* Write local buffer */
     uint8_t *             pTempWriteBuffer;        /* Temp Write local buffer */
     int                   nNbOfBytesToWrite;       /* Number of bytes to write */
@@ -99,8 +96,7 @@ static phDal4Nfc_RdWr_t               gReadWriteContext;
 static phDal4Nfc_SContext_t           gDalContext;
 static pphDal4Nfc_SContext_t          pgDalContext;
 static phHal_sHwReference_t   *       pgDalHwContext;
-static pthread_mutex_t                nCriticalSectionMutex;
-static pthread_mutex_t                nThreadsEventMutex;
+static sem_t                          nfc_read_sem;
 #ifdef USE_MQ_MESSAGE_QUEUE
 static phDal4Nfc_DeferredCall_Msg_t   nDeferedMessage;
 static mqd_t                          nDeferedCallMessageQueueId;
@@ -198,7 +194,6 @@ NFCSTATUS phDal4Nfc_Unregister(void *pContext, void *pHwRef )
             pgDalContext->cb_if.notify = NULL ;
             /* Get the upper layer context */
             pgDalContext->cb_if.pif_ctxt =  NULL ;
-//            pgDalContext = NULL;
             
         }
         else
@@ -276,42 +271,12 @@ NFCSTATUS phDal4Nfc_Shutdown( void *pContext, void *pHwRef)
       /* Flush the link */
       gLinkFunc.flush();
 
-      /* Kill the read and write threads */
-//      gReadWriteContext.nReadThreadAlive = 0;
-//      gReadWriteContext.nWriteThreadAlive = 0;
-//      pthread_mutex_unlock(&gReadWriteContext.nReadEventMutex);
-//      pthread_mutex_unlock(&gReadWriteContext.nWriteEventMutex);
-//      if (pthread_join(gReadWriteContext.nReadThread,  &pThreadReturn) != 0)
-//      {
-//         result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_FAILED);
-//      }
-//      if (pthread_join(gReadWriteContext.nWriteThread, &pThreadReturn) != 0)
-//      {
-//         result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_FAILED);
-//      }
-
       /* Close the message queue */
 #ifdef USE_MQ_MESSAGE_QUEUE
        mq_close(nDeferedCallMessageQueueId);
 #endif
 
-      /* Destroy the mutexes */
-//      pthread_mutex_destroy(&gReadWriteContext.nReadEventMutex);
-//      pthread_mutex_destroy(&gReadWriteContext.nReadCancelEventMutex);
-//      pthread_mutex_destroy(&gReadWriteContext.nWriteEventMutex);
-//      pthread_mutex_destroy(&nCriticalSectionMutex);
-//      pthread_mutex_destroy(&nThreadsEventMutex);
-
-      /* Close the link */
-//      gLinkFunc.close();
-
-      /* Reset the Writer Thread values to NULL */
-//      memset((void *)&gReadWriteContext,0,sizeof(gReadWriteContext));
-      /* Reset the DAL context values to NULL */
-//      memset((void *)&gDalContext,0,sizeof(gDalContext));
    }
-
-//   gDalContext.hw_valid = FALSE;
 
    return result;
 }
@@ -321,23 +286,19 @@ NFCSTATUS phDal4Nfc_ConfigRelease( void *pHwRef)
 
    NFCSTATUS result = NFCSTATUS_SUCCESS;
    void * pThreadReturn;
+   
+   DAL_PRINT("phDal4Nfc_ConfigRelease ");
 
    if (gDalContext.hw_valid == TRUE)
    {
-      /* Flush the link */
-      gLinkFunc.flush();
-
       /* Kill the read and write threads */
       gReadWriteContext.nReadThreadAlive = 0;
       gReadWriteContext.nWriteThreadAlive = 0;
-      pthread_mutex_unlock(&gReadWriteContext.nReadEventMutex);
-      pthread_mutex_unlock(&gReadWriteContext.nWriteEventMutex);
+      
+      DAL_PRINT("Release Read Semaphore");
+      sem_post(&nfc_read_sem);
+
       if (pthread_join(gReadWriteContext.nReadThread,  &pThreadReturn) != 0)
-      {
-         result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_FAILED);
-         DAL_PRINT("phDal4Nfc_ConfigRelease  KO");
-      }
-      if (pthread_join(gReadWriteContext.nWriteThread, &pThreadReturn) != 0)
       {
          result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_FAILED);
          DAL_PRINT("phDal4Nfc_ConfigRelease  KO");
@@ -348,17 +309,10 @@ NFCSTATUS phDal4Nfc_ConfigRelease( void *pHwRef)
        mq_close(nDeferedCallMessageQueueId);
 #endif
 
-      /* Destroy the mutexes */
-      pthread_mutex_destroy(&gReadWriteContext.nReadEventMutex);
-      pthread_mutex_destroy(&gReadWriteContext.nReadCancelEventMutex);
-      pthread_mutex_destroy(&gReadWriteContext.nWriteEventMutex);
-      pthread_mutex_destroy(&nCriticalSectionMutex);
-      pthread_mutex_destroy(&nThreadsEventMutex);
-
       /* Close the link */
       gLinkFunc.close();
 
-      /* Reset the Writer Thread values to NULL */
+      /* Reset the Read Writer context to NULL */
       memset((void *)&gReadWriteContext,0,sizeof(gReadWriteContext));
       /* Reset the DAL context values to NULL */
       memset((void *)&gDalContext,0,sizeof(gDalContext));
@@ -378,9 +332,15 @@ FUNCTION: phDal4Nfc_Write
 PURPOSE:  DAL Write function.
 
 -----------------------------------------------------------------------------*/
+
 NFCSTATUS phDal4Nfc_Write( void *pContext, void *pHwRef,uint8_t *pBuffer, uint16_t length)
 {
     NFCSTATUS result = NFCSTATUS_SUCCESS;
+    static int       MsgType= PHDAL4NFC_WRITE_MESSAGE;
+    int *            pmsgType=&MsgType;
+    phDal4Nfc_Message_t      sMsg;
+    phOsalNfc_Message_t      OsalMsg;
+
     if ((NULL != pContext) && (NULL != pHwRef)&&
         (NULL != pBuffer) && (0 != length))
     {
@@ -388,13 +348,12 @@ NFCSTATUS phDal4Nfc_Write( void *pContext, void *pHwRef,uint8_t *pBuffer, uint16
         {
             if((!gReadWriteContext.nWriteBusy)&&
                 (!gReadWriteContext.nWaitingOnWrite))
-            {		
-
+            {
+		DAL_PRINT("phDal4Nfc_Write() : Temporary buffer !! \n");
 		gReadWriteContext.pTempWriteBuffer = (uint8_t*)malloc(length * sizeof(uint8_t));
+		/* Make a copy of the passed arguments */
 		memcpy(gReadWriteContext.pTempWriteBuffer,pBuffer,length);
-
                 DAL_DEBUG("phDal4Nfc_Write(): %d\n", length);
-                /* Make a copy of the passed arguments */
                 gReadWriteContext.pWriteBuffer = gReadWriteContext.pTempWriteBuffer;
                 gReadWriteContext.nNbOfBytesToWrite  = length;
                 /* Change the write state so that thread can take over the write */
@@ -403,7 +362,14 @@ NFCSTATUS phDal4Nfc_Write( void *pContext, void *pHwRef,uint8_t *pBuffer, uint16
                 gReadWriteContext.nWaitingOnWrite = TRUE;
                 /* Update the error state */
                 result = NFCSTATUS_PENDING;
-                pthread_mutex_unlock(&gReadWriteContext.nWriteEventMutex);
+                /* Send Message and perform physical write in the DefferedCallback */
+                /* read completed immediately */
+		sMsg.eMsgType= PHDAL4NFC_WRITE_MESSAGE;
+		/* Update the state */
+		phDal4Nfc_FillMsg(&sMsg,&OsalMsg);
+		phDal4Nfc_DeferredCall((pphDal4Nfc_DeferFuncPointer_t)phDal4Nfc_DeferredCb,(void *)pmsgType);
+		memset(&sMsg,0,sizeof(phDal4Nfc_Message_t));
+		memset(&OsalMsg,0,sizeof(phOsalNfc_Message_t));
             }
             else
             {
@@ -447,6 +413,7 @@ NFCSTATUS phDal4Nfc_Read( void *pContext, void *pHwRef,uint8_t *pBuffer, uint16_
                 (!gReadWriteContext.nWaitingOnRead))
             {
                 DAL_DEBUG("*****DAl Read called  length : %d\n", length);
+
                 /* Make a copy of the passed arguments */
                 gReadWriteContext.pReadBuffer = pBuffer;
                 gReadWriteContext.nNbOfBytesToRead  = length;
@@ -454,10 +421,10 @@ NFCSTATUS phDal4Nfc_Read( void *pContext, void *pHwRef,uint8_t *pBuffer, uint16_
                 gReadWriteContext.nReadBusy = TRUE;
                 /* Just set variable here. This is the trigger for the Reader thread */
                 gReadWriteContext.nWaitingOnRead = TRUE;
-                // retval = ResetEvent(gReadWriteContext.nReadCancelEventMutex); /* TO DO */
-                /* Update the erro state */
+                /* Update the return state */
                 result = NFCSTATUS_PENDING;
-                pthread_mutex_unlock(&gReadWriteContext.nReadEventMutex);
+                /* unlock reader thread */
+                sem_post(&nfc_read_sem);
             }
             else
             {
@@ -467,7 +434,6 @@ NFCSTATUS phDal4Nfc_Read( void *pContext, void *pHwRef,uint8_t *pBuffer, uint16_
                 gReadWriteContext.pReadBuffer = pBuffer;
                 gReadWriteContext.nNbOfBytesToRead  = length;
                 result = NFCSTATUS_PENDING;
-                pthread_mutex_unlock(&gReadWriteContext.nReadEventMutex);
             }
         }
         else
@@ -495,43 +461,9 @@ PURPOSE:  DAL Read wait function.
 
 NFCSTATUS phDal4Nfc_ReadWait(void *pContext, void *pHwRef,uint8_t *pBuffer, uint16_t length)
 {
-    NFCSTATUS result = NFCSTATUS_SUCCESS;
-    if ((NULL != pContext) && (NULL != pHwRef)&&
-        (NULL != pBuffer) && (0 != length))
-    {
-        if ( gDalContext.hw_valid== TRUE)
-        {
-            if((!gReadWriteContext.nReadBusy)&&
-                (!gReadWriteContext.nReadWaitBusy)&&
-                (!gReadWriteContext.nWaitingOnRead))
-            {
-                /* Save the copy of passed arguments */
-                gReadWriteContext.pReadWaitBuffer = pBuffer;
-                gReadWriteContext.nNbOfBytesToReadWait = length;
-                /* Change the Read state so that thread can take over the read */
-                gReadWriteContext.nReadWaitBusy = TRUE;
-                /* Just set variable here. This is the trigger for the Reader thread */
-                gReadWriteContext.nWaitingOnReadWait = TRUE;
-                /* Update the error state */
-                result = NFCSTATUS_SUCCESS;
-            }
-            else
-            {
-                /* Driver is BUSY with prev Read */
-                result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_BUSY);
-            }
-        }
-        else
-        {
-            /* TBD :Additional error code : NOT_INITIALISED */
-            result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_INVALID_DEVICE);
-        }
-    }/*end if -Input parametrs valid-check*/
-    else
-    {
-        result = NFCSTATUS_INVALID_PARAMETER;
-    }
-    return result;
+   /* not used */
+   DAL_PRINT("phDal4Nfc_ReadWait"); 
+   return 0;
 }
 /*-----------------------------------------------------------------------------
 
@@ -543,34 +475,8 @@ PURPOSE: Cancel the Read wait function.
 
 NFCSTATUS phDal4Nfc_ReadWaitCancel( void *pContext, void *pHwRef)
 {
-#if 0
-    char retval;
-    NFCSTATUS result = NFCSTATUS_SUCCESS;
-    DAL_PRINT("DAl Read cancel called \n");
-    if ((NULL != pContext) && (NULL != pHwRef))
-    {
-        if ( gDalContext.hw_valid== TRUE)
-        {
-            /* Clear The Comm Port Event */
-            if (!SetCommMask(h_serial_port, 0x0000))
-            {
-                /* Windows Error */
-                result = NFCSTATUS_BOARD_COMMUNICATION_ERROR;
-            }
-            /* Cancel the Wait read */
-            retval = SetEvent(gReadWriteContext.nReadCancelEventMutex);
-        }
-        else
-        {
-            result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_INVALID_DEVICE);
-        }
-    }
-    else
-    {
-        result = NFCSTATUS_INVALID_PARAMETER;
-    }
-    return result;
-#endif
+   /* not used */
+   DAL_PRINT("phDal4Nfc_ReadWaitCancel"); 
    return 0;
 }
 
@@ -648,21 +554,13 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
    /* Iniatilize the DAL context */
    (void)memset(&gDalContext,0,sizeof(phDal4Nfc_SContext_t));
    pgDalContext = &gDalContext;
-
-   /* Reset the Writer Thread values to NULL */
-   memset((void *)&gReadWriteContext,0,sizeof(gReadWriteContext));
-   gReadWriteContext.nReadThreadAlive     = TRUE;
-   gReadWriteContext.nWriteThreadAlive    = TRUE;
-
+   
    /* Reset the Reader Thread values to NULL */
    memset((void *)&gReadWriteContext,0,sizeof(gReadWriteContext));
    gReadWriteContext.nReadThreadAlive     = TRUE;
-   gReadWriteContext.nWriteThreadAlive    = TRUE;
-
-   pthread_mutex_init (&gReadWriteContext.nReadEventMutex, NULL);
-   pthread_mutex_init (&gReadWriteContext.nReadCancelEventMutex, NULL);
-   pthread_mutex_init (&gReadWriteContext.nWriteEventMutex, NULL);
-
+   gReadWriteContext.nWriteBusy = FALSE;
+   gReadWriteContext.nWaitingOnWrite = FALSE;
+   
    /* Prepare the message queue for the defered calls */
 #ifdef USE_MQ_MESSAGE_QUEUE
    nDeferedCallMessageQueueId = mq_open(MQ_NAME_IDENTIFIER, O_CREAT|O_RDWR, 0666, &MQ_QUEUE_ATTRIBUTES);
@@ -740,6 +638,7 @@ NFCSTATUS phDal4Nfc_Download(long level)
  *
  * \retval TRUE                                 Thread exiting.
  */
+
 int phDal4Nfc_ReaderThread(void * pArg)
 {
     char      retvalue;
@@ -758,242 +657,55 @@ int phDal4Nfc_ReaderThread(void * pArg)
 
     /* Create the overlapped event. Must be closed before exiting
     to avoid a handle leak. This event is used READ API and the Reader thread*/
-    pthread_mutex_unlock(&nThreadsEventMutex); /* To indicate thread is ready */
 
     DAL_PRINT("RX Thread \n");
+    DAL_DEBUG("\nRX Thread nReadThreadAlive = %d",gReadWriteContext.nReadThreadAlive);
+    DAL_DEBUG("\nRX Thread nWaitingOnRead = %d",gReadWriteContext.nWaitingOnRead);
     while(gReadWriteContext.nReadThreadAlive) /* Thread Loop */
     {
-        retvalue = 1;
-        gReadWriteContext.nWaitingOnRead = ((gReadWriteContext.nWaitingOnRead == 1)?1:0);
-        gReadWriteContext.nCancelReadWait = 0;
-        gReadWriteContext.nWaitingOnReadWait = 0;
-
-        pthread_mutex_lock(&gReadWriteContext.nReadEventMutex); /* Remains locked till we get a read request */
-
         /* Check for the read request from user */
-        if (gReadWriteContext.nWaitingOnRead)
+	DAL_PRINT("RX Thread Sem Lock\n");
+        sem_wait(&nfc_read_sem);
+        DAL_PRINT("RX Thread Sem UnLock\n");
+        /* Issue read operation.*/
+	gReadWriteContext.nNbOfBytesRead=0;
+	DAL_DEBUG("\n*New *** *****Request Length = %d",gReadWriteContext.nNbOfBytesToRead);
+	memsetRet=memset(gReadWriteContext.pReadBuffer,0,gReadWriteContext.nNbOfBytesToRead);
+
+	/* Wait for IRQ !!!  */
+	gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
+        
+        DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
+        DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
+        DAL_PRINT("ReadBuff[]={ ");
+        for (i = 0; i < gReadWriteContext.nNbOfBytesRead; i++)
         {
-            /* Issue read operation.*/
-            gReadWriteContext.nNbOfBytesRead=0;
-            DAL_DEBUG("\n*New *** *****Request Length = %d",gReadWriteContext.nNbOfBytesToRead);
-            memsetRet=memset(gReadWriteContext.pReadBuffer,0,gReadWriteContext.nNbOfBytesToRead);
-
-            /* Wait for Write Completion */
-            usleep(5000);
-            gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
-            if (gReadWriteContext.nNbOfBytesRead == -1)
-            {
-                 DAL_DEBUG("Read failed\n", 0);
-                 /* TBD : Error, report it.*/
-                 result = PHNFCSTVAL(CID_NFC_DAL,
-                                 NFCSTATUS_BOARD_COMMUNICATION_ERROR);
-            } /* End of File Read if */
-            else if (gReadWriteContext.nNbOfBytesRead == 0)
-            {
-                /* In case of timeout, keep polling */
-                pthread_mutex_unlock(&gReadWriteContext.nReadEventMutex);
-                continue;
-            }
-            else
-            {
-                DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
-                DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
-                DAL_PRINT("ReadBuff[]={ ");
-                for (i = 0; i < gReadWriteContext.nNbOfBytesRead; i++)
-                {
-                  DAL_DEBUG("0x%x ", gReadWriteContext.pReadBuffer[i]);
-                }
-                DAL_PRINT("}\n");
-
-                /* read completed immediately */
-                sMsg.eMsgType= PHDAL4NFC_READ_MESSAGE;
-                /* Update the state */
-                phDal4Nfc_FillMsg(&sMsg,&OsalMsg);
-                phDal4Nfc_DeferredCall((pphDal4Nfc_DeferFuncPointer_t)phDal4Nfc_DeferredCb,(void *)pmsgType);
-                memsetRet=memset(&sMsg,0,sizeof(phDal4Nfc_Message_t));
-                memsetRet=memset(&OsalMsg,0,sizeof(phOsalNfc_Message_t));
-            }
+          DAL_DEBUG("0x%x ", gReadWriteContext.pReadBuffer[i]);
         }
-        else if (gReadWriteContext.nWaitingOnReadWait) /* Wait Read Loop */
-        {
+        DAL_PRINT("}\n");
+	
+        /* read completed immediately */
+	sMsg.eMsgType= PHDAL4NFC_READ_MESSAGE;
+	/* Update the state */
+	phDal4Nfc_FillMsg(&sMsg,&OsalMsg);
+	phDal4Nfc_DeferredCall((pphDal4Nfc_DeferFuncPointer_t)phDal4Nfc_DeferredCb,(void *)pmsgType);
+	memsetRet=memset(&sMsg,0,sizeof(phDal4Nfc_Message_t));
+	memsetRet=memset(&OsalMsg,0,sizeof(phOsalNfc_Message_t));
 
-            gReadWriteContext.nNbOfBytesReadWait = gLinkFunc.read(gReadWriteContext.pReadWaitBuffer, gReadWriteContext.nNbOfBytesToReadWait);
-            if (gReadWriteContext.nNbOfBytesReadWait == -1)
-            {
-                 /*  Error; report it.*/
-                 result = PHNFCSTVAL(CID_NFC_DAL,
-                             NFCSTATUS_BOARD_COMMUNICATION_ERROR);
-            }
-            else
-            {
-                sMsg.eMsgType= PHDAL4NFC_READWAIT_MESSAGE;
-                phDal4Nfc_FillMsg(&sMsg,&OsalMsg);
-                retry_cnt=0;
-                /* Update the state */
-                gReadWriteContext.nReadBusy = FALSE;
-                /*  Reset flag so that another opertion can be issued.*/
-                gReadWriteContext.nWaitingOnRead = FALSE;
-                gReadWriteContext.nNbOfBytesRead=0;
-                gReadWriteContext.nNbOfBytesToRead=0;
-                phDal4Nfc_DeferredCall((pphDal4Nfc_DeferFuncPointer_t)
-                                            phDal4Nfc_DeferredCb,(void *)pmsgType);
 
-                /* Update the state */
-                gReadWriteContext.nReadWaitBusy = FALSE;
-                /*  Reset flag so that another opertion can be issued.*/
-                gReadWriteContext.nWaitingOnReadWait = FALSE;
-            }/*end-else*/
-
-        }
-        else if (gReadWriteContext.nCancelReadWait)
-        {
-            DAL_PRINT("Read Wait is Canceled\n");
-        }
-        else if ( result != NFCSTATUS_SUCCESS )
-        {
-            /* Report it to user */
-            sMsg.transactInfo.status  = result;
-            /*map to OSAL msg format*/
-            OsalMsg.eMsgType = PH_DAL4NFC_MESSAGE_BASE;
-            OsalMsg.pMsgData = (void*)&sMsg;
-            /* Update the state */
-            gReadWriteContext.nNbOfBytesRead=0;
-            gReadWriteContext.nNbOfBytesToRead=0;
-            phDal4Nfc_DeferredCall((pphDal4Nfc_DeferFuncPointer_t)
-                                phDal4Nfc_DeferredCb,(void *)pmsgType);
-
-        } /*end-else if ( result != NFCSTATUS_SUCCESS )*/
-        else
-        {
-            continue;
-        }
-
+        
     } /* End of thread Loop*/
     return TRUE;
 }
 
-/**
- * \ingroup grp_nfc_dal
- *
- * \brief DAL Writer thread handler
- * This function manages the writes to the link interface. The writes are done from
- * this thread to create the asynchronous mecanism. When calling the synchronous
- * function phDal4Nfc_Write, the nWaitingOnWrite mutex is unlocked and the write
- * can be done. Then a client callback is called to signal the operation as complete.
- *
- * \param[in]       pArg     A custom argument that can be passed to the thread (not used)
- *
- * \retval TRUE                                 Thread exiting.
- */
-int phDal4Nfc_WriterThread(void * pArg)
-{
-    char            retvalue = 1;
-    NFCSTATUS       result = NFCSTATUS_SUCCESS;
-    phDal4Nfc_Message_t      sMsg;
-    phOsalNfc_Message_t      OsalMsg ;
-    static int     MsgType=PHDAL4NFC_WRITE_MESSAGE;
-    int * pmsgType=&MsgType;
-    int i;
 
-    pthread_setname_np(pthread_self(), "writer");
-
-    /* Create the overlapped event. Must be closed before exiting
-    to avoid a handle leak. This event is used READ API and the Reader thread*/
-    pthread_mutex_unlock(&nThreadsEventMutex); /* To indicate thread is ready */
-
-    /* Set the thread started Event, to make sure that both threads are ready
-    in the initialization state*/
-    while(gReadWriteContext.nWriteThreadAlive) /* Thread Loop */
-    {
-
-        retvalue = 1;
-        DAL_PRINT("TX Started\n");
-        pthread_mutex_lock(&gReadWriteContext.nWriteEventMutex); /* Remains locked till we get a write request */
-        /* Check for the write request from user */
-        if(gReadWriteContext.nWaitingOnWrite)
-        {
-            /* Issue a write after a 8ms pause */
-            usleep(8000);
-            gReadWriteContext.nNbOfBytesWritten = gLinkFunc.write(gReadWriteContext.pWriteBuffer, gReadWriteContext.nNbOfBytesToWrite);
-            if (gReadWriteContext.nNbOfBytesWritten != gReadWriteContext.nNbOfBytesToWrite)
-            {
-                /* controller may be in standby. do it again! */
-                usleep(8000);
-                gReadWriteContext.nNbOfBytesWritten = gLinkFunc.write(gReadWriteContext.pWriteBuffer, gReadWriteContext.nNbOfBytesToWrite);
-            }
-            if (gReadWriteContext.nNbOfBytesWritten != gReadWriteContext.nNbOfBytesToWrite)
-            {
-                /* Report write failure or timeout */
-                DAL_DEBUG("Write error in write thread\n", 0);
-                result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_BOARD_COMMUNICATION_ERROR);
-            }/*end writeFile*/
-            else /* Results ready */
-            {
-		// Free TempWriteBuffer 
-		if(gReadWriteContext.pTempWriteBuffer != NULL)
-		{
-		    free(gReadWriteContext.pTempWriteBuffer);
-		}
-
-                /* Write operation completed successfully.*/
-                sMsg.eMsgType = PHDAL4NFC_WRITE_MESSAGE;
-                //sMsg.pContext = pgDalContext;
-                sMsg.pContext= pgDalContext->cb_if.pif_ctxt;
-                phDal4Nfc_FillMsg(&sMsg,&OsalMsg);
-                /* Post a message to the HAL Thread */
-                /* Update the state */
-                gReadWriteContext.nWriteBusy = FALSE;
-                /*  Reset flag so that another opertion can be issued.*/
-                gReadWriteContext.nWaitingOnWrite = FALSE;
-
-                gReadWriteContext.nNbOfBytesWritten=gReadWriteContext.nNbOfBytesToWrite;
-
-                DAL_DEBUG("NON Overlapped Write :DAl Writer thread called  length : %d\n",
-                                            gReadWriteContext.nNbOfBytesWritten);
-
-                DAL_PRINT("WriteBuff[]={ ");
-                for (i = 0; i < gReadWriteContext.nNbOfBytesWritten; i++)
-                {
-                  DAL_DEBUG("0x%x ", gReadWriteContext.pWriteBuffer[i]);
-                }
-                DAL_PRINT("}\n");
-
-                phDal4Nfc_DeferredCall(phDal4Nfc_DeferredCb,pmsgType);
-
-            }/*end else  Results ready */
-        }
-        else if ( result != NFCSTATUS_SUCCESS )
-        {
-
-            /* Report it to user */
-            sMsg.transactInfo.status  = result;
-            /*map to OSAL msg format*/
-            OsalMsg.eMsgType = PH_DAL4NFC_MESSAGE_BASE;
-            OsalMsg.pMsgData = (void*)&sMsg;
-            /* Update the state */
-            gReadWriteContext.nWriteBusy = FALSE;
-            /*  Reset flag so that another opertion can be issued.*/
-            gReadWriteContext.nWaitingOnWrite = FALSE;
-            gReadWriteContext.nNbOfBytesWritten = 0;
-
-            DAL_DEBUG("DAl Writer thread error called  length : %d\n",
-                                gReadWriteContext.nNbOfBytesWritten);
-
-        }/*end elseif*/
-        else
-        {
-            continue;
-        }
-    }/* End of thread Loop*/
-    return TRUE;
-}
 
 /**
  * \ingroup grp_nfc_dal
  *
  * \brief DAL Start threads function
  * This function is called from phDal4Nfc_Config and is responsible of creating the
- * reader and writer threads. Also it will init necessary mutexes.
+ * reader thread.
  *
  * \retval NFCSTATUS_SUCCESS                    If success.
  * \retval NFCSTATUS_FAILED                     Can not create thread or retreive its attributes
@@ -1004,26 +716,16 @@ NFCSTATUS phDal4Nfc_StartThreads(void)
     pthread_attr_t nWriteThreadAttributes;
     int ret;
 
-    /* Mutex init */
-    pthread_mutex_init (&nCriticalSectionMutex, NULL);
-    pthread_mutex_init (&nThreadsEventMutex, NULL);
+    if(sem_init(&nfc_read_sem, 0, 0) == -1)
+    {
+      DAL_PRINT("NFC Init Semaphore creation Error");
+      return -1;
+    }
 
-    /* Lock the request mutexes */
-    pthread_mutex_lock(&gReadWriteContext.nWriteEventMutex);
-    pthread_mutex_lock(&gReadWriteContext.nReadEventMutex);
-
-    pthread_mutex_lock(&nThreadsEventMutex);  /* First thread ready lock */
     ret = pthread_create(&gReadWriteContext.nReadThread, NULL,  (pphDal4Nfc_thread_handler_t)phDal4Nfc_ReaderThread,  (void*) "dal_read_thread");
     if(ret != 0)
         return(PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_FAILED));
-    pthread_mutex_lock(&nThreadsEventMutex);  /* Blocking lock */
-    // Here we have been unblocked by the thread handler. (so the thread is ready)
-    ret = pthread_create(&gReadWriteContext.nWriteThread, NULL,  (pphDal4Nfc_thread_handler_t)phDal4Nfc_WriterThread,  (void*) "dal_write_thread");
-    if(ret != 0)
-        return(PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_FAILED));
-    pthread_mutex_lock(&nThreadsEventMutex);  /* Blocking lock */
-    // Here we have been unblocked by the thread handler. (so the thread is ready)
-    pthread_mutex_unlock(&nThreadsEventMutex);
+
     return NFCSTATUS_SUCCESS;
 }
 
@@ -1088,6 +790,7 @@ void phDal4Nfc_FillMsg(phDal4Nfc_Message_t *pDalMsg,phOsalNfc_Message_t *pOsalMs
 void phDal4Nfc_DeferredCb (void  *params)
 {
     int*    pParam=NULL;
+    int     i;
     phNfc_sTransactionInfo_t TransactionInfo;
 
     pParam=(int*)params;
@@ -1100,6 +803,8 @@ void phDal4Nfc_DeferredCb (void  *params)
             TransactionInfo.length=(uint16_t)gReadWriteContext.nNbOfBytesRead;
             TransactionInfo.status=NFCSTATUS_SUCCESS;
             gReadWriteContext.nReadBusy = FALSE;
+
+
             /*  Reset flag so that another opertion can be issued.*/
             gReadWriteContext.nWaitingOnRead = FALSE;
             if ((NULL != pgDalContext) && (NULL != pgDalContext->cb_if.receive_complete))
@@ -1107,18 +812,50 @@ void phDal4Nfc_DeferredCb (void  *params)
                 pgDalContext->cb_if.receive_complete(pgDalContext->cb_if.pif_ctxt,
                                                         pgDalHwContext,&TransactionInfo);
             }
-
-            break;
-        case PHDAL4NFC_READWAIT_MESSAGE:
-            /*dalMsg->readCbPtr(dalMsg->pContext, dalMsg->pHwRef, &dalMsg->transactInfo);*/
+            
             break;
         case PHDAL4NFC_WRITE_MESSAGE:
             DAL_PRINT(" Dal deferred write called \n");
             /* DAL_DEBUG("dalMsg->transactInfo.length : %d\n", dalMsg->transactInfo.length); */
+            /* Make a Physical WRITE */
+            usleep(3000); /* Wait 3ms before issuing a Write */
+            gReadWriteContext.nNbOfBytesWritten = gLinkFunc.write(gReadWriteContext.pWriteBuffer, gReadWriteContext.nNbOfBytesToWrite);
+            if (gReadWriteContext.nNbOfBytesWritten != gReadWriteContext.nNbOfBytesToWrite)
+            {
+                /* controller may be in standby. do it again! */ 
+                usleep(10000); /* wait 10 ms */
+                gReadWriteContext.nNbOfBytesWritten = gLinkFunc.write(gReadWriteContext.pWriteBuffer, gReadWriteContext.nNbOfBytesToWrite);
+            }
+            if (gReadWriteContext.nNbOfBytesWritten != gReadWriteContext.nNbOfBytesToWrite)
+            {
+                /* Report write failure or timeout */
+                DAL_PRINT(" Physical Write Error !!! \n");
+                TransactionInfo.length=(uint16_t)gReadWriteContext.nNbOfBytesWritten;
+                TransactionInfo.status = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_BOARD_COMMUNICATION_ERROR);
+            }
+            else
+            {
+                DAL_PRINT(" Physical Write Success \n"); 
+	        TransactionInfo.length=(uint16_t)gReadWriteContext.nNbOfBytesWritten;
+	        TransactionInfo.status=NFCSTATUS_SUCCESS;
+                DAL_PRINT("WriteBuff[]={ ");
+                for (i = 0; i < gReadWriteContext.nNbOfBytesWritten; i++)
+                {
+                  DAL_DEBUG("0x%x ", gReadWriteContext.pWriteBuffer[i]);
+                }
+                DAL_PRINT("}\n");
 
-            TransactionInfo.buffer=NULL;
-            TransactionInfo.length=(uint16_t)gReadWriteContext.nNbOfBytesWritten;
-            TransactionInfo.status=NFCSTATUS_SUCCESS;
+		// Free TempWriteBuffer 
+		if(gReadWriteContext.pTempWriteBuffer != NULL)
+		{
+		    free(gReadWriteContext.pTempWriteBuffer);
+		}
+            }
+            /* Reset Write context */
+            gReadWriteContext.nWriteBusy = FALSE;
+            gReadWriteContext.nWaitingOnWrite = FALSE;
+            
+            /* call LLC callback */
             if ((NULL != pgDalContext) && (NULL != pgDalContext->cb_if.send_complete))
             {
                 pgDalContext->cb_if.send_complete(pgDalContext->cb_if.pif_ctxt,
@@ -1149,8 +886,6 @@ void phDal4Nfc_DeferredCall(pphDal4Nfc_DeferFuncPointer_t func, void *param)
     static phDal4Nfc_DeferredCall_Msg_t nDeferedMessageRead;
     static phDal4Nfc_DeferredCall_Msg_t nDeferedMessageWrite;
 
-    pthread_mutex_lock(&nCriticalSectionMutex);
-
 #ifdef USE_MQ_MESSAGE_QUEUE
     nDeferedMessage.eMsgType = PH_DAL4NFC_MESSAGE_BASE;
     nDeferedMessage.def_call = func;
@@ -1174,7 +909,6 @@ void phDal4Nfc_DeferredCall(pphDal4Nfc_DeferFuncPointer_t func, void *param)
     retvalue = phDal4Nfc_msgsnd(nDeferedCallMessageQueueId, (struct msgbuf *)&nDeferedMessageWrapper, sizeof(phLibNfc_Message_t), 0);
 #endif
 
-    pthread_mutex_unlock(&nCriticalSectionMutex);
 }
 
 #undef _DAL_4_NFC_C
