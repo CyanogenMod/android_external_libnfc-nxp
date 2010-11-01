@@ -284,6 +284,10 @@ void phLibNfc_Ndef_Read_Cb(void* Context,NFCSTATUS status)
         else
         {
             gpphLibContext->status.GenCb_pending_status = FALSE;
+            if (gpphLibContext->psBufferedAuth != NULL && gpphLibContext->ndef_cntx.psNdefMap != NULL) {
+		    gpphLibContext->psBufferedAuth->addr = (uint8_t)
+		    gpphLibContext->ndef_cntx.psNdefMap->StdMifareContainer.currentBlock;
+            }
 
             if(NFCSTATUS_FAILED == status )
             {
@@ -521,6 +525,10 @@ void phLibNfc_Ndef_Write_Cb(void* Context,NFCSTATUS status)
         else
         {
             gpphLibContext->status.GenCb_pending_status = FALSE;
+            if (gpphLibContext->psBufferedAuth != NULL && gpphLibContext->ndef_cntx.psNdefMap != NULL) {
+                gpphLibContext->psBufferedAuth->addr = (uint8_t)
+                    gpphLibContext->ndef_cntx.psNdefMap->TLVStruct.NdefTLVBlock;
+            }
             if(status == NFCSTATUS_FAILED )
             {
 				status = NFCSTATUS_FAILED;
