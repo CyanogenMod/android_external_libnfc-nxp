@@ -70,8 +70,8 @@ NFCSTATUS phFriNfc_Llcp_EncodeTLV( phNfc_sData_t  *psValueBuffer,
                                    uint8_t        length,
                                    uint8_t        *pValue);
 
-void phFriNfc_Llcp_EncodeMIUX(uint16_t* pMiux,
-                              uint16_t* pMiuxEncoded);
+void phFriNfc_Llcp_EncodeMIUX(uint16_t pMiux,
+                              uint8_t* pMiuxEncoded);
 
 void phFriNfc_Llcp_EncodeRW(uint8_t *pRw);
 

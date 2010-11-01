@@ -127,20 +127,14 @@ NFCSTATUS phFriNfc_Llcp_EncodeTLV( phNfc_sData_t  *psValueBuffer,
 }
 
 /* TODO: comment function EncodeMIUX */
-void phFriNfc_Llcp_EncodeMIUX(uint16_t* pMiux,
-                              uint16_t* pMiuxEncoded)
+void phFriNfc_Llcp_EncodeMIUX(uint16_t miux,
+                              uint8_t* pMiuxEncoded)
 {
-   uint16_t miux = *pMiux;
-   uint8_t  encodeBuffer[2];
-
    /* MASK */
    miux = miux & PHFRINFC_LLCP_TLV_MIUX_MASK;
 
-   encodeBuffer[0] = miux >> 8;
-   encodeBuffer[1] = (uint8_t)miux;
-
-   /* Set the new value of MIUX */
-   *pMiuxEncoded =(encodeBuffer[0]) + (encodeBuffer[1] *16*16);
+   pMiuxEncoded[0] = miux >> 8;
+   pMiuxEncoded[1] = miux & 0xff;
 }
 
 /* TODO: comment function EncodeRW */

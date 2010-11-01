@@ -1973,7 +1973,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
    NFCSTATUS status = NFCSTATUS_SUCCESS;
 
    uint32_t offset = 0;
-   uint16_t miux;
+   uint8_t miux[2];
    uint8_t  i;
 
    /* Store the options in the socket */
@@ -2023,15 +2023,15 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
    if(pLlcpSocket->localMIUX != PHFRINFC_LLCP_MIUX_DEFAULT)
    {
       /* Encode MIUX value */
-      phFriNfc_Llcp_EncodeMIUX(&pLlcpSocket->localMIUX,
-                               &miux);
+      phFriNfc_Llcp_EncodeMIUX(pLlcpSocket->localMIUX,
+                               miux);
 
       /* Encode MIUX in TLV format */
       status =  phFriNfc_Llcp_EncodeTLV(&pLlcpSocket->sSocketSendBuffer,
                                         &offset,
                                         PHFRINFC_LLCP_TLV_TYPE_MIUX,
                                         PHFRINFC_LLCP_TLV_LENGTH_MIUX,
-                                        (uint8_t*)&miux);
+                                        miux);
       if(status != NFCSTATUS_SUCCESS)
       {
          /* Call the CB */
@@ -2178,7 +2178,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Connect( phFriNfc_LlcpTransp
    NFCSTATUS status = NFCSTATUS_SUCCESS;
 
    uint32_t offset = 0;
-   uint16_t miux = 0;
+   uint8_t miux[2];
 
    /* Test if a nSap is present */
    if(nSap != PHFRINFC_LLCP_SAP_DEFAULT)
@@ -2205,15 +2205,15 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Connect( phFriNfc_LlcpTransp
    if(pLlcpSocket->localMIUX != PHFRINFC_LLCP_MIUX_DEFAULT)
    {
       /* Encode MIUX value */
-      phFriNfc_Llcp_EncodeMIUX(&pLlcpSocket->localMIUX,
-                               &miux);
+      phFriNfc_Llcp_EncodeMIUX(pLlcpSocket->localMIUX,
+                               miux);
 
       /* Encode MIUX in TLV format */
       status =  phFriNfc_Llcp_EncodeTLV(&pLlcpSocket->sSocketSendBuffer,
                                         &offset,
                                         PHFRINFC_LLCP_TLV_TYPE_MIUX,
                                         PHFRINFC_LLCP_TLV_LENGTH_MIUX,
-                                        (uint8_t*)&miux);
+                                        miux);
       if(status != NFCSTATUS_SUCCESS)
       {
          return status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
