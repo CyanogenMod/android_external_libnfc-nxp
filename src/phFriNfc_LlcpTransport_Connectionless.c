@@ -92,7 +92,6 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_Close(phFriNfc_LlcpTransport_Soc
    pLlcpSocket->eSocket_Type                       = phFriNfc_LlcpTransport_eDefaultType;
    pLlcpSocket->pContext                           = NULL;
    pLlcpSocket->pSocketErrCb                       = NULL;
-   pLlcpSocket->psSocketOption                     = NULL;
    pLlcpSocket->socket_sSap                        = PHFRINFC_LLCP_SAP_DEFAULT;
    pLlcpSocket->socket_dSap                        = PHFRINFC_LLCP_SAP_DEFAULT;
    pLlcpSocket->bSocketRecvPending                 = FALSE;
@@ -110,6 +109,8 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_Close(phFriNfc_LlcpTransport_Soc
    pLlcpSocket->socket_VSA                         = 0;
    pLlcpSocket->socket_VR                          = 0;
    pLlcpSocket->socket_VRA                         = 0;
+
+   memset(&pLlcpSocket->sSocketOption, 0x00, sizeof(phFriNfc_LlcpTransport_sSocketOptions_t));
 
    if (pLlcpSocket->sServiceName.buffer != NULL) {
        phOsalNfc_FreeMemory(pLlcpSocket->sServiceName.buffer);

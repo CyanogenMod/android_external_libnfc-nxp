@@ -1814,10 +1814,10 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_SocketGetLocalOptions(phFriN
    NFCSTATUS status = NFCSTATUS_SUCCESS;
 
    /* Get Local MIUX */
-   psLocalOptions->miu = pLlcpSocket->psSocketOption->miu;
+   psLocalOptions->miu = pLlcpSocket->sSocketOption.miu;
 
    /* Get Local Receive Window */
-   psLocalOptions->rw = pLlcpSocket->psSocketOption->rw;
+   psLocalOptions->rw = pLlcpSocket->sSocketOption.rw;
 
    return status;
 }
@@ -1977,16 +1977,16 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
    uint8_t  i;
 
    /* Store the options in the socket */
-   pLlcpSocket->psSocketOption   = psOptions;
+   memcpy(&pLlcpSocket->sSocketOption, psOptions, sizeof(phFriNfc_LlcpTransport_sSocketOptions_t));
 
    /* Set socket local params (MIUX & RW) */
-   pLlcpSocket ->localMIUX = (pLlcpSocket->psSocketOption->miu - PHFRINFC_LLCP_MIU_DEFAULT) & PHFRINFC_LLCP_TLV_MIUX_MASK;
-   pLlcpSocket ->localRW   = pLlcpSocket->psSocketOption->rw & PHFRINFC_LLCP_TLV_RW_MASK;
+   pLlcpSocket ->localMIUX = (pLlcpSocket->sSocketOption.miu - PHFRINFC_LLCP_MIU_DEFAULT) & PHFRINFC_LLCP_TLV_MIUX_MASK;
+   pLlcpSocket ->localRW   = pLlcpSocket->sSocketOption.rw & PHFRINFC_LLCP_TLV_RW_MASK;
 
    /* Set the pointer and the length for the Receive Window Buffer */
    for(i=0;i<pLlcpSocket->localRW;i++)
    {
-      pLlcpSocket->sSocketRwBufferTable[i].buffer = psWorkingBuffer->buffer + (i*pLlcpSocket->psSocketOption->miu);
+      pLlcpSocket->sSocketRwBufferTable[i].buffer = psWorkingBuffer->buffer + (i*pLlcpSocket->sSocketOption.miu);
       pLlcpSocket->sSocketRwBufferTable[i].length = 0;
    }
 
@@ -2043,17 +2043,17 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
    }
 
    /* Recive Window */
-   if(pLlcpSocket->psSocketOption->rw != PHFRINFC_LLCP_RW_DEFAULT)
+   if(pLlcpSocket->sSocketOption.rw != PHFRINFC_LLCP_RW_DEFAULT)
    {
       /* Encode RW value */
-      phFriNfc_Llcp_EncodeRW(&pLlcpSocket->psSocketOption->rw);
+      phFriNfc_Llcp_EncodeRW(&pLlcpSocket->sSocketOption.rw);
 
       /* Encode RW in TLV format */
       status =  phFriNfc_Llcp_EncodeTLV(&pLlcpSocket->sSocketSendBuffer,
                                         &offset,
                                         PHFRINFC_LLCP_TLV_TYPE_RW,
                                         PHFRINFC_LLCP_TLV_LENGTH_RW,
-                                        &pLlcpSocket->psSocketOption->rw);
+                                        &pLlcpSocket->sSocketOption.rw);
       if(status != NFCSTATUS_SUCCESS)
       {
          /* Call the CB */
@@ -2221,17 +2221,17 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Connect( phFriNfc_LlcpTransp
    }
 
    /* Recive Window */
-   if(pLlcpSocket->psSocketOption->rw != PHFRINFC_LLCP_RW_DEFAULT)
+   if(pLlcpSocket->sSocketOption.rw != PHFRINFC_LLCP_RW_DEFAULT)
    {
       /* Encode RW value */
-      phFriNfc_Llcp_EncodeRW(&pLlcpSocket->psSocketOption->rw);
+      phFriNfc_Llcp_EncodeRW(&pLlcpSocket->sSocketOption.rw);
 
       /* Encode RW in TLV format */
       status =  phFriNfc_Llcp_EncodeTLV(&pLlcpSocket->sSocketSendBuffer,
                                         &offset,
                                         PHFRINFC_LLCP_TLV_TYPE_RW,
                                         PHFRINFC_LLCP_TLV_LENGTH_RW,
-                                        &pLlcpSocket->psSocketOption->rw);
+                                        &pLlcpSocket->sSocketOption.rw);
       if(status != NFCSTATUS_SUCCESS)
       {
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
@@ -2399,7 +2399,6 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_DisconnectClose_CB(void*  
       pLlcpSocket->eSocket_Type                       = phFriNfc_LlcpTransport_eDefaultType;
       pLlcpSocket->pContext                           = NULL;
       pLlcpSocket->pSocketErrCb                       = NULL;
-      pLlcpSocket->psSocketOption                     = NULL;
       pLlcpSocket->socket_sSap                        = PHFRINFC_LLCP_SAP_DEFAULT;
       pLlcpSocket->socket_dSap                        = PHFRINFC_LLCP_SAP_DEFAULT;
       pLlcpSocket->bSocketRecvPending                 = FALSE;
@@ -2415,7 +2414,9 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_DisconnectClose_CB(void*  
       pLlcpSocket->socket_VSA                         = 0;
       pLlcpSocket->socket_VR                          = 0;
       pLlcpSocket->socket_VRA                         = 0;
-      
+
+      memset(&pLlcpSocket->sSocketOption, 0x00, sizeof(phFriNfc_LlcpTransport_sSocketOptions_t));
+
       if (pLlcpSocket->sServiceName.buffer != NULL) {
           phOsalNfc_FreeMemory(pLlcpSocket->sServiceName.buffer);
       }
@@ -2460,7 +2461,6 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Close(phFriNfc_LlcpTransport
       pLlcpSocket->eSocket_Type                       = phFriNfc_LlcpTransport_eDefaultType;
       pLlcpSocket->pContext                           = NULL;
       pLlcpSocket->pSocketErrCb                       = NULL;
-      pLlcpSocket->psSocketOption                     = NULL;
       pLlcpSocket->socket_sSap                        = PHFRINFC_LLCP_SAP_DEFAULT;
       pLlcpSocket->socket_dSap                        = PHFRINFC_LLCP_SAP_DEFAULT;
       pLlcpSocket->bSocketRecvPending                 = FALSE;
@@ -2478,6 +2478,8 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Close(phFriNfc_LlcpTransport
       pLlcpSocket->socket_VSA                         = 0;
       pLlcpSocket->socket_VR                          = 0;
       pLlcpSocket->socket_VRA                         = 0;
+
+      memset(&pLlcpSocket->sSocketOption, 0x00, sizeof(phFriNfc_LlcpTransport_sSocketOptions_t));
 
       if (pLlcpSocket->sServiceName.buffer != NULL) {
           phOsalNfc_FreeMemory(pLlcpSocket->sServiceName.buffer);
@@ -2741,7 +2743,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
             {
                /* Get the data length available in the linear buffer  */
                dataLengthAvailable = phFriNfc_Llcp_CyclicFifoAvailable(&pLlcpSocket->sCyclicFifoBuffer);
-               if((dataLengthAvailable >= pLlcpSocket->psSocketOption->miu) && (pLlcpSocket->ReceiverBusyCondition == TRUE))
+               if((dataLengthAvailable >= pLlcpSocket->sSocketOption.miu) && (pLlcpSocket->ReceiverBusyCondition == TRUE))
                {
                   /* Reset the ReceiverBusyCondition Flag */
                   pLlcpSocket->ReceiverBusyCondition = FALSE;

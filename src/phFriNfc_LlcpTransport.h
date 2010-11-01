@@ -155,12 +155,13 @@ struct phFriNfc_LlcpTransport_Socket
 {
    phFriNfc_LlcpTransportSocket_eSocketState_t    eSocket_State;
    phFriNfc_LlcpTransport_eSocketType_t           eSocket_Type;
-   phFriNfc_LlcpTransport_sSocketOptions_t*       psSocketOption;
+   phFriNfc_LlcpTransport_sSocketOptions_t        sSocketOption;
    pphFriNfc_LlcpTransportSocketErrCb_t           pSocketErrCb;
 
    /* Remote and local socket info */
    uint8_t                                        socket_sSap;
    uint8_t                                        socket_dSap;
+   // TODO: copy service name (could be deallocated by upper layer)
    phNfc_sData_t                                  sServiceName;
    uint8_t                                        remoteRW;
    uint8_t                                        localRW;
