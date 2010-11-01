@@ -22,6 +22,7 @@
  *
  */
 
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
@@ -36,8 +37,7 @@
 #include <string.h>
 #endif
 
-#define PN544_RESET_CMD		0
-#define PN544_DOWNLOAD_CMD	1
+#include <linux/pn544.h>
 
 typedef struct
 {
@@ -240,9 +240,9 @@ int phDal4Nfc_i2c_reset(long level)
 {
    int ret = NFCSTATUS_SUCCESS;   
 
-   DAL_DEBUG("phDal4Nfc_i2c_reset, VEN level = %d",level);
+   DAL_DEBUG("phDal4Nfc_i2c_reset, VEN level = %ld",level);
 
-   ret = ioctl(gI2cPortContext.nHandle, PN544_RESET_CMD, level);
+   ret = ioctl(gI2cPortContext.nHandle, PN544_SET_PWR, level);
 
    return ret;
 }
@@ -258,9 +258,10 @@ int phDal4Nfc_i2c_download(long level)
 {
    int ret = NFCSTATUS_SUCCESS;
 
-   DAL_DEBUG("phDal4Nfc_i2c_download, GPIO4 level = %d",level);
+   DAL_DEBUG("phDal4Nfc_i2c_download, GPIO4 level = %ld",level);
 
-   ret = ioctl(gI2cPortContext.nHandle, PN544_DOWNLOAD_CMD, level);
+   /* TODO: implement firmware download */  abort();
+   /* ret = ioctl(gI2cPortContext.nHandle, PN544_DOWNLOAD_CMD, level); */
 
    return ret;
 }
