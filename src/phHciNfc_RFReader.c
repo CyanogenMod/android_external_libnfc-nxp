@@ -1675,18 +1675,21 @@ phHciNfc_ReaderMgmt_Presence_Check(
                     && (reader_pipe_id != HCI_UNKNOWN_PIPE_ID )
                     )
                 {   
-#if 0
+                    uint8_t cmd[11];
+                    phHciNfc_Pipe_Info_t *p_pipe_info = NULL;
                     p_pipe_info = psHciContext->p_pipe_list[reader_pipe_id];
-                    p_pipe_info->param_info = ;
-                    p_pipe_info->param_length = ;
+                    p_pipe_info->param_info = &cmd;
+                    p_pipe_info->param_length = 11;
+                    // masked inventory command:
+                    // set #slots to 1 to use mask without padding,
+                    // need to set inventory flag to enable setting #slots
+                    cmd[0] = 0x04 | 0x20; // FLAG_INVENTORY | FLAG_SLOTS
+                    cmd[1] = 0x01; // CMD_INVENTORY
+                    cmd[2] = 64; // mask bit-length
+                    memcpy(cmd + 3, &(psHciContext->p_target_info->RemoteDevInfo.Iso15693_Info.Uid), 8);
                     status = phHciNfc_Send_ISO15693_Command(
                         psHciContext,  pHwRef
                         ,reader_pipe_id, NXP_ISO15693_CMD );
-#else
-                    status = PHNFCSTVAL(CID_NFC_HCI, 
-                                    NFCSTATUS_FEATURE_NOT_SUPPORTED);
-
-#endif
                     
                 }
                 break;

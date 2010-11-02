@@ -797,7 +797,7 @@ phHciNfc_Felica_Request_Mode(
                               void                  *pHwRef)
 {
     NFCSTATUS           status = NFCSTATUS_SUCCESS;
-    static uint8_t      pres_chk_data[(PHHAL_FEL_ID_LEN + 2)] = {0};
+    static uint8_t      pres_chk_data[(PHHAL_FEL_ID_LEN + 4)] = {0};
 
     if( (NULL == psHciContext) || (NULL == pHwRef) )
     {
@@ -825,7 +825,9 @@ phHciNfc_Felica_Request_Mode(
                 &(ps_fel_info->felica_info.RemoteDevInfo.Felica_Info);
 
             pres_chk_data[i++] = sizeof(pres_chk_data);
-            pres_chk_data[i++] = FELICA_REQ_MODE;
+            pres_chk_data[i++] = 0x00; // Felica poll
+            pres_chk_data[i++] = 0xFF;
+            pres_chk_data[i++] = 0xFF;
             (void)memcpy((void *)&(pres_chk_data[i]), 
                         (void *)ps_rem_fel_info->IDm, PHHAL_FEL_ID_LEN);
 
