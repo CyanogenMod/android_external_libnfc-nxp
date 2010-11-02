@@ -310,9 +310,11 @@ static void phHal4Nfc_MifareTransceive(
                         )
 {
     uint16_t counter;
-    if ((psRemoteDevInfo->RemoteDevInfo.Iso14443A_Info.Sak == 0x00)
+    if (
 #ifndef DISABLE_MIFARE_UL_WRITE_WORKAROUND
-                        &&(phHal_eMifareWrite4 != psTransceiveInfo->sSendData.buffer[0])
+        phHal_eMifareWrite4 != psTransceiveInfo->sSendData.buffer[0]
+#else
+        1
 #endif/*#ifndef DISABLE_MIFARE_UL_WRITE_WORKAROUND*/
         )
 
