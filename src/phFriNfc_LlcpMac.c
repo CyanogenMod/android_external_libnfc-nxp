@@ -105,13 +105,6 @@ NFCSTATUS phFriNfc_LlcpMac_ChkLlcp (phFriNfc_LlcpMac_t                  *LlcpMac
                status = PHNFCSTVAL(CID_FRI_NFC_LLCP_MAC, NFCSTATUS_FAILED);
             }
          }break;
-      case phHal_eISO14443_A_PICC:
-      case phHal_eISO14443_B_PICC:
-         {
-            /* Set the MAC mapping type detected */
-            LlcpMac->MacType = phFriNfc_LlcpMac_eTypeIso14443;
-            status = NFCSTATUS_SUCCESS;
-         }break;
       default:
          {
             status = PHNFCSTVAL(CID_FRI_NFC_LLCP_MAC, NFCSTATUS_INVALID_DEVICE);
