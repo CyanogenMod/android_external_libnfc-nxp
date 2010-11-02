@@ -475,8 +475,11 @@ void phHal4Nfc_TargetDiscoveryComplete(
                         }
                         Count++;
                     }
-                    else
+                    else if ( !(Sak & ISO_14443_BITMASK) &&
+                              !(Sak & NFCIP_BITMASK) )
                     {
+                        aRemoteDevTypes[Count] = phHal_eISO14443_3A_PICC;
+                        Count++;
                     }
                 }
                 /*Check for P2P target passive*/
