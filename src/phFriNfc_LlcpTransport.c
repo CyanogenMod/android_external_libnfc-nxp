@@ -1137,7 +1137,7 @@ NFCSTATUS phFriNfc_LlcpTransport_Recv( phFriNfc_LlcpTransport_Socket_t*         
       pRecv_RspCb(pContext,status);
    }
    /* Test if the socket is in connected state */
-   else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketConnected)
+   else if(pLlcpSocket->eSocket_State == phFriNfc_LlcpTransportSocket_eSocketDefault)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
       /* Call the CB */

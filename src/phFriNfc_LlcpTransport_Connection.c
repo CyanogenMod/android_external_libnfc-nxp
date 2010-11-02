@@ -2680,6 +2680,13 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
    /* Test if the WorkingBuffer Length is null */
    if(pLlcpSocket->bufferLinearLength == 0)
    {
+      if (pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketConnected)
+      {
+          /* Call the Receive CB */
+          pRecv_RspCb(pContext,NFCSTATUS_FAILED);
+          return NFCSTATUS_SUCCESS;
+      }
+      
       /* Test If data is present in the RW Buffer */
       if(pLlcpSocket->indexRwRead != pLlcpSocket->indexRwWrite)
       {
@@ -2805,6 +2812,13 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
       }
       else
       {
+         if (pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketConnected)
+         {
+             /* Call the Receive CB */
+             pRecv_RspCb(pContext,NFCSTATUS_FAILED);
+             return NFCSTATUS_SUCCESS;
+         }
+
          /* Set Receive pending */
          pLlcpSocket->bSocketRecvPending = TRUE;
 
