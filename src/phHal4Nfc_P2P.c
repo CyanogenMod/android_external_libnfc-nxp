@@ -368,7 +368,7 @@ void phHal4Nfc_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo)
                     Hal4Ctxt->sTgtConnectInfo.pUpperDisconnectCb;
                 Hal4Ctxt->sTgtConnectInfo.pUpperDisconnectCb = NULL;
                 (*pUpperDisconnectCb)(
-                    Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt,
+                    Hal4Ctxt->sUpperLayerInfo.psUpperLayerDisconnectCtxt,
                     Hal4Ctxt->sTgtConnectInfo.psConnectedDevice,
                     SendStatus                            
                     );/*Notify disconnect failed to upper layer*/       

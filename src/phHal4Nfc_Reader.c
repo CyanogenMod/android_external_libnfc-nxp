@@ -783,7 +783,7 @@ NFCSTATUS phHal4Nfc_Disconnect(
         else       
         {
             /*Register upper layer context*/
-            Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = pContext;  
+            Hal4Ctxt->sUpperLayerInfo.psUpperLayerDisconnectCtxt = pContext;  
             /*Register upper layer callback*/
             Hal4Ctxt->sTgtConnectInfo.pUpperDisconnectCb  = pDscntCallback;
             /*Register Release Type*/
@@ -1179,7 +1179,7 @@ void phHal4Nfc_DisconnectComplete(
         {
             PHDBG_INFO("Hal4:Calling Upper layer disconnect callback");
             (*pUpperDisconnectCb)(
-                        Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt,
+                        Hal4Ctxt->sUpperLayerInfo.psUpperLayerDisconnectCtxt,
                         psConnectedDevice,
                         ConnectStatus                            
                         );

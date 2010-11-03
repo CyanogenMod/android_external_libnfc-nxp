@@ -175,6 +175,7 @@ typedef struct phHal4Nfc_UpperLayerInfo{
     /**Upper layer's Config discovery/Emulation callback registry*/
     pphHal4Nfc_GenCallback_t         pConfigCallback;
     void                            *psUpperLayerCtxt;
+    void                            *psUpperLayerDisconnectCtxt;
      /**Upper layer's Open Callback registry*/
     pphHal4Nfc_GenCallback_t         pUpperOpenCb;
     /**Upper layer's Close Callback registry */
