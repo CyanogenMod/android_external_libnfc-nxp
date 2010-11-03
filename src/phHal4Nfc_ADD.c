@@ -453,7 +453,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
                         Count++;
                     }
                     /*Check for Mifare Supported*/
-                    if(Sak & MIFARE_BITMASK)                     
+                    else if(Sak & MIFARE_BITMASK)
                     {
                         aRemoteDevTypes[Count] = phHal_eMifare_PICC;
                         Count++;
