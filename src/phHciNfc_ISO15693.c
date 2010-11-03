@@ -27,7 +27,7 @@
 * $Date: Thu Feb 11 18:54:47 2010 $                                           *
 * $Author: ing04880 $                                                         *
 * $Revision: 1.7 $                                                           *
-* $Aliases: NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
+* $Aliases:  $
 *                                                                             *
 * =========================================================================== *
 */
@@ -599,12 +599,16 @@ phHciNfc_Recv_ISO15693_Event(
         {
             phNfc_sCompletionInfo_t pCompInfo;
 
+/* #define NFC_ISO_15693_MULTIPLE_TAGS_SUPPORT 0x00 */
+#if (NFC_ISO_15693_MULTIPLE_TAGS_SUPPORT >= 0x01)
+
             if (ISO_15693_MULTIPLE_TAGS_FOUND == message->payload[i])
             {
                 ps_15693_info->multiple_tgts_found = ISO_15693_MULTIPLE_TAGS_FOUND;
                 pCompInfo.status = NFCSTATUS_MULTIPLE_TAGS;
             }
             else
+#endif /* #if (NFC_ISO_15693_MULTIPLE_TAGS_SUPPORT <= 0x01) */
             {
                 ps_15693_info->multiple_tgts_found = FALSE;
                 pCompInfo.status = NFCSTATUS_SUCCESS;

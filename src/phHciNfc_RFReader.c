@@ -27,7 +27,7 @@
 * $Date: Wed Apr 21 12:21:15 2010 $                                           *
 * $Author: ing07385 $                                                         *
 * $Revision: 1.53 $                                                            *
-* $Aliases: NFC_FRI1.1_WK1007_R33_6,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $                                                                *
+* $Aliases: NFC_FRI1.1_WK1007_R33_6 $                                                                *
 *                                                                             *
 * =========================================================================== *
 */
@@ -1524,6 +1524,16 @@ phHciNfc_ReaderMgmt_Activate_Next(
                 break;
             }
 #endif /* #ifdef TYPE_FELICA */
+#ifdef  TYPE_ISO15693
+            case phHal_eISO15693_PCD:
+            {
+                /* Get the ISO 15693 Reader Pipe ID */
+                status = phHciNfc_ISO15693_Get_PipeID
+                                        (psHciContext, &reader_pipe_id);
+
+                break;
+            }
+#endif /* #ifdef TYPE_ISO15693 */
             default:
             {
                 status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_FEATURE_NOT_SUPPORTED);

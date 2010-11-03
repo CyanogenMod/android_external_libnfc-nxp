@@ -25,10 +25,10 @@
 *
 * Project: NFC-FRI-1.1 / HAL4.0
 *
-* $Date: Fri Jun 11 16:20:17 2010 $
+* $Date: Thu Sep  9 14:56:35 2010 $
 * $Author: ing04880 $
-* $Revision: 1.37 $
-* $Aliases: NFC_FRI1.1_WK1023_R35_1 $
+* $Revision: 1.39 $
+* $Aliases:  $
 *
 */
 
@@ -47,8 +47,8 @@
 */
 
 /*@{*/
-#define PH_NFC_CONFIG_FILEREVISION "$Revision: 1.37 $" /**< \ingroup grp_file_attributes */
-#define PH_NFC_CONFIG_FILEALIASES  "$Aliases: NFC_FRI1.1_WK1023_R35_1 $"     /**< \ingroup grp_file_attributes */
+#define PH_NFC_CONFIG_FILEREVISION "$Revision: 1.39 $" /**< \ingroup grp_file_attributes */
+#define PH_NFC_CONFIG_FILEALIASES  "$Aliases:  $"     /**< \ingroup grp_file_attributes */
 /*@}*/
 
 
@@ -485,7 +485,9 @@
 #define NXP_NFC_IFC_CONFIG_DEFAULT     0x203AU
 #endif
 
-
+#ifndef NFC_ISO_15693_MULTIPLE_TAGS_SUPPORT
+#define NFC_ISO_15693_MULTIPLE_TAGS_SUPPORT 0x00
+#endif
 
 /*
  *****************************************************************
