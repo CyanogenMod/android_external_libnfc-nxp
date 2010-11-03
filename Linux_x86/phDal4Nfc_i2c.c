@@ -22,6 +22,9 @@
  *
  */
 
+#define LOG_TAG "NFC_i2c"
+#include <utils/Log.h>
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -243,6 +246,16 @@ int phDal4Nfc_i2c_reset(long level)
    DAL_DEBUG("phDal4Nfc_i2c_reset, VEN level = %ld",level);
 
    ret = ioctl(gI2cPortContext.nHandle, PN544_SET_PWR, level);
+
+   /* HACK to increase reset time
+    * TODO: move this to kernel
+    */
+   if (level == 0) {
+       LOGW("sleeping a little longer...");
+       usleep(10000);
+   } else {
+       usleep(10000);
+   }
 
    return ret;
 }
