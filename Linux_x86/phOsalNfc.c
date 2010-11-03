@@ -140,26 +140,13 @@ void phOsalNfc_DbgTrace(uint8_t data[], uint32_t size)
  */
 void phOsalNfc_RaiseException(phOsalNfc_ExceptionType_t eExceptionType, uint16_t reason)
 {
-   pid_t pid;
-#ifndef ANDROID
-   static phOsalNfc_Exception_t phOsalNfc_Exception;
-   union sigval sv;
-#endif
+    LOGD("phOsalNfc_RaiseException() called");
 
-   phOsalNfc_Exception.eExceptionType = eExceptionType;
-   phOsalNfc_Exception.reason = reason;
-
-   pid = getpid();
-
-   /*
-    * JCO: Bionic does not provide, among other things, sigqueue...
-    */
-#ifdef ANDROID
-   kill(pid, SIGABRT);
-#else
-   sv.sival_ptr = &phOsalNfc_Exception;
-
-   sigqueue(pid, SIGABRT, sv);
-#endif
+    if(eExceptionType == phOsalNfc_e_UnrecovFirmwareErr)
+    {
+        LOGE("HCI Timeout - Exception raised");
+        LOGE("Force restart of NFC Service");
+        abort();
+    }
 }
 

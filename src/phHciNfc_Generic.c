@@ -66,13 +66,7 @@
 
 #if  (NXP_NFC_HCI_TIMER == 1) 
 
-#define HCI_RES_DEFAULT_TO      0x5000
-
-#if   ((NXP_NFC_HCI_TIMEOUT) < (HCI_RES_DEFAULT_TO))
-#define NXP_HCI_RESPONSE_TIMEOUT  (HCI_RES_DEFAULT_TO)
-#else
 #define NXP_HCI_RESPONSE_TIMEOUT  (NXP_NFC_HCI_TIMEOUT)
-#endif
 
 #include <phOsalNfc_Timer.h>
 /** \internal HCI Response Timer to detect the 
@@ -81,11 +75,6 @@ static uint32_t                    hci_resp_timer_id = NXP_INVALID_TIMER_ID;
 static phHciNfc_sContext_t        *gpsHciContext= NULL;
 
 #endif /* (NXP_NFC_HCI_TIMER == 1) */
-
-
-
-
-
 
 
 /*
@@ -99,7 +88,7 @@ static phHciNfc_sContext_t        *gpsHciContext= NULL;
 static
 void
 phHciNfc_Response_Timeout (
-                    uint32_t resp_timer_id
+                uint32_t resp_timer_id
                 );
 
 #endif /* (NXP_NFC_HCI_TIMER == 1) */
@@ -588,7 +577,7 @@ phHciNfc_Release_Lower(
     {
         /* Start the HCI Response Timer */
         phOsalNfc_Timer_Start( hci_resp_timer_id,
-                NXP_HCI_RESPONSE_TIMEOUT, phHciNfc_Response_Timeout );
+                NXP_HCI_RESPONSE_TIMEOUT, phHciNfc_Response_Timeout, NULL);
         HCI_DEBUG(" HCI : Timer %X Started \n", hci_resp_timer_id);
     }
 

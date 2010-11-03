@@ -255,7 +255,7 @@
 
 #ifndef NXP_NFC_HCI_TIMER
 #define NXP_NFC_HCI_TIMER       0
-#define NXP_NFC_HCI_TIMEOUT     0x5000
+#define NXP_NFC_HCI_TIMEOUT     6000
 #endif
 
 
@@ -411,7 +411,7 @@
 #define LLC_TIMER_ENABLE
 
 /**< Macro to enable HCI Response timer */
-/* #define NXP_NFC_HCI_TIMER 1 */
+#define NXP_NFC_HCI_TIMER 1
 
 /* A Workaround to Delay and obtain the UICC Status Information */
 /* #define UICC_STATUS_DELAY */
