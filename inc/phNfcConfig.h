@@ -141,7 +141,7 @@
 
 /**< Default Session ID for Initialisation */
 #ifndef DEFAULT_SESSION
-#define DEFAULT_SESSION           "goog3"
+#define DEFAULT_SESSION           "goog4"
 #endif
 
 
@@ -323,7 +323,7 @@
 /**< Macro to Enable the Peer to Peer Feature */
 #define ENABLE_P2P
 
-#define DEFAULT_NFCIP_MODE_SUPPORT      0x0FU
+#define DEFAULT_NFCIP_MODE_SUPPORT      0x00U // to disable P2P feature
 
 
 /**< Macro to Enable the ISO14443-B Feature */
@@ -420,11 +420,11 @@
 #define UICC_STATUS_DELAY_COUNT 0x00100000
 #endif
 
-/**< Macro to delay the LLC RESET response callback, 
+/**< Macro to delay the LLC RESET response callback,
     Value is in milli-seconds */
 #define LLC_RESET_DELAY                 10
 
-/* Macro to Enable the workaround for Tuning of 
+/* Macro to Enable the workaround for Tuning of
  * RF for TYPE B and F
  */
 /* #define SW_TYPE_RF_TUNING_BF */
@@ -434,14 +434,14 @@
 
 /* #define ONE_BYTE_LEN */
 
-#define NFC_RF_NOISE_SW 
+#define NFC_RF_NOISE_SW
 
 /**< Define to configure the PMOS Modulation Index value
   */
 
 #ifndef NFC_DEV_PMOS_MOD_DEFAULT
 /* 0x3F -> 6%, 0x3A -> 10%, 0x3C -> 10%, 0x35 -> 15.8%,  0x28 -> 25.8% */
-#define NFC_DEV_PMOS_MOD_DEFAULT          0x3CU  
+#define NFC_DEV_PMOS_MOD_DEFAULT          0x3CU
 #endif
 
 
@@ -451,13 +451,13 @@
 
 
 /* Reset the Default values of Host Link Timers */
-/* Macro to Enable the Host Side Link Timeout Configuration 
+/* Macro to Enable the Host Side Link Timeout Configuration
  * 0x00 ----> Default Pre-defined Configuration;
  * 0x01 ----> Update only the Host Link Guard Timeout Configuration;
- * 0x03 ----> Update Both the Host Link Guard Timeout 
+ * 0x03 ----> Update Both the Host Link Guard Timeout
               and ACK Timeout Configuration;
  */
-    
+
 #ifndef HOST_LINK_TIMEOUT
 #define HOST_LINK_TIMEOUT              0x00U
 #endif
@@ -471,7 +471,7 @@
 #define NXP_NFC_LINK_ACK_CFG_DEFAULT   0x0005U
 #endif
 
-/* Macro to Enable the Interface Character Timeout Configuration 
+/* Macro to Enable the Interface Character Timeout Configuration
  * 0x00 ----> Default Pre-defined Configuration;
  * 0x01 ----> Update the IFC Timeout Default Configuration;
  */
