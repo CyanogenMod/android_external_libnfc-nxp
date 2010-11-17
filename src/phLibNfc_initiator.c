@@ -725,6 +725,10 @@ STATIC void phLibNfc_RemoteDev_Disconnect_cb(
         gpphLibContext->LastTrancvSuccess = FALSE;
         /*Reset Connected handle */
         gpphLibContext->Connected_handle=0x0000;
+        if(gpphLibContext->sSeContext.eActivatedMode == phLibNfc_SE_ActModeWired)
+        {
+          gpphLibContext->sSeContext.eActivatedMode = phLibNfc_SE_ActModeDefault;
+        }
         if(NULL != gpphLibContext->psBufferedAuth)
         {
             if(NULL != gpphLibContext->psBufferedAuth->sRecvData.buffer)

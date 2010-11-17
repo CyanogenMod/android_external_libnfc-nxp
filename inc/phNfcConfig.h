@@ -141,7 +141,7 @@
 
 /**< Default Session ID for Initialisation */
 #ifndef DEFAULT_SESSION
-#define DEFAULT_SESSION           "android1"
+#define DEFAULT_SESSION           "android2"
 #endif
 
 
@@ -309,7 +309,7 @@
  * Initialisation */
 
 #if !defined(NXP_SMX)
-#define NXP_SMX 0
+#define NXP_SMX 1
 #endif
 
 #if (NXP_SMX == 1)
