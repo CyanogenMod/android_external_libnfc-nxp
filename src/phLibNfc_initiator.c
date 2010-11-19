@@ -650,17 +650,19 @@ NFCSTATUS phLibNfc_RemoteDev_Disconnect( phLibNfc_Handle                 hRemote
     {
         if((eLibNfcHalStateRelease == gpphLibContext->LibNfcState.next_state)
             ||((gpphLibContext->sSeContext.eActivatedMode == phLibNfc_SE_ActModeWired)&&
-			(ReleaseType != NFC_SMARTMX_RELEASE)) 
-			||((gpphLibContext->sSeContext.eActivatedMode != phLibNfc_SE_ActModeWired)&&
-			(ReleaseType == NFC_SMARTMX_RELEASE)))
+                    (ReleaseType != NFC_SMARTMX_RELEASE))
+                    ||((gpphLibContext->sSeContext.eActivatedMode != phLibNfc_SE_ActModeWired)&&
+                            (ReleaseType == NFC_SMARTMX_RELEASE)))
         {   /* Previous disconnect callback is pending */
             RetVal = NFCSTATUS_REJECTED;            
         }
+#ifndef LLCP_CHANGES
         else if(eLibNfcHalStateTransaction == gpphLibContext->LibNfcState.next_state)
         {   /* Previous  Transaction is Pending*/
             RetVal = NFCSTATUS_BUSY;            
             PHDBG_INFO("LibNfc:Transaction is Pending");
         }
+#endif /* #ifdef LLCP_CHANGES */
         else
         {           
             gpphLibContext->ReleaseType = ReleaseType;
@@ -820,6 +822,13 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
     {
         RetVal = NFCSTATUS_REJECTED;
     }         
+#ifdef LLCP_TRANSACT_CHANGES
+    else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
+            && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
+    {
+        RetVal= NFCSTATUS_BUSY;
+    }
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
     else
     {
         gpphLibContext->ndef_cntx.eLast_Call = RawTrans;

@@ -31,6 +31,18 @@
 
 #include <phNfcStatus.h>
 
+#define LLCP_CHANGES
+#define LLCP_TRANSACT_CHANGES
+
+#ifdef LLCP_TRANSACT_CHANGES
+/* These two macros are defined due to non availibity of the below macros in header files
+#define PHFRINFC_LLCP_STATE_RESET_INIT               0   // \internal Initial state
+#define PHFRINFC_LLCP_STATE_CHECKED                  1   // \internal The tag has been checked for LLCP compliance
+*/
+#define LLCP_STATE_RESET_INIT                       0x00U
+#define LLCP_STATE_CHECKED                          0x01U
+
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
 #define LIB_NFC_VERSION_SET(v,major,minor,patch,build) ((v) = \
                                     ( ((major) << 24) & 0xFF000000 ) | \
                                     ( ((minor) << 16) & 0x00FF0000 ) | \

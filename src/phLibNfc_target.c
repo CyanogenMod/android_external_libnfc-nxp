@@ -116,6 +116,13 @@ NFCSTATUS phLibNfc_RemoteDev_Receive(phLibNfc_Handle       hRemoteDevice,
     {
         RetVal= NFCSTATUS_INVALID_DEVICE;
     }
+#ifdef LLCP_TRANSACT_CHANGES
+    else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
+            && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
+    {
+        RetVal = NFCSTATUS_BUSY;
+    }
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
     else
     {
         if(eLibNfcHalStatePresenceChk ==
@@ -264,11 +271,17 @@ phLibNfc_RemoteDev_Send(
     {
         RetVal= NFCSTATUS_INVALID_DEVICE;
     }
-    
     else if((NULL!=gpphLibContext->sNfcIp_Context.pClientNfcIpTxCb))
     {
         RetVal =NFCSTATUS_BUSY ;
     }
+#ifdef LLCP_TRANSACT_CHANGES
+    else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
+            && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
+    {
+        RetVal= NFCSTATUS_BUSY;
+    }
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
     else
     {
         if(eLibNfcHalStatePresenceChk ==
