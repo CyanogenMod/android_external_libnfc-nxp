@@ -936,6 +936,17 @@ static void phFriNfc_Llcp_Receive_CB( void               *pContext,
    /* Parse header */
    phFriNfc_Llcp_Buffer2Header(psData->buffer, 0, &sPacketHeader);
 
+   /* Check reception status and for pending disconnection */
+   if ((status != NFCSTATUS_SUCCESS) || (Llcp->bDiscPendingFlag == TRUE))
+   {
+	  LLCP_DEBUG("\nReceived LLCP packet error - status = 0x%04x", status);
+      /* Reset disconnection operation */
+      Llcp->bDiscPendingFlag = FALSE;
+      /* Deactivate the link */
+      phFriNfc_Llcp_InternalDeactivate(Llcp);
+      return;
+   }
+
    if (sPacketHeader.ptype != PHFRINFC_LLCP_PTYPE_SYMM)
    {
       LLCP_PRINT_BUFFER("\nReceived LLCP packet :", psData->buffer, psData->length);
@@ -945,15 +956,6 @@ static void phFriNfc_Llcp_Receive_CB( void               *pContext,
       LLCP_PRINT("?");
    }
 
-   /* Check reception status and for pending disconnection */
-   if ((status != NFCSTATUS_SUCCESS) || (Llcp->bDiscPendingFlag == TRUE))
-   {
-      /* Reset disconnection operation */
-      Llcp->bDiscPendingFlag = FALSE;
-      /* Deactivate the link */
-      phFriNfc_Llcp_InternalDeactivate(Llcp);
-      return;
-   }
 
    /* Check new link status */
    switch(Llcp->state)

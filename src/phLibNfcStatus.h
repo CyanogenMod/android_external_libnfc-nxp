@@ -42,6 +42,7 @@
 #define LLCP_STATE_RESET_INIT                       0x00U
 #define LLCP_STATE_CHECKED                          0x01U
 
+
 #endif /* #ifdef LLCP_TRANSACT_CHANGES */
 #define LIB_NFC_VERSION_SET(v,major,minor,patch,build) ((v) = \
                                     ( ((major) << 24) & 0xFF000000 ) | \
