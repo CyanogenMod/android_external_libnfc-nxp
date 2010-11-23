@@ -93,6 +93,54 @@ static NFCSTATUS phFriNfc_Llcp_InternalSend( phFriNfc_Llcp_t                    
                                              phNfc_sData_t                      *psInfo );
 static bool_t phFriNfc_Llcp_HandlePendingSend ( phFriNfc_Llcp_t *Llcp );
 
+static uint8_t * phFriNfc_Llcp_AllocateAndCopy(phNfc_sData_t * pOrig)
+{
+   phNfc_sData_t * pDest = NULL;
+   uint8_t * pCopyBuffer = NULL;
+
+   if (pOrig == NULL)
+   {
+       return NULL;
+   }
+
+   pDest = phOsalNfc_GetMemory(sizeof(phNfc_sData_t));
+   if (pDest == NULL)
+   {
+      goto error;
+   }
+
+   pDest->buffer = phOsalNfc_GetMemory(pOrig->length);
+   if (pDest->buffer == NULL)
+   {
+      goto error;
+   }
+
+   memcpy(pDest->buffer, pOrig->buffer, pOrig->length);
+   pDest->length = pOrig->length;
+
+   return pDest;
+
+error:
+   if (pDest != NULL)
+   {
+      if (pDest->buffer != NULL)
+      {
+         phOsalNfc_FreeMemory(pDest->buffer);
+      }
+      phOsalNfc_FreeMemory(pDest);
+   }
+   return NULL;
+}
+
+static void phFriNfc_Llcp_Deallocate(phNfc_sData_t * pData)
+{
+   if (pData != NULL)
+   {
+      phOsalNfc_FreeMemory(pData->buffer);
+      phOsalNfc_FreeMemory(pData);
+   }
+}
+
 static NFCSTATUS phFriNfc_Llcp_InternalDeactivate( phFriNfc_Llcp_t *Llcp )
 {
    if ((Llcp->state == PHFRINFC_LLCP_STATE_OPERATION_RECV) ||
@@ -785,6 +833,8 @@ static bool_t phFriNfc_Llcp_HandlePendingSend ( phFriNfc_Llcp_t *Llcp )
    phFriNfc_Llcp_sPacketSequence_t  *psSendSequence = NULL;
    phNfc_sData_t                    *psSendInfo = NULL;
    NFCSTATUS                        result;
+   uint8_t                          bDeallocate = FALSE;
+   uint8_t                          return_value = FALSE;
 
    /* Handle pending disconnection request */
    if (Llcp->bDiscPendingFlag == TRUE)
@@ -821,6 +871,7 @@ static bool_t phFriNfc_Llcp_HandlePendingSend ( phFriNfc_Llcp_t *Llcp )
       Llcp->psSendHeader = NULL;
       Llcp->psSendSequence = NULL;
       Llcp->psSendInfo = NULL;
+      bDeallocate = TRUE;
    }
 
    /* Perform send, if needed */
@@ -832,11 +883,16 @@ static bool_t phFriNfc_Llcp_HandlePendingSend ( phFriNfc_Llcp_t *Llcp )
          /* Error: send failed, impossible to recover */
          phFriNfc_Llcp_InternalDeactivate(Llcp);
       }
-      return TRUE;
+      return_value = TRUE;
    }
 
-   /* Nothing to do */
-   return FALSE;
+clean_and_return:
+   if (bDeallocate)
+   {
+       phFriNfc_Llcp_Deallocate(psSendInfo);
+   }
+
+   return return_value;
 }
 
 static NFCSTATUS phFriNfc_Llcp_HandleIncomingPacket( phFriNfc_Llcp_t    *Llcp,
@@ -1340,7 +1396,7 @@ NFCSTATUS phFriNfc_Llcp_Send( phFriNfc_Llcp_t                  *Llcp,
       /* Not ready to send, save send params for later use */
       Llcp->psSendHeader = psHeader;
       Llcp->psSendSequence = psSequence;
-      Llcp->psSendInfo = psInfo;
+      Llcp->psSendInfo = phFriNfc_Llcp_AllocateAndCopy(psInfo);
       result = NFCSTATUS_PENDING;
    }
    else
