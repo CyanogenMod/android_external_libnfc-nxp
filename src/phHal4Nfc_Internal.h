@@ -52,6 +52,7 @@
 /* -----------------Include files ---------------------------------------*/ 
 
 /* ---------------- Macros ----------------------------------------------*/
+#define LLCP_DISCON_CHANGES
 #define PH_HAL4NFC_TRANSCEIVE_TIMEOUT        30000  /**<Transceive operation
                                                         on any target should be 
                                                         completed within this 
@@ -176,6 +177,9 @@ typedef struct phHal4Nfc_UpperLayerInfo{
     pphHal4Nfc_GenCallback_t         pConfigCallback;
     void                            *psUpperLayerCtxt;
     void                            *psUpperLayerDisconnectCtxt;
+#ifdef LLCP_DISCON_CHANGES
+    void                            *psUpperLayerCfgDiscCtxt;
+#endif /* #ifdef LLCP_DISCON_CHANGES */
      /**Upper layer's Open Callback registry*/
     pphHal4Nfc_GenCallback_t         pUpperOpenCb;
     /**Upper layer's Close Callback registry */

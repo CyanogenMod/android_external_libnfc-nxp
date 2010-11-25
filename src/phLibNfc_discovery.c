@@ -246,6 +246,13 @@ NFCSTATUS phLibNfc_RemoteDev_CheckPresence( phLibNfc_Handle     hTargetDev,
     {
         RetVal = NFCSTATUS_INVALID_HANDLE;
     }
+#ifdef LLCP_TRANSACT_CHANGES
+    else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
+            && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
+    {
+        RetVal= NFCSTATUS_BUSY;
+    }
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
     else
     {
         ps_rem_dev_info = (phHal_sRemoteDevInformation_t *)

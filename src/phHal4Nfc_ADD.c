@@ -103,7 +103,11 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
             else
             {
                 /*Register Upper layer context*/
+#ifdef LLCP_DISCON_CHANGES
+                Hal4Ctxt->sUpperLayerInfo.psUpperLayerCfgDiscCtxt = pContext;
+#else /* #ifdef LLCP_DISCON_CHANGES */
                 Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = pContext;
+#endif /* #ifdef LLCP_DISCON_CHANGES */
                 switch(CfgType)
                 {
                 /*NFC_EMULATION_CONFIG*/
@@ -244,7 +248,11 @@ NFCSTATUS phHal4Nfc_ConfigureDiscovery(
             else
             {
                 /*Register Upper layer context*/
+#ifdef LLCP_DISCON_CHANGES
+                Hal4Ctxt->sUpperLayerInfo.psUpperLayerCfgDiscCtxt = pContext;
+#else /* #ifdef LLCP_DISCON_CHANGES */
                 Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = pContext;
+#endif /* #ifdef LLCP_DISCON_CHANGES */
                 switch(discoveryMode)
                 {
                 case NFC_DISCOVERY_START:
@@ -371,7 +379,12 @@ void phHal4Nfc_ConfigureComplete(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,
             Hal4Ctxt->Hal4NextState = eHal4StateInvalid;
             Hal4Ctxt->sUpperLayerInfo.pConfigCallback = NULL;
             (*pConfigCallback)(
-                Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt,Status
+#ifdef LLCP_DISCON_CHANGES
+                Hal4Ctxt->sUpperLayerInfo.psUpperLayerCfgDiscCtxt,
+#else /* #ifdef LLCP_DISCON_CHANGES */
+                Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt,
+#endif /* #ifdef LLCP_DISCON_CHANGES */
+                Status
                 );
 #ifdef MERGE_SAK_SW2
         }

@@ -158,6 +158,13 @@ NFCSTATUS phLibNfc_Ndef_Read( phLibNfc_Handle                   hRemoteDevice,
         psRd->length = 0;
         RetVal = NFCSTATUS_SUCCESS;
     }
+#ifdef LLCP_TRANSACT_CHANGES
+    else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
+            && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
+    {
+        RetVal= NFCSTATUS_BUSY;
+    }
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
     else
     {
         gpphLibContext->psRemoteDevList->psRemoteDevInfo->SessionOpened = SESSION_OPEN;
@@ -401,6 +408,13 @@ NFCSTATUS phLibNfc_Ndef_Write(
     {
         RetVal = NFCSTATUS_NOT_ENOUGH_MEMORY;
     }
+#ifdef LLCP_TRANSACT_CHANGES
+    else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
+            && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
+    {
+        RetVal= NFCSTATUS_BUSY;
+    }
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
     else
     {
         uint8_t         cr_index = 0;
@@ -747,6 +761,13 @@ NFCSTATUS phLibNfc_Ndef_CheckNdef(phLibNfc_Handle       hRemoteDevice,
     {       
         RetVal=NFCSTATUS_INVALID_HANDLE;        
     }
+#ifdef LLCP_TRANSACT_CHANGES
+    else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
+            && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
+    {
+        RetVal= NFCSTATUS_BUSY;
+    }
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
     else
     {
         uint8_t     cr_index = 0;
@@ -1214,6 +1235,13 @@ NFCSTATUS phLibNfc_RemoteDev_FormatNdef(phLibNfc_Handle         hRemoteDevice,
         RetVal = NFCSTATUS_REJECTED;
         PHDBG_INFO("LIbNfc:Previous Callback is Pending");
     }
+#ifdef LLCP_TRANSACT_CHANGES
+    else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
+            && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
+    {
+        RetVal= NFCSTATUS_BUSY;
+    }
+#endif /* #ifdef LLCP_TRANSACT_CHANGES */
     else
     {
         uint8_t   fun_id;       

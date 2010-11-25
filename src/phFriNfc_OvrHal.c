@@ -34,7 +34,6 @@
 #include <phFriNfc_SmtCrdFmt.h>
 
 
-
 #ifdef PHFRINFC_OVRHAL_MOCKUP  /* */
 //#include <phLibNfc_Gen.h>
 #endif /* PHFRINFC_OVRHAL_MOCKUP */
@@ -321,7 +320,7 @@ static void phFriNfc_OvrHal_CB_Transceive(void *context,
     
     if (NULL != OvrHal)
     {        
-        if(NULL != pRecvdata)
+        if(NULL != pRecvdata && OvrHal->TranceiveInfo.sRecvData.buffer != NULL && pRecvdata->buffer != NULL)
         {
            /* Work-around for the NFCIP Tranceive API */
             memcpy(OvrHal->TranceiveInfo.sRecvData.buffer, pRecvdata->buffer, pRecvdata->length);
@@ -370,7 +369,7 @@ static void phFriNfc_OvrHal_CB_Receive(void *context,
     if (NULL != OvrHal)
     {
         /* Copy the received buffer */
-        if(NULL != pDataInfo)
+        if(NULL != pDataInfo && OvrHal->sReceiveData.buffer != NULL && pDataInfo->buffer != NULL)
         {
             memcpy(OvrHal->sReceiveData.buffer, pDataInfo->buffer, pDataInfo->length);
             *OvrHal->pndef_recv_length = (uint16_t) pDataInfo->length;
