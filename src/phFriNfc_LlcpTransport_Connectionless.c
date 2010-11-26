@@ -72,6 +72,31 @@ static void phFriNfc_LlcpTransport_Connectionless_SendTo_CB(void*        pContex
    
 }
 
+static void phFriNfc_LlcpTransport_Connectionless_Abort(phFriNfc_LlcpTransport_Socket_t* pLlcpSocket)
+{
+   if (pLlcpSocket->pfSocketSend_Cb != NULL)
+   {
+      pLlcpSocket->pfSocketSend_Cb(pLlcpSocket->pSendContext, NFCSTATUS_ABORTED);
+      pLlcpSocket->pSendContext = NULL;
+      pLlcpSocket->pfSocketSend_Cb = NULL;
+   }
+   if (pLlcpSocket->pfSocketRecvFrom_Cb != NULL)
+   {
+      pLlcpSocket->pfSocketRecvFrom_Cb(pLlcpSocket->pRecvContext, 0, NFCSTATUS_ABORTED);
+      pLlcpSocket->pRecvContext = NULL;
+      pLlcpSocket->pfSocketRecvFrom_Cb = NULL;
+      pLlcpSocket->pfSocketRecv_Cb = NULL;
+   }
+   pLlcpSocket->pAcceptContext = NULL;
+   pLlcpSocket->pfSocketAccept_Cb = NULL;
+   pLlcpSocket->pListenContext = NULL;
+   pLlcpSocket->pfSocketListen_Cb = NULL;
+   pLlcpSocket->pConnectContext = NULL;
+   pLlcpSocket->pfSocketConnect_Cb = NULL;
+   pLlcpSocket->pDisonnectContext = NULL;
+   pLlcpSocket->pfSocketDisconnect_Cb = NULL;
+}
+
 /**
 * \ingroup grp_fri_nfc
 * \brief <b>Close a socket on a LLCP-connectionless device</b>.
@@ -100,15 +125,12 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_Close(phFriNfc_LlcpTransport_Soc
    pLlcpSocket->bSocketDiscPending                 = FALSE;
    pLlcpSocket->RemoteBusyConditionInfo            = FALSE;
    pLlcpSocket->ReceiverBusyCondition              = FALSE;
-   pLlcpSocket->pfSocketSend_Cb                    = NULL;
-   pLlcpSocket->pfSocketRecv_Cb                    = NULL;
-   pLlcpSocket->pfSocketListen_Cb                  = NULL;
-   pLlcpSocket->pfSocketConnect_Cb                 = NULL;
-   pLlcpSocket->pfSocketDisconnect_Cb              = NULL;
    pLlcpSocket->socket_VS                          = 0;
    pLlcpSocket->socket_VSA                         = 0;
    pLlcpSocket->socket_VR                          = 0;
    pLlcpSocket->socket_VRA                         = 0;
+
+   phFriNfc_LlcpTransport_Connectionless_Abort(pLlcpSocket);
 
    memset(&pLlcpSocket->sSocketOption, 0x00, sizeof(phFriNfc_LlcpTransport_sSocketOptions_t));
 
