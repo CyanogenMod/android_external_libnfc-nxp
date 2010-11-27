@@ -497,8 +497,19 @@ void phHal4Nfc_TargetDiscoveryComplete(
                     (Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode 
                     & phHal_ePassive106))
                 {
+                  if( Sak == 0x53 // Fudan card incompatible to ISO18092
+                      && psRemoteDevInfo->RemoteDevInfo.Iso14443A_Info.AtqA[0] == 0x04
+                      && psRemoteDevInfo->RemoteDevInfo.Iso14443A_Info.AtqA[1] == 0x00
+                    )
+                  {
+                    aRemoteDevTypes[Count] = phHal_eISO14443_3A_PICC;
+                    Count++;
+                  }
+                  else
+                  {
                     aRemoteDevTypes[Count] = phHal_eNfcIP1_Target;
                     Count++;
+									}
                 }
             }/*case phHal_eISO14443_A_PICC:*/
                 break;
