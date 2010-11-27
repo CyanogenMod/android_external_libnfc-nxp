@@ -453,12 +453,21 @@ void phHal4Nfc_TargetDiscoveryComplete(
                         Count++;
                     }
                     /*Check for Mifare Supported*/
-                    else if(Sak & MIFARE_BITMASK)
+                    switch( Sak )
                     {
+                      case 0x09: // Mini
+                      case 0x08: // 1K
+                      case 0x18: // 4K
+                      case 0x88: // Infineon 1K
+                      case 0x98: // Pro 4K
+                      case 0xB8: // Pro 4K
+                      case 0x28: // 1K emulation
+                      case 0x38: // 4K emulation
                         aRemoteDevTypes[Count] = phHal_eMifare_PICC;
                         Count++;
+                        break;
                     }
-                    else if((0 == Sak)&& (0 == Count))
+                    if((0 == Sak)&& (0 == Count))
                     {
                         /*Mifare check*/
                         if((NXP_UID == 
@@ -476,7 +485,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
                         Count++;
                     }
                     else if ( !(Sak & ISO_14443_BITMASK) &&
-                              !(Sak & NFCIP_BITMASK) )
+                          !(Sak & NFCIP_BITMASK) && (0 == Count))
                     {
                         aRemoteDevTypes[Count] = phHal_eISO14443_3A_PICC;
                         Count++;
