@@ -2253,7 +2253,7 @@ phHciNfc_ReaderMgmt_Release(
                 phHciNfc_Append_HCPFrame((uint8_t *)hcp_message->payload,
                                             i, p_pipe_info->param_info,
                                             p_pipe_info->param_length);
-                length =(uint8_t)(length + i + p_pipe_info->param_length);
+                length =(uint16_t)(length + i + p_pipe_info->param_length);
                 break;
             }
             default:
@@ -2299,7 +2299,7 @@ phHciNfc_ReaderMgmt_Release(
     phHciNfc_HCP_Message_t  *hcp_message = NULL;
     phHciNfc_Pipe_Info_t    *p_pipe_info = NULL;
     uint8_t                 i = 0;
-    uint8_t                 length=0;
+    uint16_t                 length=0;
     NFCSTATUS               status = NFCSTATUS_SUCCESS;
 
     if( (NULL == psHciContext)
@@ -2332,7 +2332,7 @@ phHciNfc_ReaderMgmt_Release(
                 phHciNfc_Append_HCPFrame((uint8_t *)hcp_message->payload,
                                             i, p_pipe_info->param_info,
                                             p_pipe_info->param_length);
-                length =(uint8_t)(length + i + p_pipe_info->param_length);
+                length =(uint16_t)(length + i + p_pipe_info->param_length);
                 break;
             }
             case NXP_WR_PRESCHECK:
@@ -2358,7 +2358,7 @@ phHciNfc_ReaderMgmt_Release(
                 phHciNfc_Append_HCPFrame((uint8_t *)hcp_message->payload,
                                             i, p_pipe_info->param_info,
                                             p_pipe_info->param_length);
-                length =(uint8_t)(length + i + p_pipe_info->param_length);
+                length =(uint16_t)(length + i + p_pipe_info->param_length);
                 break;
             }
             default:

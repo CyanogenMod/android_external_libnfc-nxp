@@ -639,7 +639,7 @@ NFCSTATUS phHal4Nfc_Transceive(
                 Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.params.tag_info.addr 
                                                     = psTransceiveInfo->addr;   
                 Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_length
-                                = (uint8_t)psTransceiveInfo->sSendData.length;
+                                = (uint16_t)psTransceiveInfo->sSendData.length;
                 Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer
                                         = psTransceiveInfo->sSendData.buffer;
                 Hal4Ctxt->psTrcvCtxtInfo->psUpperRecvData 
