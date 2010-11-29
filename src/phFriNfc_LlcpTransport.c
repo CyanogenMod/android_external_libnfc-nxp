@@ -200,6 +200,28 @@ NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpTran
    return status;
 }
 
+/* TODO: comment function Transport CloseAll */
+NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t *pLlcpTransport)
+{
+   NFCSTATUS status = NFCSTATUS_SUCCESS;
+   uint8_t i;
+
+   /* Check for NULL pointers */
+   if(pLlcpTransport == NULL)
+   {
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+   }
+
+   /* Close all sockets */
+   for(i=0;i<PHFRINFC_LLCP_NB_SOCKET_MAX;i++)
+   {
+      phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
+   }
+
+   return status;
+}
+
+
 /**
 * \ingroup grp_lib_nfc
 * \brief <b>Get the local options of a socket</b>.

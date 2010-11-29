@@ -39,6 +39,9 @@ NFCSTATUS static_CheckDevice(phLibNfc_Handle hRemoteDevice);
 STATIC
 void phLibNfc_Llcp_CheckLlcp_Cb(void *pContext,NFCSTATUS status);
 
+STATIC
+void phLibNfc_Llcp_Link_Cb(void *pContext,phLibNfc_Llcp_eLinkStatus_t status);
+
 /* --------------------------- Internal functions ------------------------------ */
 
 STATIC NFCSTATUS static_CheckState()
@@ -189,6 +192,10 @@ NFCSTATUS phLibNfc_Llcp_CheckLlcp( phLibNfc_Handle              hRemoteDevice,
       }
    }
 
+   /* Prepare callback */
+   gpphLibContext->CBInfo.pClientLlcpLinkCb = pLink_Cb;
+   gpphLibContext->CBInfo.pClientLlcpLinkCntx = pContext;
+
    /* Resets the LLCP LLC component */
    result = phFriNfc_Llcp_Reset( &gpphLibContext->llcp_cntx.sLlcpContext,
                                  gpphLibContext->psOverHalCtxt,
@@ -197,8 +204,8 @@ NFCSTATUS phLibNfc_Llcp_CheckLlcp( phLibNfc_Handle              hRemoteDevice,
                                  sizeof(gpphLibContext->llcp_cntx.pRxBuffer),
                                  gpphLibContext->llcp_cntx.pTxBuffer,
                                  sizeof(gpphLibContext->llcp_cntx.pTxBuffer),
-                                 pLink_Cb,
-                                 pContext);
+                                 phLibNfc_Llcp_Link_Cb,
+                                 gpphLibContext);
    if (result != NFCSTATUS_SUCCESS)
    {
       return PHNFCSTATUS(result);
@@ -244,6 +251,36 @@ NFCSTATUS phLibNfc_Llcp_CheckLlcp( phLibNfc_Handle              hRemoteDevice,
    }
 
    return result;
+}
+
+/* LLCP link callback */
+STATIC
+void phLibNfc_Llcp_Link_Cb(void *pContext, phLibNfc_Llcp_eLinkStatus_t status)
+{
+   phLibNfc_LibContext_t         *pLibNfc_Ctxt = (phLibNfc_LibContext_t *)pContext;
+   pphLibNfc_LlcpLinkStatusCb_t  pClientCb = NULL;
+   void                          *pClientContext = NULL;
+
+   if(pLibNfc_Ctxt != gpphLibContext)
+   {
+      /*wrong context returned from below layer*/
+      phOsalNfc_RaiseException(phOsalNfc_e_InternalErr,1);
+   }
+   else
+   {
+      /* Close all sockets */
+      phFriNfc_LlcpTransport_CloseAll(&gpphLibContext->llcp_cntx.sLlcpTransportContext);
+
+      /* Copy callback details */
+      pClientCb = gpphLibContext->CBInfo.pClientLlcpLinkCb;
+      pClientContext = gpphLibContext->CBInfo.pClientLlcpLinkCntx;
+
+      /* Trigger the callback */
+      if(pClientCb != NULL)
+      {
+         pClientCb(pClientContext, status);
+      }
+   }
 }
 
 /* Response callback for phLibNfc_Ndef_CheckNdef */

@@ -269,6 +269,14 @@ NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpSock
 
 
 /**
+* \ingroup grp_fri_nfc
+* \brief <b>Close all existing sockets</b>.
+*
+*/
+NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t  *pLlcpSocketTable);
+
+
+/**
 * \ingroup grp_lib_nfc
 * \brief <b>Get the local options of a socket</b>.
 *

@@ -130,6 +130,10 @@ typedef struct phLibNfc_Hal_CB_Info
     pphLibNfc_ChkLlcpRspCb_t       pClientLlcpCheckRespCb;
     void                           *pClientLlcpCheckRespCntx;
 
+    /*LLCP Link CB*/
+    pphLibNfc_LlcpLinkStatusCb_t   pClientLlcpLinkCb;
+    void                           *pClientLlcpLinkCntx;
+
 }phLibNfc_Hal_CB_Info_t;
 
 typedef struct phLibNfc_NdefInfo
