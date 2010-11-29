@@ -1391,7 +1391,12 @@ NFCSTATUS phFriNfc_Llcp_Send( phFriNfc_Llcp_t                  *Llcp,
    Llcp->pfSendCB = pfSend_CB;
    Llcp->pSendContext = pContext;
 
-   if (Llcp->state != PHFRINFC_LLCP_STATE_OPERATION_SEND)
+   if (Llcp->state == PHFRINFC_LLCP_STATE_OPERATION_SEND)
+   {
+      /* Ready to send */
+      result = phFriNfc_Llcp_InternalSend(Llcp, psHeader, psSequence, psInfo);
+   }
+   else if (Llcp->state == PHFRINFC_LLCP_STATE_OPERATION_RECV)
    {
       /* Not ready to send, save send params for later use */
       Llcp->psSendHeader = psHeader;
@@ -1401,8 +1406,8 @@ NFCSTATUS phFriNfc_Llcp_Send( phFriNfc_Llcp_t                  *Llcp,
    }
    else
    {
-      /* No send pending, send immediately */
-      result = phFriNfc_Llcp_InternalSend(Llcp, psHeader, psSequence, psInfo);
+      /* Incorrect state for sending ! */
+      result = PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_STATE);;
    }
    return result;
 }
