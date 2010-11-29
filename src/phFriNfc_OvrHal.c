@@ -43,7 +43,7 @@
 
 */
 #define MAX_MIF_PACKET_LEN                      0x0FU
-#define MIFARE_PLUS_UID_INDEX_TO_COPY           0x04U
+#define MIFARE_PLUS_UID_INDEX_TO_COPY           0x03U
 #define MIFARE_PLUS_UID_LENGTH                  0x07U
 #define MIFARE_CLASSIC_UID_LENGTH               0x04U
 #define MIFARE_UID_LEN_TO_COPY                  0x04U
