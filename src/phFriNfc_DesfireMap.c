@@ -17,14 +17,14 @@
 /*!
 * \file  phFriNfc_Desfire.c
 * \brief This component encapsulates read/write/check ndef/process functionalities,
-*        for the Desfire Card. 
+*        for the Desfire Card.
 *
 * Project: NFC-FRI
 *
-* $Date: Thu Jul 23 13:45:00 2009 $
-* $Author: ing07336 $
-* $Revision: 1.10 $
-* $Aliases: NFC_FRI1.1_WK930_R30_1,NFC_FRI1.1_WK934_PREP_1,NFC_FRI1.1_WK934_R31_1,NFC_FRI1.1_WK941_PREP1,NFC_FRI1.1_WK941_PREP2,NFC_FRI1.1_WK941_1,NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
+* $Date: Tue Jul 27 08:58:22 2010 $
+* $Author: ing02260 $
+* $Revision: 1.11 $
+* $Aliases:  $
 *
 */
 
@@ -42,10 +42,17 @@
 *
 */
 /*@{*/
-#define PHFRINFCNDEFMAP_FILEREVISION "$Revision: 1.10 $"
-#define PHFRINFCNDEFMAP_FILEALIASES  "$Aliases: NFC_FRI1.1_WK930_R30_1,NFC_FRI1.1_WK934_PREP_1,NFC_FRI1.1_WK934_R31_1,NFC_FRI1.1_WK941_PREP1,NFC_FRI1.1_WK941_PREP2,NFC_FRI1.1_WK941_1,NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $"
+#define PHFRINFCNDEFMAP_FILEREVISION "$Revision: 1.11 $"
+#define PHFRINFCNDEFMAP_FILEALIASES  "$Aliases:  $"
 
 /*@}*/
+
+/***************** Start of MACROS ********************/
+#ifdef DESFIRE_EV1
+    #define DESFIRE_EV1_P2_OFFSET_VALUE                         (0x0CU)
+#endif /* #ifdef DESFIRE_EV1 */
+
+/***************** End of MACROS ********************/
 
 /*@}*/
 
@@ -56,34 +63,34 @@
 /*@{*/
 
 /*!
- * \brief \copydoc page_ovr Helper function for Desfire. This function specifies  
+ * \brief \copydoc page_ovr Helper function for Desfire. This function specifies
  *  the card is a Desfire card or not.
  */
 static NFCSTATUS phFriNfc_Desfire_SelectSmartTag(  phFriNfc_NdefMap_t  *NdefMap);
 
 /*!
- * \brief \copydoc page_ovr Helper function for Desfire. This function is used  
+ * \brief \copydoc page_ovr Helper function for Desfire. This function is used
  *  to selct a file in the card.
  */
 static NFCSTATUS phFriNfc_Desfire_SelectFile ( phFriNfc_NdefMap_t  *NdefMap);
 
 /*!
- * \brief \copydoc page_ovr Helper function for Desfire. This function is to  
+ * \brief \copydoc page_ovr Helper function for Desfire. This function is to
  *  read the card.
  */
 static NFCSTATUS  phFriNfc_Desfire_ReadBinary( phFriNfc_NdefMap_t  *NdefMap);
 
 /*!
- * \brief \copydoc page_ovr Helper function for Desfire. This function is to  
+ * \brief \copydoc page_ovr Helper function for Desfire. This function is to
  *  write to the card.
  */
 static NFCSTATUS  phFriNfc_Desfire_UpdateBinary(   phFriNfc_NdefMap_t  *NdefMap);
 
 /*!
- * \brief \copydoc page_ovr Helper function for Desfire. This function is to  
+ * \brief \copydoc page_ovr Helper function for Desfire. This function is to
  *  update the capability container of the card.
  */
-static NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer( phFriNfc_NdefMap_t *NdefMap); 
+static NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer( phFriNfc_NdefMap_t *NdefMap);
 
 
 /* Completion Helper*/
@@ -93,7 +100,7 @@ static void phFriNfc_Desfire_HCrHandler(    phFriNfc_NdefMap_t  *NdefMap,
 /* Calculates the Le Bytes for Read Operation*/
 static uint32_t phFriNfc_Desfire_HGetLeBytes(   phFriNfc_NdefMap_t  *NdefMap);
 
-static NFCSTATUS phFriNfc_Desf_HChkAndParseTLV( phFriNfc_NdefMap_t  *NdefMap, 
+static NFCSTATUS phFriNfc_Desf_HChkAndParseTLV( phFriNfc_NdefMap_t  *NdefMap,
                                                uint8_t             BuffIndex);
 
 static NFCSTATUS phFriNfc_Desfire_HSetGet_NLEN( phFriNfc_NdefMap_t  *NdefMap);
@@ -150,7 +157,7 @@ static NFCSTATUS phFriNfc_Desfire_HGetSWVersion(phFriNfc_NdefMap_t *NdefMap)
 #ifdef PH_HAL4_ENABLE
     else
     {
-        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                        NFCSTATUS_INVALID_PARAMETER);
     }
 #endif /* #ifdef PH_HAL4_ENABLE */
@@ -175,7 +182,7 @@ static NFCSTATUS phFriNfc_Desfire_HGetUIDDetails(phFriNfc_NdefMap_t *NdefMap)
 #ifdef PH_HAL4_ENABLE
     else
     {
-        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                        NFCSTATUS_INVALID_PARAMETER);
     }
 #endif /* #ifdef PH_HAL4_ENABLE */
@@ -185,7 +192,7 @@ static NFCSTATUS phFriNfc_Desfire_HGetUIDDetails(phFriNfc_NdefMap_t *NdefMap)
 
 static NFCSTATUS phFriNfc_Desfire_HUpdateVersionDetails(const phFriNfc_NdefMap_t *NdefMap)
 {
-    NFCSTATUS status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+    NFCSTATUS status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                        NFCSTATUS_INVALID_PARAMETER);
 
     if( ( NdefMap->SendRecvBuf[*(NdefMap->SendRecvLength)- 1] == 0xAF) )
@@ -222,7 +229,7 @@ static NFCSTATUS phFriNfc_Desfire_HUpdateVersionDetails(const phFriNfc_NdefMap_t
 *
 * The function initiates the reading of NDEF information from a Remote Device.
 * It performs a reset of the state and starts the action (state machine).
-* A periodic call of the \ref phFriNfcNdefMap_Process has to be 
+* A periodic call of the \ref phFriNfcNdefMap_Process has to be
 * done once the action has been triggered.
 */
 
@@ -246,7 +253,7 @@ NFCSTATUS phFriNfc_Desfire_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
     {
         /*  No space on card for Reading : we have already
         reached the end of file !
-        Offset is set to Continue Operation */  
+        Offset is set to Continue Operation */
         status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
             NFCSTATUS_EOF_NDEF_CONTAINER_REACHED);
     }
@@ -265,8 +272,17 @@ NFCSTATUS phFriNfc_Desfire_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
 
         NdefMap->PrevOperation = PH_FRINFC_NDEFMAP_READ_OPE;
 
+#ifdef DESFIRE_EV1
         /* Select smart tag operation. First step for the read operation. */
-        status = phFriNfc_Desfire_SelectSmartTag(NdefMap);
+        if (PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 == NdefMap->CardType)
+        {
+            status = phFriNfc_Desfire_SelectFile(NdefMap);
+        }
+        else
+#endif /* #ifdef DESFIRE_EV1 */
+        {
+            status = phFriNfc_Desfire_SelectSmartTag(NdefMap);
+        }
     }
 
     return status;
@@ -302,7 +318,7 @@ NFCSTATUS phFriNfc_Desfire_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
     {
         /*  No space on card for writing : we have already
         reached the end of file !
-        Offset is set to Continue Operation */  
+        Offset is set to Continue Operation */
         status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
             NFCSTATUS_EOF_NDEF_CONTAINER_REACHED);
     }
@@ -318,8 +334,17 @@ NFCSTATUS phFriNfc_Desfire_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
         /*Store the packet data buffer*/
         NdefMap->ApduBuffer = PacketData;
 
-        /* Select smart tag operation. First step for the write operation. */
-        status = phFriNfc_Desfire_SelectSmartTag (NdefMap);
+#ifdef DESFIRE_EV1
+        if (PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 == NdefMap->CardType)
+        {
+            status = phFriNfc_Desfire_SelectFile(NdefMap);
+        }
+        else
+#endif /* #ifdef DESFIRE_EV1 */
+        {
+            /* Select smart tag operation. First step for the write operation. */
+            status = phFriNfc_Desfire_SelectSmartTag (NdefMap);
+        }
     }
     return status;
 }
@@ -337,6 +362,10 @@ NFCSTATUS phFriNfc_Desfire_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
 
 #ifdef PH_HAL4_ENABLE
 
+#ifdef DESFIRE_EV1
+    /* Reset card type */
+    NdefMap->CardType = 0;
+#endif /* #ifdef DESFIRE_EV1 */
 	/*Set the desfire operation flag*/
 	NdefMap->DespOpFlag = PH_FRINFC_NDEFMAP_DESF_NDEF_CHK_OP;
 
@@ -355,7 +384,7 @@ static NFCSTATUS phFriNfc_Desf_HChkAndParseTLV(phFriNfc_NdefMap_t     *NdefMap, 
 {
     NFCSTATUS    status = NFCSTATUS_SUCCESS;
 
-    if((NdefMap->SendRecvBuf[BuffIndex] <= 0x03) || 
+    if((NdefMap->SendRecvBuf[BuffIndex] <= 0x03) ||
         (NdefMap->SendRecvBuf[BuffIndex] >= 0x06) )
     {
         status =  PHNFCSTVAL(   CID_FRI_NFC_NDEF_MAP,
@@ -364,9 +393,9 @@ static NFCSTATUS phFriNfc_Desf_HChkAndParseTLV(phFriNfc_NdefMap_t     *NdefMap, 
     else
     {
         /* check for the type of TLV*/
-        NdefMap->TLVFoundFlag = 
+        NdefMap->TLVFoundFlag =
             ((NdefMap->SendRecvBuf[BuffIndex] == 0x04)?
-            PH_FRINFC_NDEFMAP_DESF_NDEF_CNTRL_TLV:  
+            PH_FRINFC_NDEFMAP_DESF_NDEF_CNTRL_TLV:
             PH_FRINFC_NDEFMAP_DESF_PROP_CNTRL_TLV);
 
         status =  PHNFCSTVAL(   CID_FRI_NFC_NDEF_MAP,
@@ -388,13 +417,13 @@ static NFCSTATUS    phFriNfc_Desfire_HSetGet_NLEN(phFriNfc_NdefMap_t *NdefMap)
     }
     else
     {
-        
+
         /* Get the Data Count and set it to NoOfBytesWritten
         Update the NLEN using Transceive cmd*/
 
-        /*Form the packet for the update binary command*/   
-        NdefMap->SendRecvBuf[0] = 0x00; 
-        NdefMap->SendRecvBuf[1] = 0xD6; 
+        /*Form the packet for the update binary command*/
+        NdefMap->SendRecvBuf[0] = 0x00;
+        NdefMap->SendRecvBuf[1] = 0xD6;
 
         /* As we need to set the NLEN @ first 2 bytes of NDEF File*/
         /* set the p1/p2 offsets */
@@ -424,7 +453,7 @@ static void phFriNfc_Desfire_HProcReadData(phFriNfc_NdefMap_t *NdefMap)
     uint32_t    BufferSize = 0;
     uint8_t     BufIndex=0;
     uint16_t    SizeToCpy=0;
-   
+
     /* Need to check the Actual Ndef Length before copying the data to buffer*/
     /* Only NDEF data should be copied , rest all the data should be ignored*/
     /* Ex : Ndef File Size 50 bytes , but only 5 bytes(NLEN) are relavent to NDEF data*/
@@ -449,7 +478,7 @@ static void phFriNfc_Desfire_HProcReadData(phFriNfc_NdefMap_t *NdefMap)
                 NdefMap->DesfireCapContainer.NdefDataLen);
 
         /* Decide how many byes to be copied into user buffer: depending upon the actual NDEF
-           size need to copy the content*/ 
+           size need to copy the content*/
         if ( (NdefMap->DesfireCapContainer.NdefDataLen) <= (*NdefMap->SendRecvLength - \
             (PH_FRINFC_NDEFMAP_DESF_RESP_OFFSET + BufIndex)))
         {
@@ -460,39 +489,39 @@ static void phFriNfc_Desfire_HProcReadData(phFriNfc_NdefMap_t *NdefMap)
         {
             SizeToCpy = ((*NdefMap->SendRecvLength)-(PH_FRINFC_NDEFMAP_DESF_RESP_OFFSET+BufIndex));
         }
-        
+
         /* Check do we have Ndef Data len > 0 present in the card.If No Ndef Data
         present in the card , set the card state to Initalised and set an Error*/
         if ( NdefMap->DesfireCapContainer.NdefDataLen == 0x00 )
         {
             NdefMap->CardState = PH_NDEFMAP_CARD_STATE_INITIALIZED;
-            Result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_EOF_NDEF_CONTAINER_REACHED); 
+            Result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_EOF_NDEF_CONTAINER_REACHED);
 #ifdef PH_HAL4_ENABLE
 #else
             NdefMap->PrevOperation = 0;
 #endif /* #ifdef PH_HAL4_ENABLE */
-            phFriNfc_Desfire_HCrHandler(NdefMap,Result);   
+            phFriNfc_Desfire_HCrHandler(NdefMap,Result);
         }
         else
         {
-            (void)memcpy( (&(NdefMap->ApduBuffer[ 
+            (void)memcpy( (&(NdefMap->ApduBuffer[
             NdefMap->ApduBuffIndex])),
             (&(NdefMap->SendRecvBuf[BufIndex])),
             (SizeToCpy));
 
             /*  Increment the Number of Bytes Read, which will be returned to the caller. */
-            *NdefMap->NumOfBytesRead +=SizeToCpy;
+            *NdefMap->NumOfBytesRead = (uint32_t)(*NdefMap->NumOfBytesRead + SizeToCpy);
 
             /*update the data count*/
-            *NdefMap->DataCount += SizeToCpy;
+            *NdefMap->DataCount = (uint16_t)(*NdefMap->DataCount + SizeToCpy);
 
             /*update the buffer index of the apdu buffer*/
-            NdefMap->ApduBuffIndex += SizeToCpy;
+            NdefMap->ApduBuffIndex = (uint16_t)(NdefMap->ApduBuffIndex + SizeToCpy);
         }
     }
     else
     {
-            (void)memcpy( (&(NdefMap->ApduBuffer[ 
+            (void)memcpy( (&(NdefMap->ApduBuffer[
             NdefMap->ApduBuffIndex])),
                 (NdefMap->SendRecvBuf),/* to avoid the length of the NDEF File*/
                 (*(NdefMap->SendRecvLength)-(PH_FRINFC_NDEFMAP_DESF_RESP_OFFSET)));
@@ -512,15 +541,15 @@ static void phFriNfc_Desfire_HProcReadData(phFriNfc_NdefMap_t *NdefMap)
 
     /*  check whether we still have to read some more data. */
     if (*NdefMap->DataCount < NdefMap->DesfireCapContainer.NdefDataLen )
-    {       
+    {
         /*  we have some bytes to read. */
 
         /*  Now check, we still have bytes left in the user buffer. */
-        BufferSize = NdefMap->ApduBufferSize - NdefMap->ApduBuffIndex; 
+        BufferSize = NdefMap->ApduBufferSize - NdefMap->ApduBuffIndex;
         if(BufferSize != 0)
         {
             /* Before read need to set the flag to intimate the module to
-            dont skip the first 2 bytes as we are in mode reading next 
+            dont skip the first 2 bytes as we are in mode reading next
             continues available bytes, which will not contain the NLEN
             information in the begining part that is 2 bytes*/
             NdefMap->DesfireCapContainer.IsNlenPresentFlag = 1;
@@ -535,12 +564,12 @@ static void phFriNfc_Desfire_HProcReadData(phFriNfc_NdefMap_t *NdefMap)
         }
         else
         {
-            /*  There are some more bytes to read, but 
+            /*  There are some more bytes to read, but
             no space in the user buffer */
             Result = PHNFCSTVAL(CID_NFC_NONE,NFCSTATUS_SUCCESS);
             NdefMap->ApduBuffIndex =0;
             /* call respective CR */
-            phFriNfc_Desfire_HCrHandler(NdefMap,Result);                        
+            phFriNfc_Desfire_HCrHandler(NdefMap,Result);
         }
     }
     else
@@ -571,9 +600,9 @@ static void phFriNfc_Desfire_HProcReadData(phFriNfc_NdefMap_t *NdefMap)
 
 
         NdefMap->ApduBuffIndex = 0;
-        
+
         /* call respective CR */
-        phFriNfc_Desfire_HCrHandler(NdefMap,Result);                                        
+        phFriNfc_Desfire_HCrHandler(NdefMap,Result);
     }
 }
 
@@ -596,13 +625,16 @@ void phFriNfc_Desfire_Process(void       *Context,
     uint16_t            NLength = 0,
                         SendRecLen=0;
     uint32_t            BytesRead = 0;
-    
+#ifdef DESFIRE_EV1
+    static uint8_t      card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD;
+#endif /* #ifdef DESFIRE_EV1 */
+
 
     /*  Sujatha P: Fix for 0000255/0000257:[gk] MAP:Handling HAL Errors */
     if ( Status == NFCSTATUS_SUCCESS )
     {
         switch (NdefMap->State)
-        {   
+        {
 
 #ifdef PH_HAL4_ENABLE
 #else
@@ -638,7 +670,7 @@ void phFriNfc_Desfire_Process(void       *Context,
                         phFriNfc_Desfire_HCrHandler(NdefMap,Status);
                     }
                 }
-                
+
                 break;
 
             case PH_FRINFC_DESF_STATE_GET_UID :
@@ -652,10 +684,51 @@ void phFriNfc_Desfire_Process(void       *Context,
                 break;
 #endif /* #ifdef PH_HAL4_ENABLE */
 
-        case PH_FRINFC_NDEFMAP_DESF_STATE_SELECT_SMART_TAG:     
+#ifdef DESFIRE_EV1
+            case PH_FRINFC_NDEFMAP_DESF_STATE_SELECT_SMART_TAG_EV1:
+            {
+                if(( NdefMap->SendRecvBuf[(*(NdefMap->SendRecvLength) - 2)] ==
+                    PH_FRINFC_NDEFMAP_DESF_RAPDU_SW1_BYTE) &&
+                    (NdefMap->SendRecvBuf[(*(NdefMap->SendRecvLength) - 1)] ==
+                    PH_FRINFC_NDEFMAP_DESF_RAPDU_SW2_BYTE))
+                {
+                    card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1;
+                    NdefMap->CardType = card_type;
 
-            if(( NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_SW1_INDEX] == PH_FRINFC_NDEFMAP_DESF_RAPDU_SW1_BYTE) &&
-                (NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_SW2_INDEX] == PH_FRINFC_NDEFMAP_DESF_RAPDU_SW2_BYTE))
+                    Status = phFriNfc_Desfire_SelectFile(NdefMap);
+
+                    /* handle the error in Transc function*/
+                    if ((Status & PHNFCSTBLOWER) != (NFCSTATUS_PENDING & PHNFCSTBLOWER))
+                    {
+                        /* call respective CR */
+                        phFriNfc_Desfire_HCrHandler(NdefMap,Status);
+                    }
+                }
+                else
+                {
+                    NdefMap->CardType = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD;
+                    /* The card is not the new desfire, so send select smart tag command
+                    of the old desfire */
+                    Status = phFriNfc_Desfire_SelectSmartTag(NdefMap);
+
+
+                }
+                break;
+            }
+#endif /* #ifdef DESFIRE_EV1 */
+
+        case PH_FRINFC_NDEFMAP_DESF_STATE_SELECT_SMART_TAG:
+#ifdef DESFIRE_EV1
+            if(( NdefMap->SendRecvBuf[(*(NdefMap->SendRecvLength) - 2)] ==
+                    PH_FRINFC_NDEFMAP_DESF_RAPDU_SW1_BYTE) &&
+                    (NdefMap->SendRecvBuf[(*(NdefMap->SendRecvLength) - 1)] ==
+                    PH_FRINFC_NDEFMAP_DESF_RAPDU_SW2_BYTE))
+#else
+            if(( NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_SW1_INDEX] ==
+                PH_FRINFC_NDEFMAP_DESF_RAPDU_SW1_BYTE) &&
+                (NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_SW2_INDEX] ==
+                PH_FRINFC_NDEFMAP_DESF_RAPDU_SW2_BYTE))
+#endif /* #ifdef DESFIRE_EV1 */
             {
                 Status = phFriNfc_Desfire_SelectFile(NdefMap);
 
@@ -671,6 +744,9 @@ void phFriNfc_Desfire_Process(void       *Context,
                 /*Error " Smart Tag Functionality Not Supported"*/
                 Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,\
                     NFCSTATUS_SMART_TAG_FUNC_NOT_SUPPORTED);
+#ifdef DESFIRE_EV1
+                NdefMap->CardType = 0;
+#endif /* #ifdef DESFIRE_EV1 */
 
                 /* call respective CR */
                 phFriNfc_Desfire_HCrHandler(NdefMap,Status);
@@ -685,7 +761,7 @@ void phFriNfc_Desfire_Process(void       *Context,
                 (NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_SW2_INDEX] == PH_FRINFC_NDEFMAP_DESF_RAPDU_SW2_BYTE))
             {
                 /*check for the which operation */
-                if( (NdefMap->DespOpFlag == PH_FRINFC_NDEFMAP_DESF_READ_OP) || 
+                if( (NdefMap->DespOpFlag == PH_FRINFC_NDEFMAP_DESF_READ_OP) ||
                     (NdefMap->DespOpFlag == PH_FRINFC_NDEFMAP_DESF_NDEF_CHK_OP) ||
                     (NdefMap->DespOpFlag == PH_FRINFC_NDEFMAP_DESF_GET_LEN_OP ))
                 {
@@ -742,7 +818,16 @@ void phFriNfc_Desfire_Process(void       *Context,
                 if ( Status == NFCSTATUS_SUCCESS)
                 {
                     NdefMap->DespOpFlag = PH_FRINFC_NDEFMAP_DESF_GET_LEN_OP;
-                    Status = phFriNfc_Desfire_HSetGet_NLEN(NdefMap);
+#ifdef DESFIRE_EV1
+                    if (PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 == card_type)
+                    {
+                        Status = phFriNfc_Desfire_SelectFile(NdefMap);
+                    }
+                    else
+#endif /* #ifdef DESFIRE_EV1 */
+                    {
+                        Status = phFriNfc_Desfire_HSetGet_NLEN(NdefMap);
+                    }
                     /* handle the error in Transc function*/
                     if ( (Status & PHNFCSTBLOWER) != (NFCSTATUS_PENDING & PHNFCSTBLOWER))
                     {
@@ -787,7 +872,7 @@ void phFriNfc_Desfire_Process(void       *Context,
             }
             /* Read More Number Of Bytes than Expected*/
             if ( ( BytesRead == SendRecLen ) &&
-                ((NdefMap->SendRecvBuf[(*NdefMap->SendRecvLength-2)] == PH_FRINFC_NDEFMAP_DESF_RAPDU_SW1_BYTE) && 
+                ((NdefMap->SendRecvBuf[(*NdefMap->SendRecvLength-2)] == PH_FRINFC_NDEFMAP_DESF_RAPDU_SW1_BYTE) &&
                 (NdefMap->SendRecvBuf[(*NdefMap->SendRecvLength-1)] == PH_FRINFC_NDEFMAP_DESF_RAPDU_SW2_BYTE)))
 
             {
@@ -814,9 +899,14 @@ void phFriNfc_Desfire_Process(void       *Context,
                         if ( Status == NFCSTATUS_SUCCESS )
                         {
                             /*Set the card type to Desfire*/
+#ifdef DESFIRE_EV1
+                            NdefMap->CardType = card_type;
+#else
                             NdefMap->CardType = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD;
+#endif /* #ifdef DESFIRE_EV1 */
                             /*Set the state to specify True for Ndef Compliant*/
-                            NdefMap->State = PH_FRINFC_NDEFMAP_DESF_STATE_CHK_NDEF; 
+                            NdefMap->State = PH_FRINFC_NDEFMAP_DESF_STATE_CHK_NDEF;
+
                             /*set the data count back to zero*/;
                             *NdefMap->DataCount = 0;
                             /*set the apdu buffer index to zero*/
@@ -857,7 +947,7 @@ void phFriNfc_Desfire_Process(void       *Context,
                 NdefMap->ApduBuffIndex = 0;
 
                 /* call respective CR */
-                phFriNfc_Desfire_HCrHandler(NdefMap,Status);    
+                phFriNfc_Desfire_HCrHandler(NdefMap,Status);
             }
 
             break;
@@ -869,8 +959,10 @@ void phFriNfc_Desfire_Process(void       *Context,
                 /*  Write operation was successful. */
                 /*  NdefMap->NumOfBytesWritten have been written on to the card.
                 Update the DataCount and the ApduBufferIndex */
-                *NdefMap->DataCount         += NdefMap->NumOfBytesWritten;
-                NdefMap->ApduBuffIndex      += NdefMap->NumOfBytesWritten;
+                *NdefMap->DataCount = (uint16_t)(*NdefMap->DataCount +
+                                                NdefMap->NumOfBytesWritten);
+                NdefMap->ApduBuffIndex = (uint16_t)(NdefMap->ApduBuffIndex +
+                                                NdefMap->NumOfBytesWritten);
 
                 /*  Update the user-provided buffer size to write */
                 *NdefMap->WrNdefPacketLength += NdefMap->NumOfBytesWritten;
@@ -888,7 +980,7 @@ void phFriNfc_Desfire_Process(void       *Context,
                 NdefMap->ApduBuffIndex = 0;
 
                 /* call respective CR */
-                phFriNfc_Desfire_HCrHandler(NdefMap,Status);    
+                phFriNfc_Desfire_HCrHandler(NdefMap,Status);
             }
             break;
         case PH_FRINFC_NDEFMAP_DESF_STATE_UPDATE_BIN_END :
@@ -902,10 +994,10 @@ void phFriNfc_Desfire_Process(void       *Context,
                     NFCSTATUS_SUCCESS);
 
                 /* set the state & Data len into context*/
-                NdefMap->CardState = ((NdefMap->CardState == 
-                    PH_NDEFMAP_CARD_STATE_INITIALIZED)?
-                PH_NDEFMAP_CARD_STATE_READ_WRITE:
-                NdefMap->CardState);
+                NdefMap->CardState = (uint8_t)((NdefMap->CardState ==
+                                            PH_NDEFMAP_CARD_STATE_INITIALIZED)?
+                                            PH_NDEFMAP_CARD_STATE_READ_WRITE :
+                                            NdefMap->CardState);
 
                 NdefMap->DesfireCapContainer.NdefDataLen = (uint16_t)(*NdefMap->WrNdefPacketLength);
 #ifdef PH_HAL4_ENABLE
@@ -913,7 +1005,7 @@ void phFriNfc_Desfire_Process(void       *Context,
 #else
                 NdefMap->PrevOperation = 0;
 #endif /* #ifndef PH_HAL4_ENABLE */
-                
+
             }
             else
             {
@@ -925,23 +1017,23 @@ void phFriNfc_Desfire_Process(void       *Context,
 
             /*set the buffer index back to zero*/
             NdefMap->ApduBuffIndex = 0;
-            
+
             /* call respective CR */
             phFriNfc_Desfire_HCrHandler(NdefMap,Status);
             break;
 
-        default:    
+        default:
             /*define the invalid state*/
             Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,\
                 NFCSTATUS_INVALID_DEVICE_REQUEST);
-            phFriNfc_Desfire_HCrHandler(NdefMap,Status);    
+            phFriNfc_Desfire_HCrHandler(NdefMap,Status);
             break;
         }
     }
     else
     {
         /* call respective CR */
-        phFriNfc_Desfire_HCrHandler(NdefMap,Status);        
+        phFriNfc_Desfire_HCrHandler(NdefMap,Status);
     }
 }
 
@@ -959,6 +1051,9 @@ NFCSTATUS   phFriNfc_Desfire_SelectSmartTag(phFriNfc_NdefMap_t *NdefMap)
 {
 
     NFCSTATUS                   status = NFCSTATUS_PENDING;
+#ifdef DESFIRE_EV1
+    uint8_t                     card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1;
+#endif /* #ifdef DESFIRE_EV1 */
 
     /*form the packet for Select smart tag command*/
     NdefMap->SendRecvBuf[0]  = 0x00; /* cls */
@@ -974,16 +1069,79 @@ NFCSTATUS   phFriNfc_Desfire_SelectSmartTag(phFriNfc_NdefMap_t *NdefMap)
     NdefMap->SendRecvBuf[8]  = 0x00;
     NdefMap->SendRecvBuf[9]  = 0x85;
     NdefMap->SendRecvBuf[10] = 0x01;
+
+#ifdef DESFIRE_EV1
+
+    switch (NdefMap->DespOpFlag)
+    {
+        case PH_FRINFC_NDEFMAP_DESF_NDEF_CHK_OP:
+        {
+            /* First select the smart tag using the new desfire EV1 and increment the
+                "sel_index" and if it fails then try the old desfire select smart tag
+                command */
+            if (0 == NdefMap->CardType)
+            {
+                /* p2
+                NdefMap->SendRecvBuf[3]  = DESFIRE_EV1_P2_OFFSET_VALUE; */
+                NdefMap->SendRecvBuf[11] = 0x01;
+                /* Le */
+                NdefMap->SendRecvBuf[12] = 0x00;
+                NdefMap->State = PH_FRINFC_NDEFMAP_DESF_STATE_SELECT_SMART_TAG_EV1;
+                card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1;
+            }
+            else
+            {
+                NdefMap->SendRecvBuf[3]  = 0x00; /* p2 */
+                NdefMap->SendRecvBuf[11] = 0x00;
+                NdefMap->State = PH_FRINFC_NDEFMAP_DESF_STATE_SELECT_SMART_TAG;
+                card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD;
+            }
+            break;
+        }
+
+        case PH_FRINFC_NDEFMAP_DESF_READ_OP:
+        default :
+        {
+            if (PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 == NdefMap->CardType)
+            {
+                NdefMap->SendRecvBuf[11] = 0x01;
+                NdefMap->SendRecvBuf[12] = 0x00;
+                NdefMap->State = (uint8_t)PH_FRINFC_NDEFMAP_DESF_STATE_SELECT_SMART_TAG_EV1;
+                card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1;
+            }
+            else
+            {
+                NdefMap->SendRecvBuf[11] = 0x00;
+                NdefMap->State = (uint8_t)PH_FRINFC_NDEFMAP_DESF_STATE_SELECT_SMART_TAG;
+                card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD;
+            }
+            break;
+        }
+    }
+
+#else /* #ifdef DESFIRE_EV1 */
+
     NdefMap->SendRecvBuf[11] = 0x00;
+
+#endif /* #ifdef DESFIRE_EV1 */
 
     /*Set the Send length*/
     NdefMap->SendLength = PH_FRINFC_NDEFMAP_DESF_CAPDU_SMARTTAG_PKT_SIZE;
+#ifdef DESFIRE_EV1
 
+    if (PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 == card_type)
+    {
+        /* Send length is updated for the NEW DESFIRE EV1 */
+        NdefMap->SendLength = (uint16_t)(NdefMap->SendLength + 1);
+    }
+
+#else
     /* Change the state to Select Smart Tag */
     NdefMap->State = PH_FRINFC_NDEFMAP_DESF_STATE_SELECT_SMART_TAG;
+#endif /* #ifdef DESFIRE_EV1 */
 
     status = phFriNfc_Desfire_HSendTransCmd(NdefMap,PH_FRINFC_NDEFMAP_DESF_RESP_OFFSET);
-    
+
     return status;
 }
 
@@ -991,8 +1149,8 @@ NFCSTATUS   phFriNfc_Desfire_SelectSmartTag(phFriNfc_NdefMap_t *NdefMap)
 * \brief this shall select/access the capability container of the Desfire
 * card.
 *
-* This shall be used to identify, if NDEF data structure do exist on 
-* the smart tag, we receive command completed status. 
+* This shall be used to identify, if NDEF data structure do exist on
+* the smart tag, we receive command completed status.
 *
 */
 static
@@ -1005,7 +1163,7 @@ NFCSTATUS phFriNfc_Desfire_SelectFile (phFriNfc_NdefMap_t  *NdefMap)
     if ((NdefMap->DespOpFlag != PH_FRINFC_NDEFMAP_DESF_NDEF_CHK_OP)&& \
         (NdefMap->DespOpFlag != PH_FRINFC_NDEFMAP_DESF_READ_OP)&&\
         ( NdefMap->DespOpFlag != PH_FRINFC_NDEFMAP_DESF_WRITE_OP) &&
-        ( NdefMap->DespOpFlag != PH_FRINFC_NDEFMAP_DESF_GET_LEN_OP)) 
+        ( NdefMap->DespOpFlag != PH_FRINFC_NDEFMAP_DESF_GET_LEN_OP))
     {
         status  =   PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_REMOTE_DEVICE);
     }
@@ -1023,15 +1181,22 @@ NFCSTATUS phFriNfc_Desfire_SelectFile (phFriNfc_NdefMap_t  *NdefMap)
         NdefMap->SendRecvBuf[3] = 0x00; /* p2 */
         NdefMap->SendRecvBuf[4] = 0x02; /* lc */
 
+#ifdef DESFIRE_EV1
+        if (PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 == NdefMap->CardType)
+        {
+            NdefMap->SendRecvBuf[3]  = DESFIRE_EV1_P2_OFFSET_VALUE; /* p2 */
+        }
+#endif /* #ifdef DESFIRE_EV1 */
+
         if ( (NdefMap->DespOpFlag == PH_FRINFC_NDEFMAP_DESF_NDEF_CHK_OP))
 
         {
             /* cap container file identifier*/
-            NdefMap->SendRecvBuf[5] = 0xe1; 
+            NdefMap->SendRecvBuf[5] = 0xe1;
             NdefMap->SendRecvBuf[6] = 0x03;
         }
         /* Mantis entry 0394 fixed */
-        else 
+        else
         {
             NdefMap->SendRecvBuf[5] = (uint8_t)((NdefMap->DesfireCapContainer.NdefMsgFid) >> PH_FRINFC_NDEFMAP_DESF_SHL8);
             NdefMap->SendRecvBuf[6] = (uint8_t)((NdefMap->DesfireCapContainer.NdefMsgFid) & (0x00ff));
@@ -1052,9 +1217,9 @@ NFCSTATUS phFriNfc_Desfire_SelectFile (phFriNfc_NdefMap_t  *NdefMap)
 
 /*!
 * \brief this shall read the data from Desfire card.
-* 
+*
 * This is used in two cases namely Reading the Capability container
-* data( le == 0 ) and reading the file data.Maximum bytes to be read during 
+* data( le == 0 ) and reading the file data.Maximum bytes to be read during
 * a single read binary is known after the reading the data from the capability
 * conatainer.
 *
@@ -1073,7 +1238,7 @@ NFCSTATUS  phFriNfc_Desfire_ReadBinary(phFriNfc_NdefMap_t    *NdefMap)
         /*specifies capability container shall be read*/
         NdefMap->SendRecvBuf[0] = 0x00;
         NdefMap->SendRecvBuf[1] = 0xb0;
-        NdefMap->SendRecvBuf[2] = 0x00; /* p1 */ 
+        NdefMap->SendRecvBuf[2] = 0x00; /* p1 */
         NdefMap->SendRecvBuf[3] = 0x00; /* p2 */
         NdefMap->SendRecvBuf[4] = 0x0F; /* le */
 
@@ -1088,11 +1253,11 @@ NFCSTATUS  phFriNfc_Desfire_ReadBinary(phFriNfc_NdefMap_t    *NdefMap)
     /*desfire file read operation*/
     else
     {
-        NdefMap->SendRecvBuf[0] = 0x00; 
+        NdefMap->SendRecvBuf[0] = 0x00;
         NdefMap->SendRecvBuf[1] = 0xb0;
 
         /*TBD the NLEN bytes*/
-        if( *NdefMap->DataCount == 0 ) 
+        if( *NdefMap->DataCount == 0 )
         {
             /* first read */
             /* set the offset p1 and p2*/
@@ -1103,7 +1268,7 @@ NFCSTATUS  phFriNfc_Desfire_ReadBinary(phFriNfc_NdefMap_t    *NdefMap)
         {
             /* as the p1 of the 8bit is 0, p1 and p2 are used to store the
             ofset value*/
-            DataCnt = *NdefMap->DataCount; 
+            DataCnt = *NdefMap->DataCount;
             DataCnt += PH_FRINFC_NDEFMAP_DESF_NLEN_SIZE_IN_BYTES;
             NdefMap->SendRecvBuf[2] = (uint8_t)((DataCnt)>> PH_FRINFC_NDEFMAP_DESF_SHL8);
             NdefMap->SendRecvBuf[3] = (uint8_t)((DataCnt)& (0x00ff));
@@ -1139,30 +1304,30 @@ NFCSTATUS  phFriNfc_Desfire_ReadBinary(phFriNfc_NdefMap_t    *NdefMap)
 
     if (OperFlag == 1 )
     {
-        status = phFriNfc_Desfire_HSendTransCmd(NdefMap,PH_FRINFC_NDEFMAP_MAX_SEND_RECV_BUF_SIZE);  
+        status = phFriNfc_Desfire_HSendTransCmd(NdefMap,PH_FRINFC_NDEFMAP_MAX_SEND_RECV_BUF_SIZE);
     }
     else
     {
-        status = phFriNfc_Desfire_HSendTransCmd(NdefMap,(uint8_t)(BytesToRead +PH_FRINFC_NDEFMAP_DESF_RESP_OFFSET));  
+        status = phFriNfc_Desfire_HSendTransCmd(NdefMap,(uint8_t)(BytesToRead +PH_FRINFC_NDEFMAP_DESF_RESP_OFFSET));
     }
     return (status);
 }
 
 /*!
 * \brief this shall write the data to Desfire card.
-* Maximum bytes to be written during a single update binary 
+* Maximum bytes to be written during a single update binary
 * is known after the reading the data from the capability
 * conatainer.
-* 
+*
 * le filed specifes , how many bytes of data to be written to the
 * Card.
 *
 */
 static
-NFCSTATUS  phFriNfc_Desfire_UpdateBinary(phFriNfc_NdefMap_t  *NdefMap)  
+NFCSTATUS  phFriNfc_Desfire_UpdateBinary(phFriNfc_NdefMap_t  *NdefMap)
 {
 
-    NFCSTATUS   status = NFCSTATUS_PENDING; 
+    NFCSTATUS   status = NFCSTATUS_PENDING;
     uint16_t    noOfBytesToWrite = 0, DataCnt=0,
         index=0;
 
@@ -1171,7 +1336,7 @@ NFCSTATUS  phFriNfc_Desfire_UpdateBinary(phFriNfc_NdefMap_t  *NdefMap)
         (NdefMap->ApduBuffIndex < NdefMap->ApduBufferSize))
     {
         /*  Yes, we have some bytes to write */
-        /*  Check and set the card memory size , if user sent bytes are more than the 
+        /*  Check and set the card memory size , if user sent bytes are more than the
         card memory size*/
         if( (uint16_t)(NdefMap->ApduBufferSize - NdefMap->ApduBuffIndex) >\
             (uint16_t)(PH_NFCFRI_NDEFMAP_DESF_NDEF_FILE_SIZE - *NdefMap->DataCount))
@@ -1180,11 +1345,11 @@ NFCSTATUS  phFriNfc_Desfire_UpdateBinary(phFriNfc_NdefMap_t  *NdefMap)
         }
 
         /*  Now, we have space in the card to write the data, */
-        /*Form the packet for the update binary command*/   
-        NdefMap->SendRecvBuf[0] = 0x00; 
-        NdefMap->SendRecvBuf[1] = 0xD6; 
+        /*Form the packet for the update binary command*/
+        NdefMap->SendRecvBuf[0] = 0x00;
+        NdefMap->SendRecvBuf[1] = 0xD6;
 
-        if( *NdefMap->DataCount == 0) 
+        if( *NdefMap->DataCount == 0)
         {
             /* set the p1/p2 offsets */
             NdefMap->SendRecvBuf[2] = 0x00; /* p1 */
@@ -1195,11 +1360,11 @@ NFCSTATUS  phFriNfc_Desfire_UpdateBinary(phFriNfc_NdefMap_t  *NdefMap)
         {
             /*  as the p1 of the 8bit is 0, p1 and p2 are used to store the
             ofset value*/
-            /*  This sets card offset in a card for a write operation. + 2 is 
+            /*  This sets card offset in a card for a write operation. + 2 is
             added as first 2 offsets represents the size of the NDEF Len present
             in the file*/
 
-            DataCnt = *NdefMap->DataCount; 
+            DataCnt = *NdefMap->DataCount;
             DataCnt += PH_FRINFC_NDEFMAP_DESF_NLEN_SIZE_IN_BYTES;
             NdefMap->SendRecvBuf[2] = (uint8_t)((DataCnt)>> PH_FRINFC_NDEFMAP_DESF_SHL8);
             NdefMap->SendRecvBuf[3] = (uint8_t)((DataCnt)& (0x00ff));
@@ -1265,7 +1430,7 @@ NFCSTATUS  phFriNfc_Desfire_UpdateBinary(phFriNfc_NdefMap_t  *NdefMap)
         /* Change the state to Write */
         NdefMap->State = PH_FRINFC_NDEFMAP_DESF_STATE_UPDATE_BIN_BEGIN;
 
-        status = phFriNfc_Desfire_HSendTransCmd(NdefMap,PH_FRINFC_NDEFMAP_DESF_RESP_OFFSET);    
+        status = phFriNfc_Desfire_HSendTransCmd(NdefMap,PH_FRINFC_NDEFMAP_DESF_RESP_OFFSET);
 
     }   /*  if(NdefMap->ApduBuffIndex < NdefMap->ApduBufferSize) */
     else
@@ -1273,7 +1438,7 @@ NFCSTATUS  phFriNfc_Desfire_UpdateBinary(phFriNfc_NdefMap_t  *NdefMap)
         if ( (*NdefMap->DataCount == PH_NFCFRI_NDEFMAP_DESF_NDEF_FILE_SIZE) ||
             (NdefMap->ApduBuffIndex == NdefMap->ApduBufferSize))
         {
-            /* The NdefMap->DespOpFlag = PH_FRINFC_NDEFMAP_DESF_SET_LEN_OP is not 
+            /* The NdefMap->DespOpFlag = PH_FRINFC_NDEFMAP_DESF_SET_LEN_OP is not
                 required, because the DespOpFlag shall be WRITE_OP
                 */
             /* Update the NLEN Bytes*/
@@ -1302,7 +1467,7 @@ NFCSTATUS  phFriNfc_Desfire_UpdateBinary(phFriNfc_NdefMap_t  *NdefMap)
             NdefMap->PrevOperation = 0;
 
             /* call respective CR */
-            phFriNfc_Desfire_HCrHandler(NdefMap,status);    
+            phFriNfc_Desfire_HCrHandler(NdefMap,status);
         }
 
     }
@@ -1318,12 +1483,12 @@ static void phFriNfc_Desfire_HChkNDEFFileAccessRights(phFriNfc_NdefMap_t *NdefMa
         (NdefMap->DesfireCapContainer.WriteAccess == 0x00 ))
     {
         /* Set the card state to Read/write State*/
-        /* This state can be either INITIALISED or READWRITE. but default 
+        /* This state can be either INITIALISED or READWRITE. but default
         is INITIALISED */
         NdefMap->CardState = PH_NDEFMAP_CARD_STATE_READ_WRITE;
 
     }
-    else if((NdefMap->DesfireCapContainer.ReadAccess  == 0x00) && 
+    else if((NdefMap->DesfireCapContainer.ReadAccess  == 0x00) &&
         (NdefMap->DesfireCapContainer.WriteAccess == 0xFF ))
     {
         /* Set the card state to Read Only State*/
@@ -1338,17 +1503,17 @@ static void phFriNfc_Desfire_HChkNDEFFileAccessRights(phFriNfc_NdefMap_t *NdefMa
 
 /*!
 * \brief this shall update the Desfire capability container structure.
-* 
+*
 * This function shall store version,maximum Ndef data structure size,
-* Read Access permissions, Write Access permissions , Maximum data size 
-* that can be sent using a single Update Binary, maximum data size that 
+* Read Access permissions, Write Access permissions , Maximum data size
+* that can be sent using a single Update Binary, maximum data size that
 * can be read from the Desfire using a singlr read binary.
-* These vaues shall be stored and used during the read/update binary 
+* These vaues shall be stored and used during the read/update binary
 * operations.
 *
 */
 static
-NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer(phFriNfc_NdefMap_t    *NdefMap)  
+NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer(phFriNfc_NdefMap_t    *NdefMap)
 {
     uint16_t    CapContSize = 0,
         /* this is initalised 2 because CCLEN includes the field size bytes i.e 2bytes*/
@@ -1381,15 +1546,15 @@ NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer(phFriNfc_NdefMap_t    *N
         {
             CCLen += 1;
 
-            /*Get Response APDU data size 
-            to check the integration s/w response size*/             
+            /*Get Response APDU data size
+            to check the integration s/w response size*/
 #ifdef PH_HAL4_ENABLE
 			{
-				uint16_t	max_rsp_size = 
+				uint16_t	max_rsp_size =
 					((((uint16_t)NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_MLE_BYTE_FIRST_INDEX]) << 8)\
 					+ NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_MLE_BYTE_SECOND_INDEX]);
 				NdefMap->DesfireCapContainer.MaxRespSize =
-								((max_rsp_size > PHHAL_MAX_DATASIZE)? 
+								((max_rsp_size > PHHAL_MAX_DATASIZE)?
 								(PHHAL_MAX_DATASIZE) : max_rsp_size);
 			}
 #else
@@ -1398,26 +1563,26 @@ NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer(phFriNfc_NdefMap_t    *N
                 +NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_MLE_BYTE_SECOND_INDEX]);
 #endif /* #ifdef PH_HAL4_ENABLE */
 
-            /*Get Command APDU data size*/            
+            /*Get Command APDU data size*/
 #ifdef PH_HAL4_ENABLE
 			{
-				uint16_t	max_cmd_size = 
+				uint16_t	max_cmd_size =
 					((((uint16_t)NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_MLC_BYTE_FIRST_INDEX])<<8)\
 					+ NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_MLC_BYTE_SECOND_INDEX]);
 
-				NdefMap->DesfireCapContainer.MaxCmdSize = 
-								((max_cmd_size > PHHAL_MAX_DATASIZE)? 
+				NdefMap->DesfireCapContainer.MaxCmdSize =
+								((max_cmd_size > PHHAL_MAX_DATASIZE)?
 								(PHHAL_MAX_DATASIZE): max_cmd_size);
 			}
 #else
-			NdefMap->DesfireCapContainer.MaxCmdSize = 
+			NdefMap->DesfireCapContainer.MaxCmdSize =
 				((((uint16_t)NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_MLC_BYTE_FIRST_INDEX])<<8)\
                 +NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_MLC_BYTE_SECOND_INDEX]);
 #endif /* #ifdef PH_HAL4_ENABLE */
             /* Check for the Validity of Cmd & Resp Size*/
             /* check the Validity of the Cmd Size*/
             if( (NdefMap->DesfireCapContainer.MaxRespSize < 0x0f) ||
-                ( NdefMap->DesfireCapContainer.MaxCmdSize == 0x00)) 
+                ( NdefMap->DesfireCapContainer.MaxCmdSize == 0x00))
             {
                 ErrFlag=1;
 
@@ -1457,9 +1622,9 @@ NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer(phFriNfc_NdefMap_t    *N
                             ErrFlag=1;
                         }
                         else
-                        {   
+                        {
                             /*Get Ndef Size*/
-                            NdefMap->DesfireCapContainer.NdefFileSize = 
+                            NdefMap->DesfireCapContainer.NdefFileSize =
                                 ((((uint16_t)NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_NDEF_FILESZ_BYTE_FIRST_INDEX])<<8)
                                 | (NdefMap->SendRecvBuf[PH_FRINFC_NDEFMAP_DESF_NDEF_FILESZ_BYTE_SECOND_INDEX] & 0x00ff));
 
@@ -1467,7 +1632,7 @@ NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer(phFriNfc_NdefMap_t    *N
                             /*Check Ndef Size*/
                             /* TBD : Do we need to minus 2 bytes of size it self?*/
                             if ( ((NdefMap->DesfireCapContainer.NdefFileSize -2) <= 0x0004 ) ||
-                                ((NdefMap->DesfireCapContainer.NdefFileSize -2) == 0xFFFD ) ) 
+                                ((NdefMap->DesfireCapContainer.NdefFileSize -2) == 0xFFFD ) )
                             {
                                 ErrFlag=1;
                             }
@@ -1549,10 +1714,10 @@ static uint32_t phFriNfc_Desfire_HGetLeBytes(phFriNfc_NdefMap_t *NdefMap)
             size bytes
             Now, check do we have NdefMap->DesfireCapContainer.MaxRespSize to read ? */
 
-            BytesToRead = (((NdefMap->DesfireCapContainer.NdefDataLen - *NdefMap->DataCount) >= 
+            BytesToRead = (((NdefMap->DesfireCapContainer.NdefDataLen - *NdefMap->DataCount) >=
                 NdefMap->DesfireCapContainer.MaxRespSize) ?
                 NdefMap->DesfireCapContainer.MaxRespSize :
-            (NdefMap->DesfireCapContainer.NdefDataLen - 
+            (NdefMap->DesfireCapContainer.NdefDataLen -
                 *NdefMap->DataCount));
         }
         else
@@ -1565,7 +1730,7 @@ static uint32_t phFriNfc_Desfire_HGetLeBytes(phFriNfc_NdefMap_t *NdefMap)
             }
         }
 
-        NdefMap->DesfireCapContainer.SkipNlenBytesFlag = 
+        NdefMap->DesfireCapContainer.SkipNlenBytesFlag =
             (uint8_t)(((NdefMap->Offset == PH_FRINFC_NDEFMAP_SEEK_BEGIN )&&( *NdefMap->DataCount == 0 )) ?
             1 : 0);
 
@@ -1591,7 +1756,7 @@ static void phFriNfc_Desfire_HCrHandler(    phFriNfc_NdefMap_t  *NdefMap,
 
     switch(NdefMap->DespOpFlag)
     {
-        /* check which routine has the problem and set the CR*/ 
+        /* check which routine has the problem and set the CR*/
     case PH_FRINFC_NDEFMAP_DESF_NDEF_CHK_OP :
         /* set the completion routine*/
         NdefMap->CompletionRoutine[PH_FRINFC_NDEFMAP_CR_CHK_NDEF].\
@@ -1613,7 +1778,7 @@ static void phFriNfc_Desfire_HCrHandler(    phFriNfc_NdefMap_t  *NdefMap,
             Status);
         break;
 
-    default : 
+    default :
         /* set the completion routine*/
         NdefMap->CompletionRoutine[PH_FRINFC_NDEFMAP_CR_INVALID_OPE].\
             CompletionRoutine(NdefMap->CompletionRoutine->Context,\
@@ -1629,12 +1794,12 @@ static NFCSTATUS phFriNfc_Desfire_HSendTransCmd(phFriNfc_NdefMap_t *NdefMap,uint
     NFCSTATUS status =  NFCSTATUS_SUCCESS;
 
     /* set the command type*/
-#ifndef PH_HAL4_ENABLE  
+#ifndef PH_HAL4_ENABLE
     NdefMap->Cmd.Iso144434Cmd = phHal_eIso14443_4_CmdListTClCmd;
 #else
     NdefMap->Cmd.Iso144434Cmd = phHal_eIso14443_4_Raw;
 #endif
-    
+
     /* set the Additional Info*/
     NdefMap->psDepAdditionalInfo.DepFlags.MetaChaining = 0;
     NdefMap->psDepAdditionalInfo.DepFlags.NADPresent = 0;
@@ -1647,7 +1812,7 @@ static NFCSTATUS phFriNfc_Desfire_HSendTransCmd(phFriNfc_NdefMap_t *NdefMap,uint
     *NdefMap->SendRecvLength = ((uint16_t)(SendRecvLen));
 
 
-    /*Call the Overlapped HAL Transceive function */ 
+    /*Call the Overlapped HAL Transceive function */
     status = phFriNfc_OvrHal_Transceive(NdefMap->LowerDevice,
         &NdefMap->MapCompletionInfo,
         NdefMap->psRemoteDevInfo,

@@ -20,10 +20,10 @@
  *
  * Project: NFC-FRI
  *
- * $Date: Fri Sep 26 11:13:22 2008 $
- * $Author: ing08205 $
- * $Revision: 1.5 $
- * $Aliases: NFC_FRI1.1_WK840_R10_PREP1,NFC_FRI1.1_WK840_R10_1,NFC_FRI1.1_WK842_R11_PREP1,NFC_FRI1.1_WK842_R11_PREP2,NFC_FRI1.1_WK842_R11_1,NFC_FRI1.1_WK844_PREP1,NFC_FRI1.1_WK844_R12_1,NFC_FRI1.1_WK846_PREP1,NFC_FRI1.1_WK846_R13_1,NFC_FRI1.1_WK848_PREP1,NFC_FRI1.1_WK848_R14_1,NFC_FRI1.1_WK850_PACK1,NFC_FRI1.1_WK851_PREP1,NFC_FRI1.1_WK850_R15_1,NFC_FRI1.1_WK902_PREP1,NFC_FRI1.1_WK902_R16_1,NFC_FRI1.1_WK904_PREP1,NFC_FRI1.1_WK904_R17_1,NFC_FRI1.1_WK906_R18_1,NFC_FRI1.1_WK908_PREP1,NFC_FRI1.1_WK908_R19_1,NFC_FRI1.1_WK910_PREP1,NFC_FRI1.1_WK910_R20_1,NFC_FRI1.1_WK912_PREP1,NFC_FRI1.1_WK912_R21_1,NFC_FRI1.1_WK914_PREP1,NFC_FRI1.1_WK914_R22_1,NFC_FRI1.1_WK914_R22_2,NFC_FRI1.1_WK916_R23_1,NFC_FRI1.1_WK918_R24_1,NFC_FRI1.1_WK920_PREP1,NFC_FRI1.1_WK920_R25_1,NFC_FRI1.1_WK922_PREP1,NFC_FRI1.1_WK922_R26_1,NFC_FRI1.1_WK924_PREP1,NFC_FRI1.1_WK924_R27_1,NFC_FRI1.1_WK926_R28_1,NFC_FRI1.1_WK928_R29_1,NFC_FRI1.1_WK930_R30_1,NFC_FRI1.1_WK934_PREP_1,NFC_FRI1.1_WK934_R31_1,NFC_FRI1.1_WK941_PREP1,NFC_FRI1.1_WK941_PREP2,NFC_FRI1.1_WK941_1,NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
+ * $Date: Fri Oct 15 13:50:54 2010 $
+ * $Author: ing02260 $
+ * $Revision: 1.6 $
+ * $Aliases:  $
  *
  */
 
@@ -57,8 +57,8 @@
  *
  */
 /*@{*/
-#define PHFRINFCNDEFMAP_FILEREVISION "$Revision: 1.5 $"
-#define PHFRINFCNDEFMAP_FILEALIASES  "$Aliases: NFC_FRI1.1_WK840_R10_PREP1,NFC_FRI1.1_WK840_R10_1,NFC_FRI1.1_WK842_R11_PREP1,NFC_FRI1.1_WK842_R11_PREP2,NFC_FRI1.1_WK842_R11_1,NFC_FRI1.1_WK844_PREP1,NFC_FRI1.1_WK844_R12_1,NFC_FRI1.1_WK846_PREP1,NFC_FRI1.1_WK846_R13_1,NFC_FRI1.1_WK848_PREP1,NFC_FRI1.1_WK848_R14_1,NFC_FRI1.1_WK850_PACK1,NFC_FRI1.1_WK851_PREP1,NFC_FRI1.1_WK850_R15_1,NFC_FRI1.1_WK902_PREP1,NFC_FRI1.1_WK902_R16_1,NFC_FRI1.1_WK904_PREP1,NFC_FRI1.1_WK904_R17_1,NFC_FRI1.1_WK906_R18_1,NFC_FRI1.1_WK908_PREP1,NFC_FRI1.1_WK908_R19_1,NFC_FRI1.1_WK910_PREP1,NFC_FRI1.1_WK910_R20_1,NFC_FRI1.1_WK912_PREP1,NFC_FRI1.1_WK912_R21_1,NFC_FRI1.1_WK914_PREP1,NFC_FRI1.1_WK914_R22_1,NFC_FRI1.1_WK914_R22_2,NFC_FRI1.1_WK916_R23_1,NFC_FRI1.1_WK918_R24_1,NFC_FRI1.1_WK920_PREP1,NFC_FRI1.1_WK920_R25_1,NFC_FRI1.1_WK922_PREP1,NFC_FRI1.1_WK922_R26_1,NFC_FRI1.1_WK924_PREP1,NFC_FRI1.1_WK924_R27_1,NFC_FRI1.1_WK926_R28_1,NFC_FRI1.1_WK928_R29_1,NFC_FRI1.1_WK930_R30_1,NFC_FRI1.1_WK934_PREP_1,NFC_FRI1.1_WK934_R31_1,NFC_FRI1.1_WK941_PREP1,NFC_FRI1.1_WK941_PREP2,NFC_FRI1.1_WK941_1,NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $"
+#define PHFRINFCNDEFMAP_FILEREVISION "$Revision: 1.6 $"
+#define PHFRINFCNDEFMAP_FILEALIASES  "$Aliases:  $"
 /*@}*/
 
 NFCSTATUS phFriNfc_MapTool_SetCardState(phFriNfc_NdefMap_t  *NdefMap,
@@ -67,11 +67,11 @@ NFCSTATUS phFriNfc_MapTool_SetCardState(phFriNfc_NdefMap_t  *NdefMap,
     NFCSTATUS   Result = NFCSTATUS_SUCCESS;
     if(Length == PH_FRINFC_NDEFMAP_MFUL_VAL0)
     {
-        /* As the NDEF LEN / TLV Len is Zero, irrespective of any state the card 
+        /* As the NDEF LEN / TLV Len is Zero, irrespective of any state the card
            shall be set to INITIALIZED STATE*/
-        NdefMap->CardState =(uint8_t) (((NdefMap->CardState == 
-                                PH_NDEFMAP_CARD_STATE_READ_ONLY) || 
-                                (NdefMap->CardState == 
+        NdefMap->CardState =(uint8_t) (((NdefMap->CardState ==
+                                PH_NDEFMAP_CARD_STATE_READ_ONLY) ||
+                                (NdefMap->CardState ==
                                 PH_NDEFMAP_CARD_STATE_INVALID))?
                                 PH_NDEFMAP_CARD_STATE_INVALID:
                                 PH_NDEFMAP_CARD_STATE_INITIALIZED);
@@ -81,21 +81,21 @@ NFCSTATUS phFriNfc_MapTool_SetCardState(phFriNfc_NdefMap_t  *NdefMap,
         switch(NdefMap->CardState)
         {
             case PH_NDEFMAP_CARD_STATE_INITIALIZED:
-                NdefMap->CardState =(uint8_t) ((NdefMap->CardState == 
+                NdefMap->CardState =(uint8_t) ((NdefMap->CardState ==
                     PH_NDEFMAP_CARD_STATE_INVALID)?
                     NdefMap->CardState:
                     PH_NDEFMAP_CARD_STATE_READ_WRITE);
             break;
 
             case PH_NDEFMAP_CARD_STATE_READ_ONLY:
-                NdefMap->CardState = (uint8_t)((NdefMap->CardState == 
+                NdefMap->CardState = (uint8_t)((NdefMap->CardState ==
                     PH_NDEFMAP_CARD_STATE_INVALID)?
                     NdefMap->CardState:
                     PH_NDEFMAP_CARD_STATE_READ_ONLY);
             break;
 
             case PH_NDEFMAP_CARD_STATE_READ_WRITE:
-                NdefMap->CardState = (uint8_t)((NdefMap->CardState == 
+                NdefMap->CardState = (uint8_t)((NdefMap->CardState ==
                     PH_NDEFMAP_CARD_STATE_INVALID)?
                     NdefMap->CardState:
                     PH_NDEFMAP_CARD_STATE_READ_WRITE);
@@ -103,14 +103,14 @@ NFCSTATUS phFriNfc_MapTool_SetCardState(phFriNfc_NdefMap_t  *NdefMap,
 
             default:
                 NdefMap->CardState = PH_NDEFMAP_CARD_STATE_INVALID;
-                Result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+                Result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                             NFCSTATUS_NO_NDEF_SUPPORT);
             break;
         }
     }
-    Result = ((NdefMap->CardState == 
+    Result = ((NdefMap->CardState ==
                 PH_NDEFMAP_CARD_STATE_INVALID)?
-                PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+                PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                 NFCSTATUS_NO_NDEF_SUPPORT):
                 Result);
     return Result;
@@ -130,46 +130,87 @@ NFCSTATUS   phFriNfc_MapTool_ChkSpcVer( const phFriNfc_NdefMap_t  *NdefMap,
         /*Return Status Error “ Invalid Format”*/
         status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,NFCSTATUS_INVALID_FORMAT);
     }
-    else if((NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_1K_CARD) || 
-        (NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD))
-    {
-        /* calculate the major and minor version number of Mifare std version number */
-        status = (( (( PH_NFCFRI_MFSTDMAP_NFCDEV_MAJOR_VER_NUM == 
-                        PH_NFCFRI_MFSTDMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
-                    ( PH_NFCFRI_MFSTDMAP_NFCDEV_MINOR_VER_NUM == 
-                        PH_NFCFRI_MFSTDMAP_GET_MINOR_TAG_VERNO(TagVerNo))) ||
-                    (( PH_NFCFRI_MFSTDMAP_NFCDEV_MAJOR_VER_NUM == 
-                        PH_NFCFRI_MFSTDMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
-                    ( PH_NFCFRI_MFSTDMAP_NFCDEV_MINOR_VER_NUM < 
-                        PH_NFCFRI_MFSTDMAP_GET_MINOR_TAG_VERNO(TagVerNo) )))?
-                NFCSTATUS_SUCCESS:
-                PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
-                            NFCSTATUS_INVALID_FORMAT));
-    }
     else
     {
-        /* calculate the major and minor version number of T3VerNo */
-        if( (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM == 
-                PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
-            ( PH_NFCFRI_NDEFMAP_NFCDEV_MINOR_VER_NUM == 
-                PH_NFCFRI_NDEFMAP_GET_MINOR_TAG_VERNO(TagVerNo))) ||
-            (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM == 
-                PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
-            ( PH_NFCFRI_NDEFMAP_NFCDEV_MINOR_VER_NUM < 
-                PH_NFCFRI_NDEFMAP_GET_MINOR_TAG_VERNO(TagVerNo) )))
+        switch (NdefMap->CardType)
         {
-            status = PHNFCSTVAL(CID_NFC_NONE,NFCSTATUS_SUCCESS);
-        }
-        else 
-        {
-            if (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM <
-                    PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo) ) ||
-               ( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM > 
-                    PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo)))
+            case PH_FRINFC_NDEFMAP_MIFARE_STD_1K_CARD:
+            case PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD:
             {
-                status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,NFCSTATUS_INVALID_FORMAT);
+                /* calculate the major and minor version number of Mifare std version number */
+                status = (( (( PH_NFCFRI_MFSTDMAP_NFCDEV_MAJOR_VER_NUM ==
+                                PH_NFCFRI_MFSTDMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
+                            ( PH_NFCFRI_MFSTDMAP_NFCDEV_MINOR_VER_NUM ==
+                                PH_NFCFRI_MFSTDMAP_GET_MINOR_TAG_VERNO(TagVerNo))) ||
+                            (( PH_NFCFRI_MFSTDMAP_NFCDEV_MAJOR_VER_NUM ==
+                                PH_NFCFRI_MFSTDMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
+                            ( PH_NFCFRI_MFSTDMAP_NFCDEV_MINOR_VER_NUM <
+                                PH_NFCFRI_MFSTDMAP_GET_MINOR_TAG_VERNO(TagVerNo) )))?
+                        NFCSTATUS_SUCCESS:
+                        PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_FORMAT));
+                break;
             }
+
+#ifdef DESFIRE_EV1
+            case PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1:
+            {
+                /* calculate the major and minor version number of T3VerNo */
+                if( (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM_2 ==
+                        PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
+                    ( PH_NFCFRI_NDEFMAP_NFCDEV_MINOR_VER_NUM ==
+                        PH_NFCFRI_NDEFMAP_GET_MINOR_TAG_VERNO(TagVerNo))) ||
+                    (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM_2 ==
+                        PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
+                    ( PH_NFCFRI_NDEFMAP_NFCDEV_MINOR_VER_NUM <
+                        PH_NFCFRI_NDEFMAP_GET_MINOR_TAG_VERNO(TagVerNo) )))
+                {
+                    status = PHNFCSTVAL(CID_NFC_NONE,NFCSTATUS_SUCCESS);
+                }
+                else
+                {
+                    if (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM_2 <
+                            PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo) ) ||
+                    ( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM_2 >
+                            PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo)))
+                    {
+                        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,NFCSTATUS_INVALID_FORMAT);
+                    }
+                }
+                break;
+            }
+#endif /* #ifdef DESFIRE_EV1 */
+
+            default:
+            {
+                /* calculate the major and minor version number of T3VerNo */
+                if( (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM ==
+                        PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
+                    ( PH_NFCFRI_NDEFMAP_NFCDEV_MINOR_VER_NUM ==
+                        PH_NFCFRI_NDEFMAP_GET_MINOR_TAG_VERNO(TagVerNo))) ||
+                    (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM ==
+                        PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo ) )&&
+                    ( PH_NFCFRI_NDEFMAP_NFCDEV_MINOR_VER_NUM <
+                        PH_NFCFRI_NDEFMAP_GET_MINOR_TAG_VERNO(TagVerNo) )))
+                {
+                    status = PHNFCSTVAL(CID_NFC_NONE,NFCSTATUS_SUCCESS);
+                }
+                else
+                {
+                    if (( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM <
+                            PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo) ) ||
+                    ( PH_NFCFRI_NDEFMAP_NFCDEV_MAJOR_VER_NUM >
+                            PH_NFCFRI_NDEFMAP_GET_MAJOR_TAG_VERNO(TagVerNo)))
+                    {
+                        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,NFCSTATUS_INVALID_FORMAT);
+                    }
+                }
+                break;
+            }
+
+
         }
     }
+
     return (status);
 }

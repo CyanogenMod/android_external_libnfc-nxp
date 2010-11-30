@@ -20,10 +20,10 @@
 *
 * Project: NFC-FRI
 *
-* $Date: Mon Mar 29 17:32:37 2010 $
+* $Date: Tue Jul 27 08:58:22 2010 $
 * $Author: ing02260 $
-* $Revision: 1.37 $
-* $Aliases: NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
+* $Revision: 1.38 $
+* $Aliases:  $
 *
 */
 
@@ -64,8 +64,8 @@
 *
 */
 /*@{*/
-#define PHFRINFCNDEFMAP_FILEREVISION "$Revision: 1.37 $"
-#define PHFRINFCNDEFMAP_FILEALIASES  "$Aliases: NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $"
+#define PHFRINFCNDEFMAP_FILEREVISION "$Revision: 1.38 $"
+#define PHFRINFCNDEFMAP_FILEALIASES  "$Aliases:  $"
 /*@}*/
 
 #ifndef PH_FRINFC_MAP_DESFIRE_DISABLED
@@ -79,8 +79,8 @@ static void phFriNfc_Felica_HReset(phFriNfc_NdefMap_t  *NdefMap);
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED */
 
 
-/* \note    This function has to be called at the beginning, after creating an 
-*          instance of \ref phFriNfc_NdefMap_t . Use this function to reset 
+/* \note    This function has to be called at the beginning, after creating an
+*          instance of \ref phFriNfc_NdefMap_t . Use this function to reset
 *          the instance and/or switch to a different underlying device (
 *          different NFC device or device mode, or different Remote Device).
 */
@@ -98,8 +98,8 @@ NFCSTATUS phFriNfc_NdefMap_Reset(   phFriNfc_NdefMap_t              *NdefMap,
     NFCSTATUS   status = NFCSTATUS_SUCCESS;
     uint8_t     index;
 
-    if (    (ReceiveLength == NULL) || (NdefMap == NULL) || (psRemoteDevInfo == NULL) || 
-        (TrxBuffer == NULL) || (TrxBufferSize == 0)  || (LowerDevice == NULL) || 
+    if (    (ReceiveLength == NULL) || (NdefMap == NULL) || (psRemoteDevInfo == NULL) ||
+        (TrxBuffer == NULL) || (TrxBufferSize == 0)  || (LowerDevice == NULL) ||
         (*ReceiveLength == 0) || (ReceiveBuffer == NULL) || (DataCount == NULL) ||
         (psDevInputParam == NULL) ||
         (*ReceiveLength < PH_FRINFC_NDEFMAP_MAX_SEND_RECV_BUF_SIZE ))
@@ -211,8 +211,8 @@ NFCSTATUS phFriNfc_NdefMap_Reset(   phFriNfc_NdefMap_t              *NdefMap,
         phFriNfc_Mockup_H_Reset(NdefMap);
 #endif  /* PHFRINFC_OVRHAL_MOCKUP */
 
-        /* 
-        *  Fix for PR - 0001256 
+        /*
+        *  Fix for PR - 0001256
         *  Date- 08-08-08
         */
         NdefMap->CardState = PH_NDEFMAP_CARD_STATE_INVALID;
@@ -237,7 +237,7 @@ NFCSTATUS phFriNfc_NdefMap_SetCompletionRoutine(phFriNfc_NdefMap_t     *NdefMap,
 {
     NFCSTATUS   status = NFCSTATUS_SUCCESS;
 
-    if ( ( NdefMap == NULL ) || (FunctionID >= PH_FRINFC_NDEFMAP_CR) || 
+    if ( ( NdefMap == NULL ) || (FunctionID >= PH_FRINFC_NDEFMAP_CR) ||
         ( CompletionRoutine == NULL) || (CompletionRoutineContext == NULL))
     {
         status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_PARAMETER);
@@ -258,7 +258,7 @@ NFCSTATUS phFriNfc_NdefMap_SetCompletionRoutine(phFriNfc_NdefMap_t     *NdefMap,
 * Initiates Reading of NDEF information from the Remote Device.
 *
 * Remote Peer device may be of type any card. Ex: desfire,felica,jewel
-* mifareUL,mifare 1K etc. The function initiates the reading of NDEF 
+* mifareUL,mifare 1K etc. The function initiates the reading of NDEF
 * information from a Remote Device.
 *
 * This is the main NdefMap read function call.Internally,depending upon
@@ -280,9 +280,9 @@ NFCSTATUS phFriNfc_NdefMap_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
 {
     NFCSTATUS   status = NFCSTATUS_PENDING;
 
-    
+
     /* check for validity of input parameters*/
-    if (( PacketData == NULL ) 
+    if (( PacketData == NULL )
         || ( NdefMap == NULL )
         || ( PacketDataLength == NULL )
         || ( *PacketDataLength == 0 )
@@ -295,15 +295,15 @@ NFCSTATUS phFriNfc_NdefMap_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
     }
     else if (NdefMap->CardState == PH_NDEFMAP_CARD_STATE_INVALID)
     {
-        /*  Card is in invalid state, cannot have any read/write 
+        /*  Card is in invalid state, cannot have any read/write
         operations*/
         status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,\
             NFCSTATUS_INVALID_FORMAT);
-    }     
+    }
     else if(NdefMap->CardState == PH_NDEFMAP_CARD_STATE_INITIALIZED)
     {
         /*  Can't read any data from the card:TLV length is zero*/
-        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_EOF_NDEF_CONTAINER_REACHED); 
+        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_EOF_NDEF_CONTAINER_REACHED);
 
         NdefMap->NumOfBytesRead = PacketDataLength;
         *NdefMap->NumOfBytesRead = 0;
@@ -317,7 +317,7 @@ NFCSTATUS phFriNfc_NdefMap_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
     else
     {
         /*  Check the offset given by the user
-        If the offset is 1 (SEEK_BEGIN), reset everything and start 
+        If the offset is 1 (SEEK_BEGIN), reset everything and start
         reading from the first Page of the card.
         else if offset is 0 (PH_FRINFC_NDEFMAP_SEEK_CUR), continue reading
         No need to reset the parameters.  */
@@ -353,6 +353,9 @@ NFCSTATUS phFriNfc_NdefMap_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
 
 #ifndef PH_FRINFC_MAP_DESFIRE_DISABLED
                 case PH_FRINFC_NDEFMAP_ISO14443_4A_CARD :
+#ifdef DESFIRE_EV1
+                case PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 :
+#endif /* #ifdef DESFIRE_EV1 */
                     /*  Desfire card selected. Call Desfire read */
                     status = phFriNfc_Desfire_RdNdef(   NdefMap,
                         PacketData,
@@ -411,7 +414,7 @@ NFCSTATUS phFriNfc_NdefMap_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
                     break;
 #endif  /* PHFRINFC_OVRHAL_MOCKUP */
 
-                default : 
+                default :
                     /*  Unknown card type. Return error */
                     status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,\
                         NFCSTATUS_INVALID_REMOTE_DEVICE);
@@ -429,15 +432,15 @@ NFCSTATUS phFriNfc_NdefMap_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
 * The function initiates the writing of NDEF information to a Remote Device
 *
 * Remote Peer device may be of type any card. Ex: desfire,felica,jewel
-* mifareUL,mifare 1K etc. The function initiates the reading of NDEF 
+* mifareUL,mifare 1K etc. The function initiates the reading of NDEF
 * information from a Remote Device.
 *
-* This is a main write api.Internally,depending upon the CardType, 
+* This is a main write api.Internally,depending upon the CardType,
 * respective mifare/desfire write apis are called.In future this can be
 * extended to support any types of card.
 *
 * It performs a reset of the state and starts the action (state machine).
-* A periodic call of the \ref phFriNfcNdefMap_Process has to be done once 
+* A periodic call of the \ref phFriNfcNdefMap_Process has to be done once
 * the action has been triggered.
 *
 * NOTE: Please refer the header file for more information.
@@ -451,7 +454,7 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
                                   uint8_t             Offset)
 {
     NFCSTATUS   status = NFCSTATUS_PENDING;
-    uint8_t     StatusChk=0; 
+    uint8_t     StatusChk=0;
 
      if (     (PacketData          == NULL)
         ||  ( NdefMap             == NULL )
@@ -466,12 +469,12 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
     {
         /*  Invalid input parameter error   */
         status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,NFCSTATUS_INVALID_PARAMETER);
-    }    
-    else if (( NdefMap->CardState == PH_NDEFMAP_CARD_STATE_INVALID) && 
-        (PH_FRINFC_NDEFMAP_TOPAZ_CARD != NdefMap->CardType) && 
+    }
+    else if (( NdefMap->CardState == PH_NDEFMAP_CARD_STATE_INVALID) &&
+        (PH_FRINFC_NDEFMAP_TOPAZ_CARD != NdefMap->CardType) &&
         (PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD != NdefMap->CardType))
     {
-        /*  Card is in invalid state, cannot have any read/write 
+        /*  Card is in invalid state, cannot have any read/write
         operations*/
         status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,\
             NFCSTATUS_INVALID_FORMAT);
@@ -489,19 +492,19 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
         *NdefMap->WrNdefPacketLength = 0;
 
     }
-    else 
+    else
     {
         /*  Check the offset given by the user
-        If the offset is 1 (SEEK_BEGIN), reset everything and start 
+        If the offset is 1 (SEEK_BEGIN), reset everything and start
         writing from the first Byte of the card.
         else if offset is 0 (PH_FRINFC_NDEFMAP_SEEK_CUR), continue writing
         No need to reset the parameters.  */
-         if (( NdefMap->CardState == PH_NDEFMAP_CARD_STATE_INVALID) && 
+         if (( NdefMap->CardState == PH_NDEFMAP_CARD_STATE_INVALID) &&
             (PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD == NdefMap->CardType))
         {
             /* If Topaz Dynamic card CC bytes are not valid then also allow writing,
             If card is really good then writing will be done properly and reading can be performed,
-            otherwise writing or reading will fail. so, setting card state to  
+            otherwise writing or reading will fail. so, setting card state to
             NdefMap->CardState = PH_NDEFMAP_CARD_STATE_READ_WRITE */
             NdefMap->CardState = PH_NDEFMAP_CARD_STATE_READ_WRITE;
         }
@@ -512,10 +515,10 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
             *NdefMap->DataCount = 0;
         }
 
-        if ( (NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_UL_CARD) || 
+        if ( (NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_UL_CARD) ||
             (NdefMap->CardType == PH_FRINFC_NDEFMAP_ISO14443_4A_CARD))
         {
-            if (( (NdefMap->PrevOperation == PH_FRINFC_NDEFMAP_READ_OPE) && (Offset != PH_FRINFC_NDEFMAP_SEEK_BEGIN )) || 
+            if (( (NdefMap->PrevOperation == PH_FRINFC_NDEFMAP_READ_OPE) && (Offset != PH_FRINFC_NDEFMAP_SEEK_BEGIN )) ||
                 ( (Offset == PH_FRINFC_NDEFMAP_SEEK_CUR) && (*NdefMap->DataCount == 0 )))
             {
                 /*  A WRITE operation cannot be done if the previuos operation was READ
@@ -542,11 +545,14 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
 
 #ifndef PH_FRINFC_MAP_DESFIRE_DISABLED
                 case PH_FRINFC_NDEFMAP_ISO14443_4A_CARD :
+#ifdef DESFIRE_EV1
+                case PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 :
+#endif /* #ifdef DESFIRE_EV1 */
                     /*  Desfire card selected. Call Desfire Write */
                     status =  phFriNfc_Desfire_WrNdef(  NdefMap,
                         PacketData,
                         PacketDataLength,
-                        Offset);                                                
+                        Offset);
                     break;
 #endif  /* PH_FRINFC_MAP_DESFIRE_DISABLED */
 
@@ -600,7 +606,7 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
                         Offset);
                     break;
 #endif  /* PHFRINFC_OVRHAL_MOCKUP */
-                default : 
+                default :
                     /*  Unknown card type. Return error */
                     status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                         NFCSTATUS_INVALID_REMOTE_DEVICE);
@@ -614,15 +620,15 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
 /*!
 * Check whether a particular Remote Device is NDEF compliant.
 *
-* The function initiates the ndef compliancy check. 
+* The function initiates the ndef compliancy check.
 *
 * This is a main check ndef api.Internally,depending upon the different
 * opmodes,respective mifare/desfire checkNdef apis are called.
-* In future this can be extended to check any types of card ndef 
+* In future this can be extended to check any types of card ndef
 * compliancy.
 *
 * It performs a reset of the state and starts the action (state machine).
-* A periodic call of the \ref phFriNfcNdefMap_Process has to be done once 
+* A periodic call of the \ref phFriNfcNdefMap_Process has to be done once
 * the action has been triggered.
 *
 * NOTE: Please refer the header file for more information.
@@ -656,12 +662,12 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
         {
             /*
             * 1.Changed
-            *   CardInfo106 Replace with the ReaderA_Info. 
+            *   CardInfo106 Replace with the ReaderA_Info.
             */
 
             sak = NdefMap->psRemoteDevInfo->RemoteDevInfo.Iso14443A_Info.Sak;
 
-            /* 
+            /*
             * 3. Changed
             *    Description: Opmode replace with RemDevType.
             */
@@ -673,41 +679,41 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
             case phHal_eISO14443_3A_PICC:
                 /*  Remote device is Mifare card . Check for Mifare
                 NDEF compliancy */
-                if(0x00 == sak) 
+                if(0x00 == sak)
                 {
                     /*  The SAK/Sel_Res says the card is of the type
                     Mifare UL */
 #ifndef PH_FRINFC_MAP_MIFAREUL_DISABLED
                     status = phFriNfc_MifareUL_ChkNdef( NdefMap);
 #else   /* PH_FRINFC_MAP_MIFAREUL_DISABLED*/
-                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                        NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                        NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_MIFAREUL_DISABLED*/
                 }
-                else if ((0x08 == (sak & 0x18)) || 
-                        (0x18 == (sak & 0x18))) 
+                else if ((0x08 == (sak & 0x18)) ||
+                        (0x18 == (sak & 0x18)))
                 {
                     /*  The SAK/Sel_Res says the card is of the type
                     Mifare Standard */
 #ifndef PH_FRINFC_MAP_MIFARESTD_DISABLED
                     status = phFriNfc_MifareStdMap_ChkNdef( NdefMap);
 #else   /* PH_FRINFC_MAP_MIFARESTD_DISABLED*/
-                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                        NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                        NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_MIFARESTD_DISABLED*/
                 }
                 else
                 {
-                    /*  Invalid Mifare UL card, as the remote device 
-                    info - opmode says its a Mifare UL card but, 
+                    /*  Invalid Mifare UL card, as the remote device
+                    info - opmode says its a Mifare UL card but,
                     The SAK/Sel_Res is wrong */
-                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                         NFCSTATUS_INVALID_REMOTE_DEVICE);
                 }
                 break;
             case phHal_eISO14443_B_PICC:
-                {                   
-                    status = phFriNfc_Desfire_ChkNdef(NdefMap);                                     
+                {
+                    status = phFriNfc_Desfire_ChkNdef(NdefMap);
                 }
                 break;
             case  phHal_eISO14443_A_PICC :
@@ -720,16 +726,16 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
 #ifndef PH_FRINFC_MAP_DESFIRE_DISABLED
                     status = phFriNfc_Desfire_ChkNdef(NdefMap);
 #else   /* PH_FRINFC_MAP_DESFIRE_DISABLED*/
-                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                        NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                        NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_DESFIRE_DISABLED*/
                 }
                 else
                 {
-                    /*  Invalid Desfire card, as the remote device 
-                    info - opmode says its a desfire card but, 
+                    /*  Invalid Desfire card, as the remote device
+                    info - opmode says its a desfire card but,
                     The SAK/Sel_Res is wrong */
-                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                         NFCSTATUS_INVALID_REMOTE_DEVICE);
                 }
                 break;
@@ -744,8 +750,8 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
 #endif /* #ifndef PH_HAL4_ENABLE */
                 status = phFriNfc_Felica_ChkNdef(NdefMap);
 #else   /* PH_FRINFC_MAP_FELICA_DISABLED*/
-                status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                    NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                    NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED*/
 
                 break;
@@ -758,8 +764,8 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
                 NdefMap->OpModeType[1] = phHal_eOpModesArrayTerminator;
                 status = phFriNfc_Felica_ChkNdef(NdefMap);
 #else   /* PH_FRINFC_MAP_FELICA_DISABLED*/
-                status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                    NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                    NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED*/
                 break;
 #endif
@@ -770,16 +776,16 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
 #ifdef PH_HAL4_ENABLE
 #ifndef PH_FRINFC_MAP_TOPAZ_DISABLED
             /* Decide on the Header bytes to know the
-                   Type of the Topaz card.Card could be Static or 
+                   Type of the Topaz card.Card could be Static or
                    Dynamic type. These are of type NFFC-NDEF Data Application*/
-                if ( NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.HeaderRom0 
+                if ( NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.HeaderRom0
                                 == PH_FRINFC_TOPAZ_HEADROM0_VAL)
                 {
 
                         status = phFriNfc_TopazMap_ChkNdef(NdefMap);
                 }
 #ifndef PH_FRINFC_MAP_TOPAZ_DYNAMIC_DISABLED
-                else if( NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.HeaderRom0 
+                else if( NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.HeaderRom0
                                 == PH_FRINFC_TOPAZ_DYNAMIC_HEADROM0_VAL)
                 {
 
@@ -789,7 +795,7 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
                 else
                 {
 
-                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                            NFCSTATUS_INVALID_REMOTE_DEVICE);
 
                 }
@@ -804,19 +810,19 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
 #ifndef PH_FRINFC_MAP_TOPAZ_DISABLED
                     status = phFriNfc_TopazMap_ChkNdef(NdefMap);
 #else   /* PH_FRINFC_MAP_TOPAZ_DISABLED*/
-                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                        NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                        NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_TOPAZ_DISABLED*/
                 }
                 else
-                { 
-                    /*  Invalid Topaz card, as the remote device 
-                    info - opmode says its a desfire card but, 
+                {
+                    /*  Invalid Topaz card, as the remote device
+                    info - opmode says its a desfire card but,
                     The SAK/Sel_Res is wrong */
-                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+                    status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                         NFCSTATUS_INVALID_REMOTE_DEVICE);
                 }
-#endif              
+#endif
                 break;
 
 #ifdef PHFRINFC_OVRHAL_MOCKUP
@@ -875,8 +881,8 @@ void phFriNfc_NdefMap_Process(  void        *Context,
                 /*  Remote device is Mifare Standard card */
                 phFriNfc_MifareStdMap_Process(NdefMap,Status);
 #else   /* PH_FRINFC_MAP_MIFARESTD_DISABLED*/
-                Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                    NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                    NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_MIFARESTD_DISABLED*/
             }
             else
@@ -885,8 +891,8 @@ void phFriNfc_NdefMap_Process(  void        *Context,
                 /*  Remote device is Mifare UL card */
                 phFriNfc_MifareUL_Process(NdefMap,Status);
 #else   /* PH_FRINFC_MAP_MIFAREUL_DISABLED*/
-                Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                    NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                    NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_MIFAREUL_DISABLED*/
             }
             break;
@@ -896,8 +902,8 @@ void phFriNfc_NdefMap_Process(  void        *Context,
             /*  Remote device is Desfire card */
             phFriNfc_Desfire_Process(NdefMap, Status);
 #else   /* PH_FRINFC_MAP_DESFIRE_DISABLED*/
-            Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                NFCSTATUS_INVALID_REMOTE_DEVICE);               
+            Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_DESFIRE_DISABLED*/
             break;
         case phHal_eISO14443_B_PICC:
@@ -910,8 +916,8 @@ void phFriNfc_NdefMap_Process(  void        *Context,
             /*  Remote device is Felica Smart card */
             phFriNfc_Felica_Process(NdefMap, Status);
 #else   /* PH_FRINFC_MAP_FELICA_DISABLED*/
-            Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                NFCSTATUS_INVALID_REMOTE_DEVICE);               
+            Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED*/
             break;
 
@@ -930,8 +936,8 @@ void phFriNfc_NdefMap_Process(  void        *Context,
             }
             else
             {
-                Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                NFCSTATUS_INVALID_REMOTE_DEVICE);   
+                Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                NFCSTATUS_INVALID_REMOTE_DEVICE);
 
             }
             break;
@@ -942,10 +948,10 @@ void phFriNfc_NdefMap_Process(  void        *Context,
 #ifdef PHFRINFC_OVRHAL_MOCKUP
         case phHal_eOpModesMockup:
             /*  Remote device is Desfire card */
-            phFriNfc_Mockup_Process(NdefMap, Status);     
+            phFriNfc_Mockup_Process(NdefMap, Status);
             break;
 #endif  /* PHFRINFC_OVRHAL_MOCKUP*/
-        default : 
+        default :
             /*  Remote device opmode not recognised.
             Probably not NDEF compliant */
             Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
@@ -1004,7 +1010,7 @@ NFCSTATUS phFriNfc_ChkAndParseTLV(phFriNfc_NdefMap_t    *NdefMap)
                 break;
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED */
 
-            default : 
+            default :
                 /*  Unknown card type. Return error */
                 status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,\
                     NFCSTATUS_INVALID_REMOTE_DEVICE);
@@ -1094,6 +1100,9 @@ NFCSTATUS phFriNfc_NdefMap_EraseNdef(phFriNfc_NdefMap_t *NdefMap)
 #endif  /* PHFRINFC_OVRHAL_MOCKUP */
             case  PH_FRINFC_NDEFMAP_MIFARE_UL_CARD :
             case  PH_FRINFC_NDEFMAP_ISO14443_4A_CARD :
+#ifdef DESFIRE_EV1
+            case  PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 :
+#endif /* #ifdef DESFIRE_EV1 */
             case  PH_FRINFC_NDEFMAP_MIFARE_STD_1K_CARD :
             case  PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD :
 #ifndef PH_FRINFC_MAP_TOPAZ_DISABLED
@@ -1112,15 +1121,15 @@ NFCSTATUS phFriNfc_NdefMap_EraseNdef(phFriNfc_NdefMap_t *NdefMap)
             case PH_FRINFC_NDEFMAP_FELICA_SMART_CARD :
 
 #ifndef PH_FRINFC_MAP_FELICA_DISABLED
-                /*  Felica card selected. Call to write EMPTY NDEF Msg */       
+                /*  Felica card selected. Call to write EMPTY NDEF Msg */
                 status =  phFriNfc_Felica_EraseNdef( NdefMap );
 #else   /* PH_FRINFC_MAP_FELICA_DISABLED*/
-                status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
-                    NFCSTATUS_INVALID_REMOTE_DEVICE);               
+                status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                    NFCSTATUS_INVALID_REMOTE_DEVICE);
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED*/
 
                 break;
-            default : 
+            default :
                 /*  Unknown card type. Return error */
                 status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                     NFCSTATUS_INVALID_REMOTE_DEVICE);
@@ -1156,11 +1165,11 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
 #ifndef PH_FRINFC_MAP_MIFAREUL_DISABLED
             case  PH_FRINFC_NDEFMAP_MIFARE_UL_CARD :
                 /*  Mifare UL card */
-                /*  The integration needs to ensure that the checkNdef 
+                /*  The integration needs to ensure that the checkNdef
                 function has been called before calling this function,
                 otherwise NdefMap->CardMemSize will be 0 */
                 *maxSize = NdefMap->MifareULContainer.RemainingSize;
-                /* In Mifare UL card, the actual size is the length field 
+                /* In Mifare UL card, the actual size is the length field
                 value of the TLV */
                 *actualSize = NdefMap->TLVStruct.ActualSize;
                 break;
@@ -1168,14 +1177,17 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
 
 #ifndef PH_FRINFC_MAP_DESFIRE_DISABLED
             case PH_FRINFC_NDEFMAP_ISO14443_4A_CARD :
+#ifdef DESFIRE_EV1
+            case PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 :
+#endif /* #ifdef DESFIRE_EV1 */
                 /*  Desfire card */
-                /*  The integration needs to ensure that the checkNdef 
+                /*  The integration needs to ensure that the checkNdef
                 function has been called before calling this function,
-                otherwise NdefMap->DesfireCapContainer.NdefFileSize 
+                otherwise NdefMap->DesfireCapContainer.NdefFileSize
                 will be 0 */
                 /* -2 bytes represents the size field bytes*/
                 *maxSize = NdefMap->DesfireCapContainer.NdefFileSize - 2;
-                /* In Desfire card, the actual size cant be calculated so 
+                /* In Desfire card, the actual size cant be calculated so
                 the actual size is given as 0xFFFFFFFF */
                 *actualSize = NdefMap->DesfireCapContainer.NdefDataLen;
                 break;
@@ -1184,22 +1196,22 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
 #ifndef PH_FRINFC_MAP_TOPAZ_DISABLED
             case PH_FRINFC_NDEFMAP_TOPAZ_CARD :
                 /*  Topaz card */
-                /*  The integration needs to ensure that the checkNdef 
+                /*  The integration needs to ensure that the checkNdef
                 function has been called before calling this function,
                 otherwise NdefMap->CardMemSize will be 0 */
                 *maxSize = NdefMap->TopazContainer.RemainingSize;
-                /* In Topaz card, the actual size is the length field value of the  
+                /* In Topaz card, the actual size is the length field value of the
                 TLV */
                 *actualSize = NdefMap->TLVStruct.BytesRemainLinTLV;
                 break;
 #ifndef PH_FRINFC_MAP_TOPAZ_DYNAMIC_DISABLED
             case PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD :
                 /*  Topaz 512 card */
-                /*  The integration needs to ensure that the checkNdef 
+                /*  The integration needs to ensure that the checkNdef
                 function has been called before calling this function,
                 otherwise NdefMap->CardMemSize will be 0 */
                 *maxSize = NdefMap->TopazContainer.NDEFRWSize;
-                /* In Topaz card, the actual size is the length field value of the  
+                /* In Topaz card, the actual size is the length field value of the
                 TLV */
                 *actualSize = NdefMap->TopazContainer.ActualNDEFMsgSize;
                 break;
@@ -1219,44 +1231,44 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
 
 #else /* #ifndef PH_HAL4_ENABLE */
 
-                while ((PH_FRINFC_MIFARESTD_NDEF_COMP == 
-                        NdefMap->StdMifareContainer.aid[count_index]) && 
-                        (count_index < 
+                while ((PH_FRINFC_MIFARESTD_NDEF_COMP ==
+                        NdefMap->StdMifareContainer.aid[count_index]) &&
+                        (count_index <
                         PH_FRINFC_NDEFMAP_MIFARESTD_TOTALNO_BLK))
                 {
                     actual_sect_index++;
                     count_index++;
                 }
                 /* Total number of sectors in 1k = 16 (0 to 15, MAD sector number = 0)
-                    Total number of sectors in 4k = 40 (0 to 39, 
-                        MAD sector number = 0 and 16, After block number 31, each sector 
+                    Total number of sectors in 4k = 40 (0 to 39,
+                        MAD sector number = 0 and 16, After block number 31, each sector
                         has 16 blocks)
-                    Every last block of the sector is the sector header, So the blocks 
-                    that can be read or written in each sector is always 
+                    Every last block of the sector is the sector header, So the blocks
+                    that can be read or written in each sector is always
                         (number of blocks in each sector - 1)
-                    No of blocks in the one sector till the sector number 0 to 31 
-                        (total 32 sectors) = 
+                    No of blocks in the one sector till the sector number 0 to 31
+                        (total 32 sectors) =
                         4 blocks, So blocks that can be read/write = (4 - 1 = 3 blocks)
-                    No of blocks in the one sector after the sector number 31 to 39 = 
+                    No of blocks in the one sector after the sector number 31 to 39 =
                         16 blocks, So blocks that can be read/write = (16 - 1 = 15 blocks)
-                    Each block has 16 bytes 
+                    Each block has 16 bytes
                     To calculate number of bytes in the sector, depending on the number
                     of blocks multiplied by 16
                 */
-                if (PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD == 
+                if (PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD ==
                     NdefMap->CardType)
-                {                    
+                {
                     if (actual_sect_index > 32)
                     {
                         sect_index = (actual_sect_index - 32);
-                        /* Here, 30 is used because block number 0 and 16 are MAD blocks 
-                        which cannot be used for reading and writing data 
+                        /* Here, 30 is used because block number 0 and 16 are MAD blocks
+                        which cannot be used for reading and writing data
                         3 and 15 are blocks in each sector which can be read/write
                         3 indicates the sector is in between (0 and 31)
                         15 indicates the sector is in between (32 to 39)
-                        16 is always number of bytes in each block 
-                        4 is used because each NDEF write has to write using the 
-                            TLV format and T & L takes 4 bytes length and V is the 
+                        16 is always number of bytes in each block
+                        4 is used because each NDEF write has to write using the
+                            TLV format and T & L takes 4 bytes length and V is the
                             input data
                         */
                         *maxSize = (((30 * (16 * 3)) + (sect_index * (16 * 15))) - 4);
@@ -1272,7 +1284,7 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
                 }
                 else
                 {
-                    /* Here, 16 is always number of bytes in each block 
+                    /* Here, 16 is always number of bytes in each block
                         3 indicates the sector is in between (0 and 31) */
                     if (actual_sect_index > NdefMap->StdMifareContainer.SectorIndex)
                     {
@@ -1280,7 +1292,7 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
                     }
                     *maxSize = (((actual_sect_index - 1) * (16 * 3)) - 4);
                 }
-                
+
 #endif /* #ifndef PH_HAL4_ENABLE */
                 *actualSize = NdefMap->TLVStruct.BytesRemainLinTLV;
 
@@ -1298,20 +1310,20 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
                 *actualSize = *actualSize << 16;
                 *actualSize += NdefMap->FelicaAttrInfo.LenBytes[1];
                 *actualSize = *actualSize << 8;
-                *actualSize += NdefMap->FelicaAttrInfo.LenBytes[2];                
+                *actualSize += NdefMap->FelicaAttrInfo.LenBytes[2];
                 break;
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED */
 
 #ifdef PHFRINFC_OVRHAL_MOCKUP
             case PH_FRINFC_NDEFMAP_MOCKUP_CARD :
                 *maxSize = 0xFFFFFFFF;
-                /* In Desfire card, the actual size cant be calculated so 
+                /* In Desfire card, the actual size cant be calculated so
                 the actual size is given as 0xFFFFFFFF */
-                *actualSize = 0xFFFFFFFF;         
+                *actualSize = 0xFFFFFFFF;
                 break;
 #endif  /* PHFRINFC_OVRHAL_MOCKUP */
 
-            default : 
+            default :
                 /*  Unknown card type. Return error */
                 result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,\
                     NFCSTATUS_INVALID_REMOTE_DEVICE);
@@ -1322,10 +1334,10 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
 }
 
 #ifdef PHFRINFC_OVRHAL_MOCKUP
-NFCSTATUS phFriNfc_NdefMap_MockupCardSetter(phFriNfc_NdefMap_t *NdefMap, 
-                                            uint8_t *NdefData, 
-                                            uint32_t NdefActualSize, 
-                                            uint32_t NdefMaxSize, 
+NFCSTATUS phFriNfc_NdefMap_MockupCardSetter(phFriNfc_NdefMap_t *NdefMap,
+                                            uint8_t *NdefData,
+                                            uint32_t NdefActualSize,
+                                            uint32_t NdefMaxSize,
                                             uint32_t CardSize)
 {
     NFCSTATUS Status = NFCSTATUS_SUCCESS;
@@ -1333,15 +1345,15 @@ NFCSTATUS phFriNfc_NdefMap_MockupCardSetter(phFriNfc_NdefMap_t *NdefMap,
     if((NdefData != NULL) && (NdefMap != NULL))
     {
         // OK we can set
-        NdefMap->MochupContainer.NdefData       = NdefData; 
+        NdefMap->MochupContainer.NdefData       = NdefData;
         NdefMap->MochupContainer.NdefActualSize = NdefActualSize;
         NdefMap->MochupContainer.NdefMaxSize    = NdefMaxSize;
         NdefMap->MochupContainer.CardSize       = CardSize;
         NdefMap->MochupContainer.CurrentBlock   = 0;
 
-    } else 
+    } else
     {
-        Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_PARAMETER); 
+        Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_PARAMETER);
     }
     return Status;
 }
