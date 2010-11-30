@@ -625,9 +625,6 @@ void phFriNfc_Desfire_Process(void       *Context,
     uint16_t            NLength = 0,
                         SendRecLen=0;
     uint32_t            BytesRead = 0;
-#ifdef DESFIRE_EV1
-    static uint8_t      card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD;
-#endif /* #ifdef DESFIRE_EV1 */
 
 
     /*  Sujatha P: Fix for 0000255/0000257:[gk] MAP:Handling HAL Errors */
@@ -692,8 +689,7 @@ void phFriNfc_Desfire_Process(void       *Context,
                     (NdefMap->SendRecvBuf[(*(NdefMap->SendRecvLength) - 1)] ==
                     PH_FRINFC_NDEFMAP_DESF_RAPDU_SW2_BYTE))
                 {
-                    card_type = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1;
-                    NdefMap->CardType = card_type;
+                    NdefMap->CardType = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1;
 
                     Status = phFriNfc_Desfire_SelectFile(NdefMap);
 
@@ -819,7 +815,7 @@ void phFriNfc_Desfire_Process(void       *Context,
                 {
                     NdefMap->DespOpFlag = PH_FRINFC_NDEFMAP_DESF_GET_LEN_OP;
 #ifdef DESFIRE_EV1
-                    if (PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 == card_type)
+                    if (PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1 == NdefMap->CardType)
                     {
                         Status = phFriNfc_Desfire_SelectFile(NdefMap);
                     }
@@ -899,9 +895,7 @@ void phFriNfc_Desfire_Process(void       *Context,
                         if ( Status == NFCSTATUS_SUCCESS )
                         {
                             /*Set the card type to Desfire*/
-#ifdef DESFIRE_EV1
-                            NdefMap->CardType = card_type;
-#else
+#ifndef DESFIRE_EV1
                             NdefMap->CardType = PH_FRINFC_NDEFMAP_ISO14443_4A_CARD;
 #endif /* #ifdef DESFIRE_EV1 */
                             /*Set the state to specify True for Ndef Compliant*/
