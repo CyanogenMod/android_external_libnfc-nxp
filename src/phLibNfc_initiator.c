@@ -963,6 +963,7 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
                 (phHal_eMifare_PICC == pRmtdev_info->RemDevType) && 
                 (0x00 != pRmtdev_info->RemoteDevInfo.Iso14443A_Info.Sak))
         {
+            gpphLibContext->LastTrancvSuccess = FALSE;
             trans_status = NFCSTATUS_FAILED;
             /* card type is mifare 1k/4k, then reconnect */
             trans_status = phHal4Nfc_Connect(gpphLibContext->psHwReference,  
