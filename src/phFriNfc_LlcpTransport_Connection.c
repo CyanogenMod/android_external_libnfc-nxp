@@ -2369,6 +2369,9 @@ NFCSTATUS phLibNfc_LlcpTransport_ConnectionOriented_Disconnect(phFriNfc_LlcpTran
    pLlcpSocket->pfSocketDisconnect_Cb = pDisconnect_RspCb;
    pLlcpSocket->pDisonnectContext = pContext;
 
+   /* Set the socket in connecting state */
+   pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketDisconnecting;
+
    /* Test if a send IFRAME is pending with this socket */
    if((pLlcpSocket->bSocketSendPending == TRUE) || (pLlcpSocket->bSocketRecvPending == TRUE))
    {
@@ -2419,9 +2422,6 @@ NFCSTATUS phLibNfc_LlcpTransport_ConnectionOriented_Disconnect(phFriNfc_LlcpTran
 
       /* Store the index of the socket */
       pLlcpSocket->psTransport->socketIndex = pLlcpSocket->index;
-
-      /* Set the socket in connecting state */
-      pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketDisconnecting;
 
       status =  phFriNfc_Llcp_Send(pLlcpSocket->psTransport->pLlcp,
                                    &pLlcpSocket->sLlcpHeader,
