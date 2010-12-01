@@ -1,18 +1,17 @@
 /*
- * Copyright (C) 2010 NXP Semiconductors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+*                    Copyright (c), NXP Semiconductors
+*
+*                       (C)NXP N.V.2007
+*         All rights are reserved. Reproduction in whole or in part is
+*        prohibited without the written consent of the copyright owner.
+*    NXP reserves the right to make changes without notice at any time.
+*   NXP makes no warranty, expressed, implied or statutory, including but
+*   not limited to any implied warranty of merchantability or fitness for any
+*  particular purpose, or that the use will not infringe any third party patent,
+*   copyright or trademark. NXP must not be liable for any loss or damage
+*                            arising from its use.
+*
+*/
 
 /*!
 * \file  phFriNfc_DesfireFormat.h
@@ -20,10 +19,10 @@
 *
 * Project: NFC-FRI
 *
-* $Date: Fri Jan 30 14:17:04 2009 $
-* $Author: ing07299 $
-* $Revision: 1.2 $
-* $Aliases: NFC_FRI1.1_WK906_R18_1,NFC_FRI1.1_WK908_PREP1,NFC_FRI1.1_WK908_R19_1,NFC_FRI1.1_WK910_PREP1,NFC_FRI1.1_WK910_R20_1,NFC_FRI1.1_WK912_PREP1,NFC_FRI1.1_WK912_R21_1,NFC_FRI1.1_WK914_PREP1,NFC_FRI1.1_WK914_R22_1,NFC_FRI1.1_WK914_R22_2,NFC_FRI1.1_WK916_R23_1,NFC_FRI1.1_WK918_R24_1,NFC_FRI1.1_WK920_PREP1,NFC_FRI1.1_WK920_R25_1,NFC_FRI1.1_WK922_PREP1,NFC_FRI1.1_WK922_R26_1,NFC_FRI1.1_WK924_PREP1,NFC_FRI1.1_WK924_R27_1,NFC_FRI1.1_WK926_R28_1,NFC_FRI1.1_WK928_R29_1,NFC_FRI1.1_WK930_R30_1,NFC_FRI1.1_WK934_PREP_1,NFC_FRI1.1_WK934_R31_1,NFC_FRI1.1_WK941_PREP1,NFC_FRI1.1_WK941_PREP2,NFC_FRI1.1_WK941_1,NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
+* $Date: Tue Jul 27 08:59:52 2010 $
+* $Author: ing02260 $
+* $Revision: 1.3 $
+* $Aliases:  $
 *
 */
 
@@ -104,8 +103,7 @@ enum{
 
 /* Create File command constants*/
 #define  PH_FRINFC_DESF_CREATE_AID_CMD                  0xCA
-/* This settings can be changed, depending on the requirement*/
-#define  PH_FRINFC_DESF_PICC_NFC_KEY_SETTING            0x0F    
+   
 /* Specifies the NFC Forum App Number of Keys*/
 #define  PH_FRINFC_DESF_NFCFORUM_APP_NO_OF_KEYS         0x01
 
