@@ -126,7 +126,7 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
                       in general bytes*/
                     if(puConfig->nfcIPConfig.generalBytesLength == 0)
                     {
-                        Hal4Ctxt->uConfig.nfcIPConfig.generalBytesLength = 0x30;
+                        Hal4Ctxt->uConfig.nfcIPConfig.generalBytesLength = 0x00;
                         (void)memset(Hal4Ctxt->uConfig.nfcIPConfig.generalBytes,
                                     0,Hal4Ctxt->uConfig.nfcIPConfig.generalBytesLength
                                     );

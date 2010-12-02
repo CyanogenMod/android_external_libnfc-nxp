@@ -1760,7 +1760,6 @@ phHciNfc_NfcIP_SetATRInfo(
     NFCSTATUS                   status = NFCSTATUS_SUCCESS;
 
     if( (NULL == psHciContext) || (NULL == pHwRef) || (NULL == atr_info) || 
-        (atr_info->generalBytesLength == 0) ||
         (atr_info->generalBytesLength > NFCIP_ATR_MAX_LENGTH))
     {
         status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_INVALID_PARAMETER);
