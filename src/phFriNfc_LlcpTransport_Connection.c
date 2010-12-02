@@ -120,6 +120,7 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
 
             /* Call the Reject Callback */
             psTempLlcpSocket.pfSocketSend_Cb(psTempLlcpSocket.pRejectContext,status);
+            psTempLlcpSocket.pfSocketSend_Cb = NULL;
          }break;
 
       case phFriNfc_LlcpTransportSocket_eSocketConnected:
@@ -127,10 +128,7 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
             if(psTransport->pSocketTable[psTransport->socketIndex].sLlcpHeader.ptype == PHFRINFC_LLCP_PTYPE_I && psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb != NULL)
             {
                psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb(psTransport->pSocketTable[psTransport->socketIndex].pSendContext,status);
-               if(psTransport->pSocketTable[psTransport->socketIndex].bSocketSendPending != TRUE)
-               {
-                  psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb = NULL;
-               }
+               psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb = NULL;
             }
          }break;
       }
@@ -730,6 +728,7 @@ static void Handle_ConnectionFrame(phFriNfc_LlcpTransport_t      *psTransport,
                /* Get the ListenCB of the socket */
                pListen_Cb = psLocalLlcpSocket->pfSocketListen_Cb;
                pListenContext = psLocalLlcpSocket->pListenContext;
+               psLocalLlcpSocket->pfSocketListen_Cb = NULL;
                break;
             }
          }
@@ -750,6 +749,7 @@ static void Handle_ConnectionFrame(phFriNfc_LlcpTransport_t      *psTransport,
               /* Get the Listen CB and the Context of the socket */
                pListen_Cb = psLocalLlcpSocket->pfSocketListen_Cb;
                pListenContext = psLocalLlcpSocket->pListenContext;
+               psLocalLlcpSocket->pfSocketListen_Cb = NULL;
               break;
            }
         }
@@ -1092,6 +1092,7 @@ static void Handle_DisconnetModeFrame(phFriNfc_LlcpTransport_t      *psTransport
                if (psLocalLlcpSocket->pfSocketDisconnect_Cb != NULL)
                {
                   psLocalLlcpSocket->pfSocketDisconnect_Cb(psLocalLlcpSocket->pDisonnectContext,NFCSTATUS_SUCCESS);
+                  psLocalLlcpSocket->pfSocketDisconnect_Cb = NULL;
                }
 
             }break;
@@ -1108,6 +1109,7 @@ static void Handle_DisconnetModeFrame(phFriNfc_LlcpTransport_t      *psTransport
                {
                   /* Call Connect CB */
                   psLocalLlcpSocket->pfSocketConnect_Cb(psLocalLlcpSocket->pConnectContext,dmOpCode,NFCSTATUS_FAILED);
+                  psLocalLlcpSocket->pfSocketConnect_Cb = NULL;
                }
             }break;
          }
@@ -1258,6 +1260,7 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
 
                /* Call the Receive CB */
                psLocalLlcpSocket->pfSocketRecv_Cb(psLocalLlcpSocket->pRecvContext, NFCSTATUS_SUCCESS);
+               psLocalLlcpSocket->pfSocketRecv_Cb = NULL;
 
                /* Test if a send is pending with this socket */
                if(psLocalLlcpSocket->bSocketSendPending == TRUE && (psLocalLlcpSocket->socket_VS != (psLocalLlcpSocket->socket_VSA + psLocalLlcpSocket->remoteRW)))
