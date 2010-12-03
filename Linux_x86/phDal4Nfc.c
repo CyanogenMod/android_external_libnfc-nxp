@@ -289,6 +289,9 @@ NFCSTATUS phDal4Nfc_ConfigRelease( void *pHwRef)
    
    DAL_PRINT("phDal4Nfc_ConfigRelease ");
 
+   /* Shutdown NFC Chip */
+   phDal4Nfc_Reset(0);
+
    if (gDalContext.hw_valid == TRUE)
    {
       /* Kill the read and write threads */
@@ -475,8 +478,14 @@ PURPOSE: Cancel the Read wait function.
 
 NFCSTATUS phDal4Nfc_ReadWaitCancel( void *pContext, void *pHwRef)
 {
-   /* not used */
-   DAL_PRINT("phDal4Nfc_ReadWaitCancel"); 
+   DAL_PRINT("phDal4Nfc_ReadWaitCancel");
+
+   /* unlock read semaphore */
+   sem_post(&nfc_read_sem);
+
+   /* Stop the reader thread */
+   gReadWriteContext.nReadThreadAlive = 0;
+
    return 0;
 }
 

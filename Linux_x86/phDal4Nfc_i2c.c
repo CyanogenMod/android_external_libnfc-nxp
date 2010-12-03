@@ -252,7 +252,7 @@ int phDal4Nfc_i2c_reset(long level)
     */
    if (level == 0) {
        LOGW("sleeping a little longer...");
-       usleep(10000);
+       usleep(50000);
    } else {
        usleep(10000);
    }
