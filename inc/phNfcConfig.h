@@ -141,7 +141,7 @@
 
 /**< Default Session ID for Initialisation */
 #ifndef DEFAULT_SESSION
-#define DEFAULT_SESSION           "goog4"
+#define DEFAULT_SESSION           "android1"
 #endif
 
 
@@ -323,7 +323,7 @@
 /**< Macro to Enable the Peer to Peer Feature */
 #define ENABLE_P2P
 
-#define DEFAULT_NFCIP_MODE_SUPPORT      0x00U // to disable P2P feature
+#define DEFAULT_NFCIP_MODE_SUPPORT      0x0FU
 
 
 /**< Macro to Enable the ISO14443-B Feature */
