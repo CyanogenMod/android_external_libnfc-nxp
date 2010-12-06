@@ -1,17 +1,18 @@
 /*
-*                    Copyright (c), NXP Semiconductors
-*
-*                       (C)NXP Electronics N.V.2007
-*         All rights are reserved. Reproduction in whole or in part is
-*        prohibited without the written consent of the copyright owner.
-*    NXP reserves the right to make changes without notice at any time.
-*   NXP makes no warranty, expressed, implied or statutory, including but
-*   not limited to any implied warranty of merchantability or fitness for any
-*  particular purpose, or that the use will not infringe any third party patent,
-*   copyright or trademark. NXP must not be liable for any loss or damage
-*                            arising from its use.
-*
-*/
+ * Copyright (C) 2010 NXP Semiconductors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*!
 * \file  phFriNfc_DesfireFormat.c
