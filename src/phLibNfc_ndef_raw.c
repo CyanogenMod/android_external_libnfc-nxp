@@ -856,6 +856,7 @@ void phLibNfc_Ndef_CheckNdef_Cb(void *pContext,NFCSTATUS status)
 
     Ndef_Info.ActualNdefMsgLength = 0;
     Ndef_Info.MaxNdefMsgLength = 0;
+    Ndef_Info.NdefCardState = PHLIBNFC_NDEF_CARD_INVALID;
     if(pLibNfc_Ctxt != gpphLibContext)
     {    /*wrong context returned from below layer*/
         phOsalNfc_RaiseException(phOsalNfc_e_InternalErr,1);
@@ -989,6 +990,39 @@ void phLibNfc_Ndef_CheckNdef_Cb(void *pContext,NFCSTATUS status)
             gpphLibContext->CBInfo.pClientCkNdefCntx = NULL;
             if(NULL != pClientCb)
             {
+                if (!RetStatus)
+                {
+                    switch (pLibNfc_Ctxt->ndef_cntx.psNdefMap->CardState)
+                    {
+                        case PH_NDEFMAP_CARD_STATE_INITIALIZED:
+                        {
+                            Ndef_Info.NdefCardState = 
+                                            PHLIBNFC_NDEF_CARD_INITIALISED;
+                            break;
+                        }
+
+                        case PH_NDEFMAP_CARD_STATE_READ_ONLY:
+                        {
+                            Ndef_Info.NdefCardState = 
+                                            PHLIBNFC_NDEF_CARD_READ_ONLY;
+                            break;
+                        }
+
+                        case PH_NDEFMAP_CARD_STATE_READ_WRITE:
+                        {
+                            Ndef_Info.NdefCardState = 
+                                            PHLIBNFC_NDEF_CARD_READ_WRITE;
+                            break;
+                        }
+
+                        default:
+                        {
+                            Ndef_Info.NdefCardState = 
+                                            PHLIBNFC_NDEF_CARD_INVALID;
+                            break;
+                        }
+                    }
+                }
                 /* call the upper check ndef callback */
                 pClientCb(pUpperLayerContext,Ndef_Info,RetStatus);
             }
@@ -1068,6 +1102,7 @@ STATIC void phLibNfc_Ndef_ChkNdef_Pchk_Cb(void   *pContext,
         gpphLibContext->CBInfo.pClientCkNdefCntx = NULL;
         if(NULL != pClientCb)
         {
+            Ndef_Info.NdefCardState = PHLIBNFC_NDEF_CARD_INVALID;
             /* call the upper check ndef callback */
             pClientCb(pUpperLayerContext,Ndef_Info,RetStatus);
         }

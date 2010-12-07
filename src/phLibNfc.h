@@ -327,6 +327,22 @@ typedef struct phLibNfc_Ndef_Info
     
 } phLibNfc_Ndef_Info_t;
 
+/* As per NFC forum specification, the card can be in either of the below mentioned states 
+    INVALID - means card is NOT NFC forum specified tag. NDEF FORMAT can only be performed for 
+                the factory cards, other cards may or may not be formatted for NDEF FORMAT function.
+    INITIALISED - means card is NFC forum specified tag. But, in this state 
+                the user has to first call NDEF WRITE, because in INITIALISED state, there 
+                wont be any data i.e.,ACTUAL NDEF FILE SIZE is 0. After the first 
+                NDEF WRITE, NDEF READ and WRITE functions can be called any number of times.
+    READ WRITE - means card is NFC forum specified tag. User can use both 
+                NDEF READ and WRITE functions
+    READ ONLY - means card is NFC forum specified tag. User can only use 
+                NDEF READ. NDEF WRITE function will not work.    
+    */
+#define PHLIBNFC_NDEF_CARD_INVALID                      0x00U
+#define PHLIBNFC_NDEF_CARD_INITIALISED                  0x01U
+#define PHLIBNFC_NDEF_CARD_READ_WRITE                   0x02U
+#define PHLIBNFC_NDEF_CARD_READ_ONLY                    0x03U
 
 /**
 * \ingroup grp_lib_nfc
@@ -335,6 +351,7 @@ typedef struct phLibNfc_Ndef_Info
 */
 typedef struct phLibNfc_ChkNdef_Info
 {
+    uint8_t   NdefCardState;                    /**< Card state information */
     uint32_t  ActualNdefMsgLength;              /**< Indicates Actual length of NDEF Message in Tag */
     uint32_t  MaxNdefMsgLength;                 /**< Indicates Maximum Ndef Message length that Tag can hold*/ 
 } phLibNfc_ChkNdef_Info_t;
