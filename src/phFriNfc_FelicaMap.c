@@ -2943,9 +2943,13 @@ static NFCSTATUS   phFriNfc_Felica_HUpdateAttrInfo(phFriNfc_NdefMap_t *NdefMap)
                             {
                                 NdefMap->CardState = PH_NDEFMAP_CARD_STATE_READ_ONLY;
                             }
-                            else
+                            else if ( NdefMap->FelicaAttrInfo.RdWrFlag == 0x01 ) // additional check for R/W access
                             {
                                 NdefMap->CardState = PH_NDEFMAP_CARD_STATE_READ_WRITE;
+                            }
+                            else // otherwise invalid
+                            {
+                                NdefMap->CardState = PH_NDEFMAP_CARD_STATE_INVALID;
                             }
                             
                             NdefMap->FelicaAttrInfo.LenBytes[0] = NdefMap->SendRecvBuf[24];
