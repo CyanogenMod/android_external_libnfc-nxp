@@ -91,6 +91,9 @@ static NFCSTATUS phFriNfc_LlcpMac_Nfcip_Activate (phFriNfc_LlcpMac_t   *LlcpMac)
 static NFCSTATUS phFriNfc_LlcpMac_Nfcip_Deactivate (phFriNfc_LlcpMac_t   *LlcpMac)
 {
    NFCSTATUS status  = NFCSTATUS_SUCCESS;
+   phFriNfc_LlcpMac_Send_CB_t    pfSendCB;
+   phFriNfc_LlcpMac_Reveive_CB_t pfRecvCB;
+   void                          *pContext;
 
    if(NULL == LlcpMac)
    {
@@ -100,6 +103,40 @@ static NFCSTATUS phFriNfc_LlcpMac_Nfcip_Deactivate (phFriNfc_LlcpMac_t   *LlcpMa
    {
       /* Set the flag of LinkStatus to deactivate */
       LlcpMac->LinkState = phFriNfc_LlcpMac_eLinkDeactivated;
+   }
+
+   if (LlcpMac->SendPending)
+   {
+      /* Reset Flag */
+      LlcpMac->SendPending = FALSE;
+
+      /* Save context in local variables */
+      pfSendCB = LlcpMac->MacSend_Cb;
+      pContext = LlcpMac->MacSend_Context;
+
+      /* Reset the pointer to the Send Callback */
+      LlcpMac->MacSend_Cb = NULL;
+      LlcpMac->MacSend_Context = NULL;
+
+      /* Call Send callback */
+      pfSendCB(pContext, NFCSTATUS_FAILED);
+   }
+
+   if (LlcpMac->RecvPending)
+   {
+      /* Reset Flag */
+      LlcpMac->RecvPending = FALSE;
+
+      /* Save context in local variables */
+      pfRecvCB = LlcpMac->MacReceive_Cb;
+      pContext = LlcpMac->MacReceive_Context;
+
+      /* Reset the pointer to the Receive Callback */
+      LlcpMac->MacReceive_Cb = NULL;
+      LlcpMac->MacReceive_Context = NULL;
+
+      /* Call Receive callback */
+      pfRecvCB(pContext, NFCSTATUS_FAILED, NULL);
    }
 
    LlcpMac->LinkStatus_Cb(LlcpMac->LinkStatus_Context,
@@ -187,6 +224,7 @@ static void phFriNfc_LlcpMac_Nfcip_Receive_Cb(void       *pContext,
    LlcpMac->MacReceive_Context = NULL;
 
    /* Call the receive callback */
+   LlcpMac->RecvPending = FALSE;
    pfReceiveCB(pReceiveContext, Status, LlcpMac->psReceiveBuffer);
 
 #ifdef LLCP_CHANGES

@@ -933,9 +933,6 @@ static void phFriNfc_Llcp_Receive_CB( void               *pContext,
    NFCSTATUS                     result = NFCSTATUS_SUCCESS;
    phFriNfc_Llcp_sPacketHeader_t sPacketHeader;
 
-   /* Parse header */
-   phFriNfc_Llcp_Buffer2Header(psData->buffer, 0, &sPacketHeader);
-
    /* Check reception status and for pending disconnection */
    if ((status != NFCSTATUS_SUCCESS) || (Llcp->bDiscPendingFlag == TRUE))
    {
@@ -946,6 +943,9 @@ static void phFriNfc_Llcp_Receive_CB( void               *pContext,
       phFriNfc_Llcp_InternalDeactivate(Llcp);
       return;
    }
+
+   /* Parse header */
+   phFriNfc_Llcp_Buffer2Header(psData->buffer, 0, &sPacketHeader);
 
    if (sPacketHeader.ptype != PHFRINFC_LLCP_PTYPE_SYMM)
    {
