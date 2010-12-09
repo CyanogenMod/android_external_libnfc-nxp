@@ -46,7 +46,9 @@
 */
 #define PHLIBNFC_MAXNO_OF_SE        (0x02)
 
-typedef uint32_t    phLibNfc_Handle; 
+typedef uint32_t    phLibNfc_Handle;
+
+extern const unsigned char *nxp_nfc_full_version;
 
 
 /**
@@ -834,9 +836,9 @@ NFCSTATUS phLibNfc_Mgt_ConfigureDriver (pphLibNfc_sConfig_t     psConfig,
 NFCSTATUS phLibNfc_Mgt_UnConfigureDriver (void *                 pDriverHandle
                                           );
 
-NFCSTATUS phLibNfc_HW_Reset (long level);
+NFCSTATUS phLibNfc_HW_Reset ();
 
-NFCSTATUS phLibNfc_Download_Mode (long level);
+NFCSTATUS phLibNfc_Download_Mode ();
 
 /**
 * \ingroup grp_lib_nfc

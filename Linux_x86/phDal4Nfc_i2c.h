@@ -37,4 +37,3 @@ NFCSTATUS phDal4Nfc_i2c_open_and_configure(pphDal4Nfc_sConfig_t pConfig, void **
 int       phDal4Nfc_i2c_read(uint8_t * pBuffer, int nNbBytesToRead);
 int       phDal4Nfc_i2c_write(uint8_t * pBuffer, int nNbBytesToWrite);
 int 	  phDal4Nfc_i2c_reset(long level);
-int 	  phDal4Nfc_i2c_download(long level);

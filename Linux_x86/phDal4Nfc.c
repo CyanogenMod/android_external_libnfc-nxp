@@ -289,17 +289,15 @@ NFCSTATUS phDal4Nfc_ConfigRelease( void *pHwRef)
    
    DAL_PRINT("phDal4Nfc_ConfigRelease ");
 
-   /* Shutdown NFC Chip */
-   phDal4Nfc_Reset(0);
-
    if (gDalContext.hw_valid == TRUE)
    {
-      /* Kill the read and write threads */
-      gReadWriteContext.nReadThreadAlive = 0;
-      gReadWriteContext.nWriteThreadAlive = 0;
-      
       DAL_PRINT("Release Read Semaphore");
       sem_post(&nfc_read_sem);
+
+       /* Kill the read and write threads */
+      DAL_PRINT("Stop Reader Thread");
+      gReadWriteContext.nReadThreadAlive = 0;
+      gReadWriteContext.nWriteThreadAlive = 0;
 
       if (pthread_join(gReadWriteContext.nReadThread,  &pThreadReturn) != 0)
       {
@@ -311,6 +309,9 @@ NFCSTATUS phDal4Nfc_ConfigRelease( void *pHwRef)
 #ifdef USE_MQ_MESSAGE_QUEUE
        mq_close(nDeferedCallMessageQueueId);
 #endif
+
+       /* Shutdown NFC Chip */
+       phDal4Nfc_Reset(0);
 
       /* Close the link */
       gLinkFunc.close();
@@ -324,6 +325,7 @@ NFCSTATUS phDal4Nfc_ConfigRelease( void *pHwRef)
    gDalContext.hw_valid = FALSE;
    
    DAL_DEBUG("phDal4Nfc_ConfigRelease(): %04x\n", result);
+
 
    return result;
 }
@@ -483,9 +485,6 @@ NFCSTATUS phDal4Nfc_ReadWaitCancel( void *pContext, void *pHwRef)
    /* unlock read semaphore */
    sem_post(&nfc_read_sem);
 
-   /* Stop the reader thread */
-   gReadWriteContext.nReadThreadAlive = 0;
-
    return 0;
 }
 
@@ -526,8 +525,8 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
          gLinkFunc.open_and_configure = phDal4Nfc_uart_open_and_configure;
          gLinkFunc.read               = phDal4Nfc_uart_read;
          gLinkFunc.write              = phDal4Nfc_uart_write;
-	 gLinkFunc.download           = phDal4Nfc_uart_download;
-	 gLinkFunc.reset	      = phDal4Nfc_uart_reset;
+         gLinkFunc.download           = phDal4Nfc_uart_download;
+         gLinkFunc.reset              = phDal4Nfc_uart_reset;
       }
       break;
 
@@ -543,8 +542,7 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
          gLinkFunc.open_and_configure = phDal4Nfc_i2c_open_and_configure;
          gLinkFunc.read               = phDal4Nfc_i2c_read;
          gLinkFunc.write              = phDal4Nfc_i2c_write;
-	 gLinkFunc.download           = phDal4Nfc_i2c_download;
-	 gLinkFunc.reset	      = phDal4Nfc_i2c_reset;
+         gLinkFunc.reset              = phDal4Nfc_i2c_reset;
          break;
       }
 
@@ -615,13 +613,14 @@ FUNCTION: phDal4Nfc_Download
 PURPOSE: Put the PN544 in download mode, using the GPIO4 pin
 
 -----------------------------------------------------------------------------*/
-NFCSTATUS phDal4Nfc_Download(long level)
+NFCSTATUS phDal4Nfc_Download()
 {
    NFCSTATUS	retstatus = NFCSTATUS_SUCCESS;
 
-   DAL_DEBUG("phDal4Nfc_Download: GPIO4 to %d",level);
+   DAL_DEBUG("phDal4Nfc_Download: GPIO4 to %d",1);
 
-   retstatus = gLinkFunc.download(level);
+   usleep(10000);
+   retstatus = phDal4Nfc_Reset(2);
 
    return retstatus;
 }

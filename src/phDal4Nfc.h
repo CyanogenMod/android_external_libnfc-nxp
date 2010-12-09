@@ -627,7 +627,7 @@ phDal4Nfc_Reset(long level);
 
 extern 
 NFCSTATUS 
-phDal4Nfc_Download(long level);
+phDal4Nfc_Download();
 
 /******************** Function declarations *************************/
 

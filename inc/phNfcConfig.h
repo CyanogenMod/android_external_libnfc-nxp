@@ -367,7 +367,7 @@
 /* #define HOST_EMULATION */
 
 /**< Macro to Enable the Download Mode Feature */
-//#define FW_DOWNLOAD
+#define FW_DOWNLOAD
 
 /**< Macro to Enable the Firmware Download Timer */
 #define FW_DOWNLOAD_TIMER
@@ -376,7 +376,7 @@
 /* #define FW_DOWNLOAD_VERIFY */
 
 #ifndef FW_DOWNLOAD_VERIFY
-#define NXP_FW_INTEGRITY_CHK
+#define NXP_FW_INTEGRITY_CHK    1
 #endif
 
 #define UICC_CONNECTIVITY_PATCH

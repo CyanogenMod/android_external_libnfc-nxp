@@ -27,16 +27,15 @@
  */
 
 /* ---------------------------Include files ---------------------------------*/
+
 #include <phHal4Nfc.h>
 #include <phHal4Nfc_Internal.h>
 #include <phOsalNfc.h>
 #include <phHciNfc.h>
 #include <phLlcNfc.h>
 #include <phDal4Nfc.h>
-//#include <phDnldNfc.h>
+#include <phDnldNfc.h>
 #include <phOsalNfc_Timer.h>
-
-
 
 /* ------------------------------- Macros -----------------------------------*/
 #ifndef HAL_UNIT_TEST
@@ -78,6 +77,13 @@ static void phHal4Nfc_CloseComplete(
                                     phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,
                                     void *pInfo
                                     );
+
+static void phHal4Nfc_DownloadComplete(
+                                void *pContext,
+                                void *pHwRef,
+                                uint8_t type,
+                                void *pInfo
+                                );
 
 static NFCSTATUS phHal4Nfc_Configure_Layers(
                                 phNfcLayer_sCfg_t       **pphLayer
@@ -288,6 +294,44 @@ phHal4Nfc_Configure_Layers(
 }
 
 
+
+#ifdef ANDROID
+
+#define LOG_TAG "NFC-HCI"
+
+#include <utils/Log.h>
+#include <dlfcn.h>
+
+const unsigned char *nxp_nfc_full_version;
+const unsigned char *nxp_nfc_fw;
+
+int dlopen_firmware() {
+    void *p;
+
+    void *handle = dlopen("/system/lib/libpn544_fw.so", RTLD_NOW);
+    if (handle == NULL) {
+        LOGE("Could not open libpn544.so");
+        return -1;
+    }
+
+    p = dlsym(handle, "nxp_nfc_full_version");
+    if (p == NULL) {
+        LOGE("Could not link nxp_nfc_full_version");
+        return -1;
+    }
+    nxp_nfc_full_version = (unsigned char *)p;
+
+    p = dlsym(handle, "nxp_nfc_fw");
+    if (p == NULL) {
+        LOGE("Could not link nxp_nfc_fw");
+        return -1;
+    }
+    nxp_nfc_fw = (unsigned char *)p;
+
+    return 0;
+}
+#endif
+
 /**
  *  The open function called by the upper HAL when HAL4 is to be opened
  *  (initialized).
@@ -322,6 +366,10 @@ NFCSTATUS phHal4Nfc_Open(
     }
     else/*Do an initialization*/
     { 
+#ifdef ANDROID
+        dlopen_firmware();
+#endif
+
         /*If hal4 ctxt in Hwreference is NULL create a new context*/
         if(NULL == ((phHal_sHwReference_t *)psHwReference)->hal_context)
         {

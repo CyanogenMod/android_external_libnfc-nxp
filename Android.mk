@@ -27,6 +27,9 @@ LOCAL_SRC_FILES += src/phHal4Nfc_Emulation.c
 LOCAL_SRC_FILES += src/phHal4Nfc_P2P.c
 LOCAL_SRC_FILES += src/phHal4Nfc_Reader.c
 
+#phDnldNfc
+LOCAL_SRC_FILES += src/phDnldNfc.c
+
 #phHciNfc
 LOCAL_SRC_FILES += src/phHciNfc_AdminMgmt.c
 LOCAL_SRC_FILES += src/phHciNfc.c
@@ -100,8 +103,8 @@ LOCAL_SRC_FILES += Linux_x86/phDal4Nfc.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_i2c.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_messageQueueLib.c
 
-#LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DDEBUG -DLLC_TRACE -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common -fpic
-LOCAL_CFLAGS += -DNXP_MESSAGING -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common -fpic
+#LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DDEBUG -DDAL_TRACE -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common -fpic
+LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common -fpic
 
 ifeq ($(NFC_BUILD_VARIANT),debug)
 LOCAL_CFLAGS += -DDEBUG -D_DEBUG
@@ -122,7 +125,7 @@ LOCAL_CFLAGS += -I$(LOCAL_PATH)/src
 
 LOCAL_MODULE:= libnfc
 LOCAL_MODULE_TAGS := optional
-LOCAL_SHARED_LIBRARIES := libcutils libnfc_ndef
+LOCAL_SHARED_LIBRARIES := libcutils libnfc_ndef libdl
 
 include $(BUILD_SHARED_LIBRARY)
 

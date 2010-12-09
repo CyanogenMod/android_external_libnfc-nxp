@@ -54,7 +54,7 @@ typedef struct
    phDal4Nfc_link_open_and_configure_CB_t      open_and_configure;
    phDal4Nfc_link_read_CB_t                    read;
    phDal4Nfc_link_write_CB_t                   write;
-   phDal4Nfc_link_download_CB_t		       download;
+   phDal4Nfc_link_download_CB_t                download;
    phDal4Nfc_link_reset_CB_t                   reset;
 } phDal4Nfc_link_cbk_interface_t;
 
