@@ -1020,14 +1020,6 @@ static void phFriNfc_Llcp_Send_CB( void               *pContext,
    phFriNfc_Llcp_Send_CB_t          pfSendCB;
    void                             *pSendContext;
 
-   /* Check reception status */
-   if (status != NFCSTATUS_SUCCESS)
-   {
-      /* Error: Reception failed, link must be down */
-      phFriNfc_Llcp_InternalDeactivate(Llcp);
-      return;
-   }
-
    /* Call the upper layer callback if last packet sent was  */
    /* NOTE: if Llcp->psSendHeader is not NULL, this means that the send operation is still not initiated */
    if (Llcp->psSendHeader == NULL)
@@ -1043,6 +1035,13 @@ static void phFriNfc_Llcp_Send_CB( void               *pContext,
          /* Call the callback */
          (pfSendCB)(pSendContext, status);
       }
+   }
+
+   /* Check reception status */
+   if (status != NFCSTATUS_SUCCESS)
+   {
+       /* Error: Reception failed, link must be down */
+       phFriNfc_Llcp_InternalDeactivate(Llcp);
    }
 }
 
