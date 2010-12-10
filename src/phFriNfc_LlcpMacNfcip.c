@@ -242,7 +242,7 @@ static void phFriNfc_LlcpMac_Nfcip_Receive_Cb(void       *pContext,
    /* Test if a send is pending */
    if(LlcpMac->SendPending)
    {
-      Status = phFriNfc_LlcpMac_Nfcip_Send(LlcpMac,LlcpMac->psSendBuffer,LlcpMac->MacSend_Cb,LlcpMac->MacReceive_Context);
+      Status = phFriNfc_LlcpMac_Nfcip_Send(LlcpMac,LlcpMac->psSendBuffer,LlcpMac->MacSend_Cb,LlcpMac->MacSend_Context);
    }
 }
 }
