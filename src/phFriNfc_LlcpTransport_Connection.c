@@ -728,7 +728,6 @@ static void Handle_ConnectionFrame(phFriNfc_LlcpTransport_t      *psTransport,
                /* Get the ListenCB of the socket */
                pListen_Cb = psLocalLlcpSocket->pfSocketListen_Cb;
                pListenContext = psLocalLlcpSocket->pListenContext;
-               psLocalLlcpSocket->pfSocketListen_Cb = NULL;
                break;
             }
          }
@@ -749,7 +748,6 @@ static void Handle_ConnectionFrame(phFriNfc_LlcpTransport_t      *psTransport,
               /* Get the Listen CB and the Context of the socket */
                pListen_Cb = psLocalLlcpSocket->pfSocketListen_Cb;
                pListenContext = psLocalLlcpSocket->pListenContext;
-               psLocalLlcpSocket->pfSocketListen_Cb = NULL;
               break;
            }
         }
