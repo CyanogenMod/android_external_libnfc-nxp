@@ -563,6 +563,7 @@ STATIC void phLibNfc_RemoteDev_Connect_Cb(
     /*Check valid lib nfc context is returned from lower layer*/
     if((phLibNfc_LibContext_t *)pContext == gpphLibContext)
     {
+        gpphLibContext->LastTrancvSuccess = FALSE;
 
         /* Mark General Callback pending status as false*/
         gpphLibContext->status.GenCb_pending_status = FALSE;
