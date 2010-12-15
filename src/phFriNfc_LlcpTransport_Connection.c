@@ -325,6 +325,11 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
    else
    {
       /* Send CB error */
+      if(psTransport->pSocketTable[psTransport->socketIndex].sLlcpHeader.ptype == PHFRINFC_LLCP_PTYPE_I && psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb != NULL)
+      {
+         psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb(psTransport->pSocketTable[psTransport->socketIndex].pSendContext,status);
+         psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb = NULL;
+      }
    }
 }
 
