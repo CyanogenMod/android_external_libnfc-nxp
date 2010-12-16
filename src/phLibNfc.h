@@ -37,9 +37,11 @@
 #include <phLibNfcStatus.h>
 #include <phFriNfc_NdefRecord.h>
 #include <phNfcLlcpTypes.h>
+#include <phNfcConfig.h>
 #ifdef ANDROID
 #include <string.h>
 #endif
+
 /*!
 *\def PHLIBNFC_MAXNO_OF_SE
 *Defines maximum no of secured elements supported by PN544.
@@ -1361,6 +1363,73 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(phLibNfc_Handle                hRemoteDevic
                                      pphLibNfc_ConnectCallback_t    pNotifyConnect_RspCb,
                                      void*                          pContext
                                      );
+
+#ifdef RECONNECT_SUPPORT
+
+/**
+* \ingroup  grp_lib_nfc
+* \brief This function is used to to connect to NEXT Remote Device.
+*
+* This function is called only if there are more than one remote device is detected.
+* Once notification handler notified sucessfully discovered targets will be available in
+* \ref phLibNfc_RemoteDevList_t .Remote device list contains valid handles for discovered 
+* targets .Using this interface LibNfc client can connect to one out of 'n' discovered targets.
+* A new session is started after  connect operation is successful.
+* Similarly, if the user wants to connect to another handle. Libnfc client can select the handle and 
+* the previously connected device is replaced by present handle. The session ends with a
+* successful disconnect operation. 
+* Re-Connect operation on an already connected tag Reactivates the Tag. This Feature is not 
+* Valid for Jewel/Topaz Tags ,and hence a second re-connect if issued
+* without disconnecting a Jewel/Topaz tag always Fails.
+*
+* \note :In case multiple targets discovered LibNfc client can re-connect to only one target.
+*
+* \param[in]     hRemoteDevice       Handle of the target device obtained during discovery process.
+*
+* \param[in]    pNotifyReConnect_RspCb Client response callback to be to be 
+*                                    notified to indicate status of the request.
+*
+* \param[in]    pContext             Client context which will  be included in
+*                                    callback when the request is completed.
+*
+*\retval NFCSTATUS_PENDING           Request initiated, result will be informed via
+*                                    callback.
+*\retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters 
+*                                    could not be properly interpreted.
+*\retval NFCSTATUS_TARGET_LOST       Indicates target is lost.
+*\retval NFSCSTATUS_SHUTDOWN         shutdown in progress.
+*\retval NFCSTATUS_NOT_INITIALISED   Indicates stack is not yet initialized.
+*\retval NFCSTATUS_INVALID_HANDLE    Target handle is invalid.
+*
+*\retval NFCSTATUS_FAILED            Request failed.
+*
+*
+*\msc
+*LibNfcClient,LibNfc;
+*LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
+*LibNfcClient<-LibNfc   [label="pInitCb()",URL="\ref pphLibNfc_RspCb_t()"];
+*LibNfcClient=>LibNfc   [label="phLibNfc_RemoteDev_NtfRegister()",URL="\ref phLibNfc_RemoteDev_NtfRegister"];
+*LibNfcClient<<LibNfc   [label="NFCSTATUS_SUCCESS"];
+*LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_configureDiscovery()",URL="\ref phLibNfc_Mgt_ConfigureDiscovery"];
+*LibNfcClient<-LibNfc   [label="pConfigDiscovery_RspCb",URL="\ref pphLibNfc_RspCb_t"];
+*--- [label="Now Present multiple protocol Tag to be  discovered"];
+*LibNfcClient<-LibNfc [label="pNotificationHandler",URL="\ref phLibNfc_NtfRegister_RspCb_t"];
+*--- [label="TWO remote device information is received, So connect with one handle"];
+*LibNfcClient=>LibNfc [label="phLibNfc_RemoteDev_Connect()",URL="\ref phLibNfc_RemoteDev_Connect"];
+*LibNfcClient<-LibNfc [label="pNotifyConnect_RspCb",URL="\ref pphLibNfc_ConnectCallback_t"];
+*--- [label="Connect is successful, so transact using this handle. Now if user wants to switch to another handle then call Reconnect "];
+*LibNfcClient=>LibNfc [label="phLibNfc_RemoteDev_ReConnect()",URL="\ref phLibNfc_RemoteDev_ReConnect"];
+*LibNfcClient<-LibNfc [label="pNotifyReConnect_RspCb",URL="\ref pphLibNfc_ConnectCallback_t"];
+*
+*\endmsc
+*/
+NFCSTATUS 
+phLibNfc_RemoteDev_ReConnect (
+    phLibNfc_Handle                 hRemoteDevice,
+    pphLibNfc_ConnectCallback_t     pNotifyReConnect_RspCb,
+    void                            *pContext);
+
+#endif /* #ifdef RECONNECT_SUPPORT */
 
 /**
 * \ingroup  grp_lib_nfc

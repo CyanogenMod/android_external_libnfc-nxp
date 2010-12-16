@@ -362,6 +362,8 @@
  * to allow the UICC Communication */
 #define HOST_WHITELIST
 
+/**< Support reconnecting to a different handle on the same tag */
+#define RECONNECT_SUPPORT
 
 /**< Macro to Enable the Card Emulation Feature */
 /* #define HOST_EMULATION */

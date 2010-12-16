@@ -188,6 +188,42 @@ NFCSTATUS phHal4Nfc_Connect(
                 );
                 Hal4Ctxt->Hal4NextState = eHal4StateTargetActivate;
         }
+#ifdef RECONNECT_SUPPORT
+        else if (psRemoteDevInfo != 
+                    Hal4Ctxt->sTgtConnectInfo.psConnectedDevice)
+        {
+            phHal_sRemoteDevInformation_t           *ps_store_connected_device =
+                                                Hal4Ctxt->sTgtConnectInfo.psConnectedDevice;
+
+            RemoteDevCount = Hal4Ctxt->psADDCtxtInfo->nbr_of_devices;
+
+            while (0 != RemoteDevCount)
+            {
+                RemoteDevCount--;
+                /*Check if handle provided by upper layer matches with any 
+                  remote device in the list*/
+                if(psRemoteDevInfo == (Hal4Ctxt->rem_dev_list[RemoteDevCount]))
+                {
+                    break;
+                }
+            }/*End of while*/
+
+            if (ps_store_connected_device == 
+                Hal4Ctxt->sTgtConnectInfo.psConnectedDevice)
+            {
+                RetStatus = phHciNfc_Reactivate (Hal4Ctxt->psHciHandle,
+                                                (void *)psHwReference,
+                                                psRemoteDevInfo);
+
+                if (NFCSTATUS_PENDING == RetStatus)
+                {
+                    Hal4Ctxt->sTgtConnectInfo.psConnectedDevice = 
+                                    Hal4Ctxt->rem_dev_list[RemoteDevCount];
+                    Hal4Ctxt->Hal4NextState = eHal4StateTargetActivate;
+                }
+            }
+        }
+#endif /* #ifdef RECONNECT_SUPPORT */
         else if(NULL == Hal4Ctxt->sTgtConnectInfo.psConnectedDevice)
         {
             /*Wrong state to issue connect*/
