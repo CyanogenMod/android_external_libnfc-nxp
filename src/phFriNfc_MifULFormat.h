@@ -59,7 +59,11 @@
 #define PH_FRINFC_MFUL_FMT_WR_TLV              3 /*!< Write TLV */  
 #ifdef PH_NDEF_MIFARE_ULC
 #define PH_FRINFC_MFUL_FMT_WR_TLV1             4 /*!< Write TLV (second part) */ 
-#endif	/* #ifdef PH_NDEF_MIFARE_ULC */
+#endif  /* #ifdef PH_NDEF_MIFARE_ULC */
+#ifdef FRINFC_READONLY_NDEF
+#define PH_FRINFC_MFUL_FMT_RO_RD_16BYTES       5 /*!< Read only the tag */
+#define PH_FRINFC_MFUL_FMT_RO_WR_OTP_BYTES     6 /*!< Write OTP bytes to make the tag Read only */
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 /*@}*/
 
@@ -159,6 +163,29 @@ void phFriNfc_MfUL_Reset(phFriNfc_sNdefSmtCrdFmt_t    *NdefSmtCrdFmt);
  *
  */
 NFCSTATUS phFriNfc_MfUL_Format(phFriNfc_sNdefSmtCrdFmt_t    *NdefSmtCrdFmt);
+
+#ifdef FRINFC_READONLY_NDEF
+
+/*!
+ * \ingroup grp_fri_smart_card_formatting
+ *
+ * \brief Initiates the conversion of the already NDEF formatted tag to READ ONLY.
+ *
+ * \copydoc page_ovr  The function initiates the conversion of the already NDEF formatted
+ * tag to READ ONLY.After this formation, remote card would be properly Ndef Compliant and READ ONLY.
+ * Depending upon the different card type, this function handles formatting procedure.
+ *
+ * \param[in] phFriNfc_sNdefSmartCardFmt_t Pointer to a valid instance of the \ref phFriNfc_sNdefSmartCardFmt_t
+ *                             structure describing the component context.
+ * \retval  NFCSTATUS_PENDING   The action has been successfully triggered.
+ * \retval  Other values        An error has occurred.
+ *
+ */
+NFCSTATUS
+phFriNfc_MfUL_ConvertToReadOnly (
+    phFriNfc_sNdefSmtCrdFmt_t    *NdefSmtCrdFmt);
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 /**
  *\ingroup grp_fri_smart_card_formatting

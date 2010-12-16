@@ -21,9 +21,9 @@
 *
 * Project: NFC-FRI
 *
-* $Date: Fri Oct 15 13:50:54 2010 $
+* $Date: Thu Oct 28 17:44:00 2010 $
 * $Author: ing02260 $
-* $Revision: 1.6 $
+* $Revision: 1.8 $
 * $Aliases:  $
 *
 */
@@ -52,6 +52,15 @@ CLA         INS     P1      P2      Lc          Data            Le
 /* This settings can be changed, depending on the requirement*/
 #define  PH_FRINFC_DESF_PICC_NFC_KEY_SETTING                0x0FU
 
+#ifdef FRINFC_READONLY_NDEF
+
+    #define READ_ONLY_NDEF_DESFIRE                          0xFFU
+    #define CC_BYTES_SIZE                                   0x0FU
+    #define PH_FRINFC_DESF_READ_DATA_CMD                    0xBDU
+    #define NATIVE_WRAPPER_READ_DATA_LC_VALUE               0x07U
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
 #ifdef DESFIRE_FMT_EV1
 
 #define DESFIRE_CARD_TYPE_EV1                               0x01U
@@ -72,7 +81,7 @@ CLA         INS     P1      P2      Lc          Data            Le
 #define DESFIRE_4K_CARD                                     4096U
 #define DESFIRE_8K_CARD                                     7680U
 
-#define DESFIRE_EV1_KEY_SETTINGS_2                          0x27U
+#define DESFIRE_EV1_KEY_SETTINGS_2                          0x21U
 
 #define DESFIRE_EV1_FIRST_AID_BYTE                          0x01U
 #define DESFIRE_EV1_SECOND_AID_BYTE                         0x00U
@@ -133,6 +142,40 @@ static NFCSTATUS phFriNfc_Desf_HWrNDEFData(phFriNfc_sNdefSmtCrdFmt_t    *NdefSmt
 /* Transceive Cmd initiation*/
 static NFCSTATUS phFriNfc_Desf_HSendTransCmd(phFriNfc_sNdefSmtCrdFmt_t    *NdefSmtCrdFmt);
 
+#ifdef FRINFC_READONLY_NDEF
+
+#if 0
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlySelectCCFile (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
+#endif /* #if 0 */
+
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlyReadCCFile (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
+
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlyWriteCCFile (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
+
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlySelectApp (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
+
+#ifdef DESFIRE_FMT_EV1
+
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlySelectAppEV1 (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
+
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 void phFriNfc_Desfire_Reset( phFriNfc_sNdefSmtCrdFmt_t    *NdefSmtCrdFmt)
 {
@@ -672,8 +715,9 @@ static NFCSTATUS phFriNfc_Desf_HUpdateVersionDetails(phFriNfc_sNdefSmtCrdFmt_t *
     {
         NdefSmtCrdFmt->AddInfo.Type4Info.MajorVersion = NdefSmtCrdFmt->SendRecvBuf[PH_SMTCRDFMT_DESF_VAL3];
         NdefSmtCrdFmt->AddInfo.Type4Info.MinorVersion = NdefSmtCrdFmt->SendRecvBuf[PH_SMTCRDFMT_DESF_VAL4];
-        if ( ( NdefSmtCrdFmt->AddInfo.Type4Info.MajorVersion == PH_FRINFC_DESF4_MAJOR_VERSION )&&
-             ( NdefSmtCrdFmt->AddInfo.Type4Info.MinorVersion == PH_FRINFC_DESF4_MINOR_VERSION ))
+
+        if ((PH_FRINFC_DESF4_MAJOR_VERSION == NdefSmtCrdFmt->AddInfo.Type4Info.MajorVersion) &&
+             (PH_FRINFC_DESF4_MINOR_VERSION == NdefSmtCrdFmt->AddInfo.Type4Info.MinorVersion))
         {
             /* card size of DESFire4 type */
             NdefSmtCrdFmt->AddInfo.Type4Info.CardSize = PH_FRINFC_DESF4_MEMORY_SIZE;
@@ -930,6 +974,265 @@ NFCSTATUS phFriNfc_Desfire_Format(phFriNfc_sNdefSmtCrdFmt_t    *NdefSmtCrdFmt)
     return (status);
 }
 
+#ifdef FRINFC_READONLY_NDEF
+
+#if 0
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlySelectCCFile (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt)
+{
+    NFCSTATUS result = NFCSTATUS_SUCCESS;
+    return result;
+}
+#endif /* #if 0 */
+
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlyReadCCFile (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt)
+{
+    NFCSTATUS       result = NFCSTATUS_SUCCESS;
+    uint16_t        i = 0;
+
+    if ((PH_FRINFC_DESF_NATIVE_RESP_BYTE1 == 
+        NdefSmtCrdFmt->SendRecvBuf[(*NdefSmtCrdFmt->SendRecvLength - 2)]) 
+        && (PH_FRINFC_DESF_NATIVE_RESP_BYTE2 == 
+        NdefSmtCrdFmt->SendRecvBuf[(*NdefSmtCrdFmt->SendRecvLength - 1)]))
+    {
+        NdefSmtCrdFmt->State = PH_FRINFC_DESF_STATE_RO_READ_CC_FILE;
+
+        /* Class Byte */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_CLASS_BYTE;
+        i++;
+
+        /* let the place to store the cmd byte type, point to next index 
+            Instruction Cmd code */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_READ_DATA_CMD;
+        i++;
+
+        
+        /* P1/P2 offsets always set to zero */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_OFFSET_P1;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_OFFSET_P2;
+        i++;
+
+        /*  Lc: Length of wrapped data */
+        NdefSmtCrdFmt->SendRecvBuf[i] = NATIVE_WRAPPER_READ_DATA_LC_VALUE;
+        i++;
+
+#ifdef DESFIRE_FMT_EV1
+        if (DESFIRE_CARD_TYPE_EV1 == NdefSmtCrdFmt->CardType)
+        {
+            /* set the file id*/
+            NdefSmtCrdFmt->SendRecvBuf[i] = DESFIRE_EV1_CC_FILE_ID;
+            i++;
+        }
+        else
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+        {
+            /* set the file id*/
+            NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_CC_FILE_ID;
+            i++;
+        }
+
+        /* set the offset to zero*/
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+
+        /* Set the length of data available to read */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_CC_FILE_SIZE;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+
+        /* Le Value is set 0 */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_LE_BYTE;
+        i++;
+
+        NdefSmtCrdFmt->SendLength = i;
+
+        result = phFriNfc_Desf_HSendTransCmd (NdefSmtCrdFmt);
+    }
+    else
+    {
+        result = PHNFCSTVAL(CID_FRI_NFC_NDEF_SMTCRDFMT,
+                            NFCSTATUS_FORMAT_ERROR);
+    }
+
+    return result;
+}
+
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlyWriteCCFile (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt)
+{
+    NFCSTATUS   result = NFCSTATUS_SUCCESS;
+    uint8_t     read_cc_btyes[CC_BYTES_SIZE] = {0};
+    uint16_t    i = 0;
+
+    if ((PH_FRINFC_DESF_NATIVE_RESP_BYTE1 == 
+        NdefSmtCrdFmt->SendRecvBuf[(*NdefSmtCrdFmt->SendRecvLength - 2)]) 
+        && (PH_FRINFC_DESF_NATIVE_RESP_BYTE2 == 
+        NdefSmtCrdFmt->SendRecvBuf[(*NdefSmtCrdFmt->SendRecvLength - 1)]))
+    {
+        NdefSmtCrdFmt->State = PH_FRINFC_DESF_STATE_RO_UPDATE_CC_FILE;
+
+        memcpy ((void *)read_cc_btyes, (void *)NdefSmtCrdFmt->SendRecvBuf, 
+                sizeof (read_cc_btyes));
+        read_cc_btyes[(sizeof (read_cc_btyes) - 1)] = READ_ONLY_NDEF_DESFIRE;
+
+        /* Class Byte */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_CLASS_BYTE;
+        i++;
+
+        /* let the place to store the cmd byte type, point to next index 
+            Instruction Cmd code */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_WRITE_CMD;
+        i++;
+
+        
+        /* P1/P2 offsets always set to zero */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_OFFSET_P1;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_OFFSET_P2;
+        i++;
+
+        /*  Lc: Length of wrapped data */
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_WRCC_WRDT_LEN;
+        i++;
+
+#ifdef DESFIRE_FMT_EV1
+        if (DESFIRE_CARD_TYPE_EV1 == NdefSmtCrdFmt->CardType)
+        {
+            /* set the file id*/
+            NdefSmtCrdFmt->SendRecvBuf[i] = DESFIRE_EV1_CC_FILE_ID;
+            i++;
+        }
+        else
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+        {
+            /* set the file id*/
+            NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_CC_FILE_ID;
+            i++;
+        }
+
+        /* set the offset to zero*/
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+
+        /* Set the length of data available to write*/
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_CC_FILE_SIZE;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+        NdefSmtCrdFmt->SendRecvBuf[i] = 0x00;
+        i++;
+
+        /*set the data to be written to the CC file*/
+        (void)memcpy ((void *)&NdefSmtCrdFmt->SendRecvBuf[i],
+                    (void *)read_cc_btyes, sizeof (read_cc_btyes));
+#ifdef DESFIRE_FMT_EV1
+#else
+        i++;
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+
+        i = (uint16_t)(i + sizeof (read_cc_btyes));
+
+        /* Le bytes*/
+        NdefSmtCrdFmt->SendRecvBuf[i] = PH_FRINFC_DESF_NATIVE_LE_BYTE;
+        i++;
+#ifdef DESFIRE_FMT_EV1
+        if (DESFIRE_CARD_TYPE_EV1 == NdefSmtCrdFmt->CardType)
+        {
+            NdefSmtCrdFmt->SendLength = i;
+        }
+        else
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+        {
+            NdefSmtCrdFmt->SendLength = PH_FRINFC_DESF_WRITECC_CMD_SNLEN;
+        }
+
+        result = phFriNfc_Desf_HSendTransCmd (NdefSmtCrdFmt);
+    }
+    else
+    {
+        result = PHNFCSTVAL(CID_FRI_NFC_NDEF_SMTCRDFMT,
+                            NFCSTATUS_FORMAT_ERROR);
+    }
+
+    return result;
+}
+
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlySelectApp (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt)
+{
+    NFCSTATUS result = NFCSTATUS_SUCCESS;
+
+    NdefSmtCrdFmt->CardType = 0;
+
+    NdefSmtCrdFmt->State = PH_FRINFC_DESF_STATE_RO_SELECT_APP;
+
+    /* Helper routine to wrap the native DESFire cmds */
+    phFriNfc_Desf_HWrapISONativeCmds (NdefSmtCrdFmt, PH_FRINFC_DESF_SELECTAPP_CMD);
+
+    result = phFriNfc_Desf_HSendTransCmd (NdefSmtCrdFmt);
+
+    return result;
+}
+
+#ifdef DESFIRE_FMT_EV1
+static 
+NFCSTATUS 
+phFriNfc_Desf_HReadOnlySelectAppEV1 (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt)
+{
+    NFCSTATUS result = NFCSTATUS_SUCCESS;
+
+    NdefSmtCrdFmt->CardType = DESFIRE_CARD_TYPE_EV1;
+
+    NdefSmtCrdFmt->State = PH_FRINFC_DESF_STATE_RO_SELECT_APP_EV1;    
+
+    /* Helper routine to wrap the native DESFire cmds */
+    phFriNfc_Desf_HWrapISONativeCmds (NdefSmtCrdFmt, PH_FRINFC_DESF_SELECTAPP_CMD);
+
+    result = phFriNfc_Desf_HSendTransCmd (NdefSmtCrdFmt);
+
+    return result;
+}
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+
+NFCSTATUS 
+phFriNfc_Desfire_ConvertToReadOnly (
+    phFriNfc_sNdefSmtCrdFmt_t   *NdefSmtCrdFmt)
+{
+    NFCSTATUS result = NFCSTATUS_SUCCESS;
+
+#ifdef DESFIRE_FMT_EV1
+    result = phFriNfc_Desf_HReadOnlySelectAppEV1 (NdefSmtCrdFmt);
+#else
+    result = phFriNfc_Desf_HReadOnlySelectApp (NdefSmtCrdFmt);
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+    
+    return result;
+}
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
 void phFriNfc_Desf_Process( void       *Context,
                            NFCSTATUS   Status)
 {
@@ -942,6 +1245,69 @@ void phFriNfc_Desf_Process( void       *Context,
     {
         switch(NdefSmtCrdFmt->State)
         {
+#ifdef FRINFC_READONLY_NDEF
+#ifdef DESFIRE_FMT_EV1
+            case PH_FRINFC_DESF_STATE_RO_SELECT_APP_EV1:
+            {
+                if ((PH_FRINFC_DESF_NATIVE_RESP_BYTE1 == 
+                    NdefSmtCrdFmt->SendRecvBuf[(*NdefSmtCrdFmt->SendRecvLength - 2)]) 
+                    && (PH_FRINFC_DESF_NATIVE_RESP_BYTE2 == 
+                    NdefSmtCrdFmt->SendRecvBuf[(*NdefSmtCrdFmt->SendRecvLength - 1)]))
+                {
+                    Status = phFriNfc_Desf_HReadOnlyReadCCFile (NdefSmtCrdFmt);
+                }
+                else
+                {
+                    Status = phFriNfc_Desf_HReadOnlySelectApp (NdefSmtCrdFmt);
+                }
+                break;
+            }
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+
+            case PH_FRINFC_DESF_STATE_RO_SELECT_APP:
+            {
+                Status = phFriNfc_Desf_HReadOnlyReadCCFile (NdefSmtCrdFmt);
+                break;
+            }
+
+            case PH_FRINFC_DESF_STATE_RO_READ_CC_FILE:
+            {
+                Status = phFriNfc_Desf_HReadOnlyWriteCCFile (NdefSmtCrdFmt);
+                break;
+            }
+
+            case PH_FRINFC_DESF_STATE_RO_UPDATE_CC_FILE:
+            {
+                if ((PH_FRINFC_DESF_NATIVE_RESP_BYTE1 == 
+                    NdefSmtCrdFmt->SendRecvBuf[(*NdefSmtCrdFmt->SendRecvLength - 2)]) 
+                    && (PH_FRINFC_DESF_NATIVE_RESP_BYTE2 == 
+                    NdefSmtCrdFmt->SendRecvBuf[(*NdefSmtCrdFmt->SendRecvLength - 1)]))
+                {
+                    /* SUCCESSFULL Formatting */
+#ifdef DESFIRE_FMT_EV1
+                    if (DESFIRE_CARD_TYPE_EV1 == NdefSmtCrdFmt->CardType)
+                    {
+                        Status = phFriNfc_OvrHal_Reconnect (
+                                                NdefSmtCrdFmt->LowerDevice, 
+                                                &NdefSmtCrdFmt->SmtCrdFmtCompletionInfo, 
+                                                NdefSmtCrdFmt->psRemoteDevInfo);
+
+                        if (NFCSTATUS_PENDING == Status)
+                        {
+                            NdefSmtCrdFmt->State = PH_FRINFC_DESF_STATE_REACTIVATE;
+                        }
+                    }                   
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+                }
+                else
+                {
+                    Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_SMTCRDFMT,
+                                        NFCSTATUS_FORMAT_ERROR);
+                }
+                break;
+            }
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
             case PH_FRINFC_DESF_STATE_GET_HW_VERSION:
             {
                 /* Check and store the h/w and s/w specific details.

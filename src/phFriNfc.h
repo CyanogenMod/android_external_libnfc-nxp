@@ -23,7 +23,7 @@
  * $Date: Thu Feb 11 18:45:30 2010 $
  * $Author: ing04880 $
  * $Revision: 1.19 $
- * $Aliases: NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
+ * $Aliases: NFC_FRI1.1_WK1007_R33_1 $
  *
  */
 
@@ -38,6 +38,8 @@
     #include <phNfcConfig.h>
     #define LOCK_BITS_CHECK_ENABLE
 #endif
+
+#define FRINFC_READONLY_NDEF
 
 #ifdef  DISABLE_MIFARE_MAPPING
 #define PH_FRINFC_MAP_MIFAREUL_DISABLED
@@ -74,7 +76,7 @@
 /*@{*/
 
 #define PH_FRINFC_FILEREVISION "$Revision: 1.19 $"   /**< \ingroup grp_file_attributes */
-#define PH_FRINFC_FILEALIASES  "$Aliases: NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $"       /**< \ingroup grp_file_attributes */
+#define PH_FRINFC_FILEALIASES  "$Aliases: NFC_FRI1.1_WK1007_R33_1 $"       /**< \ingroup grp_file_attributes */
 
 /*@}*/
 

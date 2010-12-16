@@ -57,6 +57,18 @@ enum{
     PH_FRINFC_DESF_STATE_GET_UID = 9,
     PH_FRINFC_DESF_STATE_GET_SW_VERSION = 10,
     PH_FRINFC_DESF_STATE_GET_HW_VERSION = 11,
+#ifdef FRINFC_READONLY_NDEF
+
+#ifdef DESFIRE_FMT_EV1
+    PH_FRINFC_DESF_STATE_RO_SELECT_APP_EV1 = 100,
+#endif /* #ifdef DESFIRE_FMT_EV1 */
+
+    PH_FRINFC_DESF_STATE_RO_SELECT_APP = 101,
+    PH_FRINFC_DESF_STATE_RO_SELECT_CC_FILE = 102,
+    PH_FRINFC_DESF_STATE_RO_READ_CC_FILE = 103,
+    PH_FRINFC_DESF_STATE_RO_UPDATE_CC_FILE = 104,
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
     /* following are used in the ISO wrapper commands*/
     PH_FRINFC_DESF_CREATEAPP_CMD = 0,
@@ -64,6 +76,9 @@ enum{
     PH_FRINFC_DESF_CREATECC_CMD = 2,
     PH_FRINFC_DESF_CREATENDEF_CMD = 3,
     PH_FRINFC_DESF_WRITECC_CMD = 4,
+#ifdef FRINFC_READONLY_NDEF
+    PH_FRINFC_DESF_WRITECC_CMD_READ_ONLY = 20, 
+#endif /* #ifdef FRINFC_READONLY_NDEF */
     PH_FRINFC_DESF_WRITENDEF_CMD = 5,
     PH_FRINFC_DESF_GET_HW_VERSION_CMD = 6,
     PH_FRINFC_DESF_GET_SW_VERSION_CMD = 7,
@@ -194,6 +209,43 @@ void phFriNfc_Desfire_Reset(phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
 *
 */
 NFCSTATUS phFriNfc_Desfire_Format(phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
+
+/*!
+* \brief \copydoc page_reg Resets the component instance to the initial state and lets the component forget about
+*        the list of registered items. Moreover, the lower device is set.
+*
+* \param[in] NdefSmtCrdFmt Pointer to a valid or uninitialized instance of \ref phFriNfc_sNdefSmtCrdFmt_t.
+*
+* \note  This function has to be called at the beginning, after creating an instance of
+*        \ref phFriNfc_sNdefSmtCrdFmt_t. Use this function to reset the instance of smart card
+formatting context variables.
+*/
+void phFriNfc_Desfire_Reset(phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
+
+#ifdef FRINFC_READONLY_NDEF
+/*!
+ * \ingroup grp_fri_smart_card_formatting
+ *
+ * \brief Initiates the conversion of the already NDEF formatted tag to READ ONLY.
+ *
+ * \copydoc page_ovr  The function initiates the conversion of the already NDEF formatted
+ * tag to READ ONLY. After this formation, remote card would be properly Ndef Compliant and READ ONLY.
+ * Depending upon the different card type, this function handles formatting procedure.
+ * 
+ * \param[in] phFriNfc_sNdefSmartCardFmt_t Pointer to a valid instance of the \ref phFriNfc_sNdefSmartCardFmt_t
+ *                             structure describing the component context.
+ *
+ * \retval NFCSTATUS_SUCCESS                  Card formatting has been successfully completed.
+ * \retval NFCSTATUS_PENDING                  The action has been successfully triggered.
+ * \retval NFCSTATUS_FORMAT_ERROR             Error occured during the formatting procedure.
+ * \retval NFCSTATUS_INVALID_REMOTE_DEVICE    Card Type is unsupported.
+ * \retval NFCSTATUS_INVALID_DEVICE_REQUEST   Command or Operation types are mismatching.
+ *
+ */
+NFCSTATUS 
+phFriNfc_Desfire_ConvertToReadOnly (
+    phFriNfc_sNdefSmtCrdFmt_t   *NdefSmtCrdFmt);
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 /**
 *\ingroup grp_fri_smart_card_formatting

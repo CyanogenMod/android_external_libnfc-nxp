@@ -53,6 +53,14 @@
 */
 /* #define TOPAZ_RF_ERROR_WORKAROUND */
 
+#ifdef FRINFC_READONLY_NDEF
+
+    #define CC_BLOCK_NUMBER                                         (0x01U)
+    #define CC_RWA_BYTE_NUMBER                                      (0x03U)
+    #define CC_READ_ONLY_VALUE                                      (0x0FU)
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
 #ifdef TOPAZ_RF_ERROR_WORKAROUND
 
     /* Below MACROs are added for the error returned from HAL, if the 
@@ -277,6 +285,25 @@ NFCSTATUS phFriNfc_TopazMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
     return Result;    
 }
 
+#ifdef FRINFC_READONLY_NDEF
+
+NFCSTATUS 
+phFriNfc_TopazMap_ConvertToReadOnly (
+    phFriNfc_NdefMap_t          *NdefMap)
+{
+    NFCSTATUS               result = NFCSTATUS_SUCCESS;
+
+    result = phFriNfc_Tpz_H_WrAByte (NdefMap, CC_BLOCK_NUMBER, 
+                                    CC_RWA_BYTE_NUMBER, CC_READ_ONLY_VALUE);
+
+    if (NFCSTATUS_PENDING == PHNFCSTATUS(result))
+    {
+        NdefMap->State = PH_FRINFC_TOPAZ_STATE_READ_ONLY;
+    }
+    return result;
+}
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 /*!
 * \brief Initiates Reading of NDEF information from the Remote Device.
@@ -482,6 +509,22 @@ void phFriNfc_TopazMap_Process( void       *Context,
     {
         switch (psNdefMap->State)
         {
+#ifdef FRINFC_READONLY_NDEF
+            case PH_FRINFC_TOPAZ_STATE_READ_ONLY:
+            {
+                if((CC_READ_ONLY_VALUE == *psNdefMap->SendRecvBuf)  
+                    && (PH_FRINFC_TOPAZ_VAL1 == *psNdefMap->SendRecvLength))
+                {
+                    /* Do nothing */
+                }
+                else
+                {
+                    Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                        NFCSTATUS_INVALID_RECEIVE_LENGTH);
+                }
+                break;
+            }
+#endif /* #ifdef FRINFC_READONLY_NDEF */
             case PH_FRINFC_TOPAZ_STATE_WRITE:
             {
                 Status = phFriNfc_Tpz_H_ProWrUsrData (psNdefMap);
@@ -821,9 +864,9 @@ static NFCSTATUS phFriNfc_Tpz_H_RdBytes(phFriNfc_NdefMap_t *NdefMap,
         /*Copy UID of the tag to  Send Buffer*/
         (void)memcpy(&(NdefMap->SendRecvBuf[PH_FRINFC_TOPAZ_VAL3]),
         &(NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.Uid),
-        (NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength));
+        TOPAZ_UID_LENGTH_FOR_READ_WRITE);
 
-        index = index + NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength;
+        index = (uint8_t)(index + TOPAZ_UID_LENGTH_FOR_READ_WRITE);
 
         /* Update the length of the command buffer*/
         NdefMap->SendLength = index;
@@ -866,8 +909,8 @@ static NFCSTATUS phFriNfc_Tpz_H_RdBytes(phFriNfc_NdefMap_t *NdefMap,
         /*Copy UID of the tag to  Send Buffer*/
         (void)memcpy(&(NdefMap->SendRecvBuf[PH_FRINFC_TOPAZ_VAL3]),
         &(NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.Uid),
-        (NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength));
-        index = index + NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength;
+        TOPAZ_UID_LENGTH_FOR_READ_WRITE);
+        index = (uint8_t)(index + TOPAZ_UID_LENGTH_FOR_READ_WRITE);
 
         /* Update the length of the command buffer*/
         NdefMap->SendLength = index;
@@ -968,8 +1011,8 @@ static NFCSTATUS phFriNfc_Tpz_H_WrAByte(phFriNfc_NdefMap_t *NdefMap,
     /*Copy UID of the tag to  Send Buffer*/
     (void)memcpy(&(NdefMap->SendRecvBuf[PH_FRINFC_TOPAZ_VAL3]),
       &(NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.Uid),
-      (NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength));
-    index = index + NdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength;
+      TOPAZ_UID_LENGTH_FOR_READ_WRITE);
+    index = (uint8_t)(index + TOPAZ_UID_LENGTH_FOR_READ_WRITE);
 
     /* Update the length of the command buffer*/
     NdefMap->SendLength = index;   

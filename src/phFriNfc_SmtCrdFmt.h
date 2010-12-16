@@ -61,6 +61,9 @@
           during the implementation phase.
 */
 
+#define DESFIRE_FMT_EV1
+
+
 #define PH_FRI_NFC_SMTCRDFMT_NFCSTATUS_FORMAT_ERROR                 9
 #define  PH_FRINFC_SMTCRDFMT_MSTD_DEFAULT_KEYA_OR_KEYB           {0xFF, 0xFF,0xFF,0xFF,0xFF,0xFF}
 #define  PH_FRINFC_SMTCRDFMT_MSTD_MADSECT_KEYA                   {0xA0, 0xA1,0xA2,0xA3,0xA4,0xA5}
@@ -397,6 +400,30 @@ NFCSTATUS phFriNfc_NdefSmtCrd_SetCR(phFriNfc_sNdefSmtCrdFmt_t     *NdefSmtCrdFmt
  *
  */
 NFCSTATUS phFriNfc_NdefSmtCrd_Format(phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt, const uint8_t *ScrtKeyB);
+
+
+#ifdef FRINFC_READONLY_NDEF
+/*!
+ * \ingroup grp_fri_smart_card_formatting
+ *
+ * \brief Initiates the conversion of the already NDEF formatted tag to READ ONLY.
+ *
+ * \copydoc page_ovr  The function initiates the conversion of the already NDEF formatted
+ * tag to READ ONLY.After this formation, remote card would be properly Ndef Compliant and READ ONLY.
+ * Depending upon the different card type, this function handles formatting procedure.
+ * This function supports only for the DESFIRE, MIFARE UL and TOPAZ tags.
+ *
+ * \param[in] phFriNfc_sNdefSmtCrdFmt_t Pointer to a valid instance of the \ref phFriNfc_sNdefSmartCardFmt_t
+ *                             structure describing the component context.
+ * \retval  NFCSTATUS_PENDING   The action has been successfully triggered.
+ * \retval  Other values        An error has occurred.
+ *
+ */
+NFCSTATUS
+phFriNfc_NdefSmtCrd_ConvertToReadOnly (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt);
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 
 /**

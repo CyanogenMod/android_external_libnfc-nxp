@@ -617,6 +617,47 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
     return status;
 }
 
+#ifdef FRINFC_READONLY_NDEF
+NFCSTATUS
+phFriNfc_NdefMap_ConvertToReadOnly (
+    phFriNfc_NdefMap_t          *NdefMap)
+{
+    NFCSTATUS   result = NFCSTATUS_PENDING;
+
+
+    /*  Check for ndefmap context and relevant state. Else return error*/
+    if (NULL == NdefMap)
+    {
+        result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_PARAMETER);
+    }
+    else if ((NdefMap->CompletionRoutine->CompletionRoutine == NULL) 
+        || (NdefMap->CompletionRoutine->Context == NULL))
+    {
+        result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_PARAMETER);
+    }
+    else
+    {
+        switch (NdefMap->CardType)
+        {
+            case PH_FRINFC_NDEFMAP_TOPAZ_CARD:
+            case PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD:
+            {
+                result = phFriNfc_TopazMap_ConvertToReadOnly (NdefMap);
+                break;
+            }
+
+            default:
+            {
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_REMOTE_DEVICE);
+                break;
+            }
+        }
+    }
+    return result;
+}
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
 /*!
 * Check whether a particular Remote Device is NDEF compliant.
 *

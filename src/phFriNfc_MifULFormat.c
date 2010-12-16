@@ -40,6 +40,15 @@
 #define PHFRINFCMIFULFORMAT_FILEREVISION "$Revision: 1.8 $"
 #define PHFRINFCMIFULFORMAT_FILEALIASES  "$Aliases: NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $"
 /*@}*/
+
+#ifdef FRINFC_READONLY_NDEF
+    /* Mifare UL OTP block number is 3 */
+    #define OTP_BLOCK_NUMBER                    0x03U
+    /* READ ONLY value that shall be written in the OTP to make the card read only */
+    #define READ_ONLY_VALUE_IN_OTP              0x0FU
+    /* Mifare UL OTP block number is 3 */
+    #define MIFARE_UL_READ_MAX_SIZE             16U
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 /*!
 * \brief \copydoc page_ovr Helper function for Mifare UL. This function calls the   
 * transceive function
@@ -123,6 +132,23 @@ NFCSTATUS phFriNfc_MfUL_Format(phFriNfc_sNdefSmtCrdFmt_t    *NdefSmtCrdFmt)
     return Result;
 }
 
+#ifdef FRINFC_READONLY_NDEF
+
+NFCSTATUS
+phFriNfc_MfUL_ConvertToReadOnly (
+    phFriNfc_sNdefSmtCrdFmt_t    *NdefSmtCrdFmt)
+{
+    NFCSTATUS               result = NFCSTATUS_SUCCESS;
+
+    NdefSmtCrdFmt->State = PH_FRINFC_MFUL_FMT_RO_RD_16BYTES;
+
+    result = phFriNfc_MfUL_H_WrRd(NdefSmtCrdFmt);
+
+    return result;
+}
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
 void phFriNfc_MfUL_Process(void             *Context,
                            NFCSTATUS        Status)
 {
@@ -155,6 +181,36 @@ void phFriNfc_MfUL_Process(void             *Context,
 #endif /* #ifdef PH_NDEF_MIFARE_ULC */
 
             break;
+
+#ifdef FRINFC_READONLY_NDEF
+
+        case PH_FRINFC_MFUL_FMT_RO_RD_16BYTES:
+        {
+            if (MIFARE_UL_READ_MAX_SIZE == *NdefSmtCrdFmt->SendRecvLength)
+            {
+                uint8_t         otp_page_size = 0;
+
+                otp_page_size = sizeof (NdefSmtCrdFmt->AddInfo.Type2Info.OTPBytes);
+                (void)memcpy (NdefSmtCrdFmt->AddInfo.Type2Info.OTPBytes,
+                            NdefSmtCrdFmt->SendRecvBuf,
+                            sizeof(NdefSmtCrdFmt->AddInfo.Type2Info.OTPBytes));
+
+                NdefSmtCrdFmt->AddInfo.Type2Info.OTPBytes[(otp_page_size - 1)] =
+                                                        READ_ONLY_VALUE_IN_OTP;
+
+                NdefSmtCrdFmt->State = PH_FRINFC_MFUL_FMT_RO_WR_OTP_BYTES;
+                Status = phFriNfc_MfUL_H_WrRd (NdefSmtCrdFmt);
+            }
+            break;
+        }
+
+        case PH_FRINFC_MFUL_FMT_RO_WR_OTP_BYTES:
+        {
+            /* Do nothing */
+            break;
+        }
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 #ifdef PH_NDEF_MIFARE_ULC   
         case PH_FRINFC_MFUL_FMT_WR_TLV1:
@@ -233,6 +289,42 @@ static void phFriNfc_MfUL_H_fillSendBuf( phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFm
     NdefSmtCrdFmt->SendRecvBuf[PH_FRINFC_MFUL_FMT_VAL_0] = (uint8_t)BlockNo;
     switch(NdefSmtCrdFmt->State)
     {
+#ifdef FRINFC_READONLY_NDEF
+
+        case PH_FRINFC_MFUL_FMT_RO_RD_16BYTES:
+        {
+#ifdef PH_HAL4_ENABLE
+            NdefSmtCrdFmt->Cmd.MfCmd = phHal_eMifareRead;
+#else
+        /* Read command */
+            NdefSmtCrdFmt->Cmd.MfCmd = phHal_eMifareCmdListMifareRead;
+#endif /* #ifdef PH_HAL4_ENABLE */
+            *NdefSmtCrdFmt->SendRecvBuf = OTP_BLOCK_NUMBER;
+            /* Send length for read command is always one */
+            NdefSmtCrdFmt->SendLength = PH_FRINFC_MFUL_FMT_VAL_1;
+            break;
+        }
+
+        case PH_FRINFC_MFUL_FMT_RO_WR_OTP_BYTES:
+        {
+#ifdef PH_HAL4_ENABLE
+            NdefSmtCrdFmt->Cmd.MfCmd = phHal_eMifareWrite4;
+#else
+            /* Read command */
+            NdefSmtCrdFmt->Cmd.MfCmd = phHal_eMifareCmdListMifareWrite4;
+#endif /* #ifdef PH_HAL4_ENABLE */
+
+            /* Send length for read command is always one */
+            NdefSmtCrdFmt->SendLength = PH_FRINFC_MFUL_FMT_VAL_5;
+            *NdefSmtCrdFmt->SendRecvBuf = OTP_BLOCK_NUMBER;
+            (void)memcpy(&NdefSmtCrdFmt->SendRecvBuf[PH_FRINFC_MFUL_FMT_VAL_1],
+                         NdefSmtCrdFmt->AddInfo.Type2Info.OTPBytes,
+                         PH_FRINFC_MFUL_FMT_VAL_4);
+            break;
+        }
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
     case PH_FRINFC_MFUL_FMT_RD_16BYTES:
 #ifdef PH_HAL4_ENABLE
         NdefSmtCrdFmt->Cmd.MfCmd = phHal_eMifareRead;

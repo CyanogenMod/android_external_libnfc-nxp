@@ -34,6 +34,9 @@ typedef enum phLibNfc_Last_Call{
                     NdefRd,
                     NdefWr,
                     NdefFmt,
+#ifdef LIBNFC_READONLY_NDEF
+                    NdefReadOnly,
+#endif /* #ifdef LIBNFC_READONLY_NDEF */
                     RawTrans
 } phLibNfc_Last_Call_t;
 

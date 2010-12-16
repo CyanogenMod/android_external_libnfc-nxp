@@ -184,6 +184,59 @@ NFCSTATUS phFriNfc_NdefSmtCrd_SetCR(phFriNfc_sNdefSmtCrdFmt_t     *NdefSmtCrdFmt
     return status;
 }
 
+#ifdef FRINFC_READONLY_NDEF
+
+NFCSTATUS
+phFriNfc_NdefSmtCrd_ConvertToReadOnly (
+    phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt)
+{
+    NFCSTATUS   result = PHNFCSTVAL(CID_FRI_NFC_NDEF_SMTCRDFMT,
+                                  NFCSTATUS_INVALID_PARAMETER);
+    uint8_t     sak = 0;
+
+    if((NdefSmtCrdFmt != NULL)
+        && (NdefSmtCrdFmt->CompletionRoutine->CompletionRoutine != NULL)
+        && (NdefSmtCrdFmt->CompletionRoutine->Context != NULL))
+    {
+        sak = NdefSmtCrdFmt->psRemoteDevInfo->RemoteDevInfo.Iso14443A_Info.Sak;
+        switch (NdefSmtCrdFmt->psRemoteDevInfo->RemDevType)
+        {
+            case phHal_eMifare_PICC:
+            {
+                if (0x00 == sak)
+                {
+                    result = phFriNfc_MfUL_ConvertToReadOnly (NdefSmtCrdFmt);
+                }
+                else
+                {
+                    /* MIFARE classic 1k/4k is not supported */
+                    result = PHNFCSTVAL(CID_FRI_NFC_NDEF_SMTCRDFMT,
+                                        NFCSTATUS_INVALID_REMOTE_DEVICE);
+                }
+                break;
+            }
+
+            case phHal_eISO14443_A_PICC:
+            {
+                result = phFriNfc_Desfire_ConvertToReadOnly (NdefSmtCrdFmt);
+                break;
+            }
+
+            default :
+            {
+                /*  Remote device is not recognised.
+                Probably not NDEF compliant */
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_SMTCRDFMT,
+                                    NFCSTATUS_INVALID_REMOTE_DEVICE);
+                break;
+            }
+        }
+    }
+    return result;
+}
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
 
 /*!
  * \brief Used to format the different smart cards.

@@ -46,6 +46,7 @@
 *\def PHLIBNFC_MAXNO_OF_SE
 *Defines maximum no of secured elements supported by PN544.
 */
+#define LIBNFC_READONLY_NDEF
 #define PHLIBNFC_MAXNO_OF_SE        (0x02)
 
 typedef uint32_t    phLibNfc_Handle;
@@ -1927,6 +1928,76 @@ NFCSTATUS phLibNfc_RemoteDev_FormatNdef(phLibNfc_Handle         hRemoteDevice,
                                         pphLibNfc_RspCb_t       pNdefformat_RspCb,
                                         void*                   pContext
                                         );
+
+#ifdef LIBNFC_READONLY_NDEF
+/**
+* \ingroup grp_lib_nfc
+*
+* \brief To convert a already formatted NDEF READ WRITE tag to READ ONLY.
+*
+* This function allows the LibNfc client to convert a already formatted NDEF READ WRITE
+* tag to READ ONLY on discovered target.
+*
+*\note
+* <br>1. Prior to formating it is recommended to perform NDEF check using \ref phLibNfc_Ndef_CheckNdef interface.
+* <br>2. READ ONLY feature supported only for MIFARE UL and Desfire tag types.
+* If the call back error code is NFCSTATUS_FAILED then the LIBNFC client has to do the
+* phLibNfc_RemoteDev_CheckPresence to find, its communication error or target lost.
+*
+*\param[in] hRemoteDevice           handle of the remote device.This handle to be
+*                                   same as as handle obtained for specific remote device
+*                                   during device discovery.
+*\param[in] pNdefReadOnly_RspCb     Response callback defined by the caller.
+*\param[in] pContext                Client context which will be included in
+*                                   callback when the request is completed.
+*
+*
+* \retval NFCSTATUS_PENDING                 Request accepted and started.
+* \retval NFCSTATUS_SHUTDOWN                Shutdown in progress.
+* \retval NFCSTATUS_INVALID_HANDLE          Target  handle is invalid.
+* \retval NFCSTATUS_NOT_INITIALISED         Indicates stack is not yet initialized.
+* \retval NFCSTATUS_INVALID_PARAMETER       One or more of the supplied parameters could not
+*                                           be  properly interpreted.
+* \retval NFCSTATUS_TARGET_NOT_CONNECTED    The Remote Device is not connected.
+* \retval NFCSTATUS_FAILED                  operation failed.
+* \retval NFCSTATUS_REJECTED                Tag is already  formatted one.
+*
+*\msc
+*LibNfcClient,LibNfc;
+*LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
+*LibNfcClient<-LibNfc   [label="pInitCb()",URL="\ref pphLibNfc_RspCb_t()"];
+*LibNfcClient=>LibNfc   [label="phLibNfc_RemoteDev_NtfRegister()",URL="\ref phLibNfc_RemoteDev_NtfRegister"];
+*LibNfcClient<<LibNfc   [label="NFCSTATUS_SUCCESS"];
+*LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_configureDiscovery()",URL="\ref phLibNfc_Mgt_ConfigureDiscovery"];
+*LibNfcClient<-LibNfc   [label="pConfigDiscovery_RspCb",URL="\ref pphLibNfc_RspCb_t"];
+*--- [label="Now Present NDEF Tag "];
+*LibNfcClient<-LibNfc [label="pNotificationHandler",URL="\ref phLibNfc_NtfRegister_RspCb_t"];
+*LibNfcClient=>LibNfc   [label="phLibNfc_RemoteDev_Connect()",URL="\ref phLibNfc_RemoteDev_Connect"];
+*LibNfcClient<-LibNfc   [label="pNotifyConnect_RspCb",URL="\ref pphLibNfc_RspCb_t"];
+*LibNfcClient=>LibNfc   [label="phLibNfc_Ndef_CheckNdef()",URL="\ref phLibNfc_Ndef_CheckNdef "];
+*LibNfcClient<-LibNfc   [label="pCheckNdef_RspCb",URL="\ref pphLibNfc_RspCb_t"];
+*--- [label="Tag found to be NDEF compliant ,now convert the tag to read only"];
+*LibNfcClient=>LibNfc   [label="phLibNfc_ConvertToReadOnlyNdef()",URL="\ref  phLibNfc_ConvertToReadOnlyNdef   "];
+*LibNfcClient<-LibNfc   [label="pNdefReadOnly_RspCb",URL="\ref pphLibNfc_RspCb_t"];
+*
+*\endmsc
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*                  \param NFCSTATUS_SUCCESS             Converting the tag to READ ONLY NDEF is successful.
+*                  \param NFCSTATUS_SHUTDOWN            Shutdown in progress.
+*                  \param NFCSTATUS_ABORTED,            Aborted due to disconnect operation in between.
+*                  \param NFCSTATUS_FAILED              Request failed.
+*/
+
+NFCSTATUS phLibNfc_ConvertToReadOnlyNdef (phLibNfc_Handle       hRemoteDevice,
+                                        pphLibNfc_RspCb_t       pNdefReadOnly_RspCb,
+                                        void*                   pContext
+                                        );
+#endif /* #ifdef LIBNFC_READONLY_NDEF */
 
 /**
 * \ingroup grp_lib_nfc

@@ -1114,6 +1114,29 @@ extern NFCSTATUS phFriNfc_NdefMap_WrNdef(phFriNfc_NdefMap_t  *NdefMap,
  */
 NFCSTATUS phFriNfc_NdefMap_ChkNdef(phFriNfc_NdefMap_t *NdefMap);
 
+#ifdef FRINFC_READONLY_NDEF
+/*!
+ * \ingroup grp_fri_smart_card_formatting
+ *
+ * \brief Initiates the conversion of the already NDEF formatted tag to READ ONLY.
+ *
+ * \copydoc page_ovr  The function initiates the conversion of the already NDEF formatted
+ * tag to READ ONLY.After this formation, remote card would be properly Ndef Compliant and READ ONLY.
+ * Depending upon the different card type, this function handles formatting procedure.
+ * This function supports only for the TOPAZ tags.
+ *
+ * \param[in] NdefMap Pointer to a valid instance of the \ref phFriNfc_NdefMap_t structure describing
+ *                    the component context.
+ * \retval  NFCSTATUS_PENDING   The action has been successfully triggered.
+ * \retval  Other values        An error has occurred.
+ *
+ */
+NFCSTATUS
+phFriNfc_NdefMap_ConvertToReadOnly (
+    phFriNfc_NdefMap_t          *NdefMap);
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
 /**
  * \ingroup grp_fri_nfc_ndef_map
  *
