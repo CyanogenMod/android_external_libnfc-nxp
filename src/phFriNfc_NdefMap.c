@@ -20,9 +20,9 @@
 *
 * Project: NFC-FRI
 *
-* $Date: Tue Jul 27 08:58:22 2010 $
+* $Date: Mon Dec 13 14:14:12 2010 $
 * $Author: ing02260 $
-* $Revision: 1.38 $
+* $Revision: 1.39 $
 * $Aliases:  $
 *
 */
@@ -64,7 +64,7 @@
 *
 */
 /*@{*/
-#define PHFRINFCNDEFMAP_FILEREVISION "$Revision: 1.38 $"
+#define PHFRINFCNDEFMAP_FILEREVISION "$Revision: 1.39 $"
 #define PHFRINFCNDEFMAP_FILEALIASES  "$Aliases:  $"
 /*@}*/
 
@@ -640,12 +640,12 @@ phFriNfc_NdefMap_ConvertToReadOnly (
         switch (NdefMap->CardType)
         {
             case PH_FRINFC_NDEFMAP_TOPAZ_CARD:
-            case PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD:
             {
                 result = phFriNfc_TopazMap_ConvertToReadOnly (NdefMap);
                 break;
             }
 
+            case PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD:
             default:
             {
                 result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
