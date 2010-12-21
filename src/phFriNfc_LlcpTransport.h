@@ -62,8 +62,6 @@ typedef enum phFriNfc_LlcpTransportSocket_eSocketState
    phFriNfc_LlcpTransportSocket_eSocketDisconnected,
    phFriNfc_LlcpTransportSocket_eSocketDisconnecting,
    phFriNfc_LlcpTransportSocket_eSocketRejected,
-   phFriNfc_LlcpTransportSocket_eSocketClosed,
-   phFriNfc_LlcpTransportSocket_eSocketClosing,
 }phFriNfc_LlcpTransportSocket_eSocketState_t;
 
 

@@ -215,7 +215,24 @@ NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t *pLlcpTransp
    /* Close all sockets */
    for(i=0;i<PHFRINFC_LLCP_NB_SOCKET_MAX;i++)
    {
-      phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
+      if(pLlcpTransport->pSocketTable[i].eSocket_Type == phFriNfc_LlcpTransport_eConnectionOriented)
+      {
+         switch(pLlcpTransport->pSocketTable[i].eSocket_State)
+         {
+         case phFriNfc_LlcpTransportSocket_eSocketConnected:
+         case phFriNfc_LlcpTransportSocket_eSocketConnecting:
+         case phFriNfc_LlcpTransportSocket_eSocketAccepted:
+         case phFriNfc_LlcpTransportSocket_eSocketDisconnected:
+         case phFriNfc_LlcpTransportSocket_eSocketDisconnecting:
+         case phFriNfc_LlcpTransportSocket_eSocketRejected:
+            phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
+            break;
+         }
+      }
+      else
+      {
+         phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
+      }
    }
 
    return status;
