@@ -20,9 +20,9 @@
  *
  * Project: NFC-FRI
  *
- * $Date: Tue Aug 31 15:13:10 2010 $
+ * $Date: Mon Dec 13 14:14:14 2010 $
  * $Author: ing02260 $
- * $Revision: 1.25 $
+ * $Revision: 1.26 $
  * $Aliases:  $
  *
  */
@@ -41,7 +41,7 @@
 #include <phFriNfc_NdefMap.h>
 
 
-#define PH_FRINFC_NDEFMAP_TOPAZMAP_FILEREVISION "$Revision: 1.25 $"
+#define PH_FRINFC_NDEFMAP_TOPAZMAP_FILEREVISION "$Revision: 1.26 $"
 #define PH_FRINFC_NDEFMAP_TOPAZMAP_FILEALIASES  "$Aliases:  $"
 
 #if !defined (ES_HW_VER)
@@ -77,7 +77,11 @@
 
 #ifdef FRINFC_READONLY_NDEF
 
-    #define PH_FRINFC_TOPAZ_STATE_READ_ONLY               9   /*!< READ ONLY state */
+    #define PH_FRINFC_TOPAZ_STATE_WR_CC_BYTE               9   /*!< READ ONLY state */
+    #define PH_FRINFC_TOPAZ_STATE_RD_LOCK0_BYTE           10  /*!< read Lock byte 0 state */
+    #define PH_FRINFC_TOPAZ_STATE_WR_LOCK0_BYTE           11  /*!< write Lock byte 0 state */
+    #define PH_FRINFC_TOPAZ_STATE_RD_LOCK1_BYTE           12  /*!< read Lock byte 1 state */
+    #define PH_FRINFC_TOPAZ_STATE_WR_LOCK1_BYTE           13  /*!< write Lock byte 1 state */
 
 #endif /* #ifdef FRINFC_READONLY_NDEF */
 /*@}*/
