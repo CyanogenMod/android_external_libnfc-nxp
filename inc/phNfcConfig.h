@@ -141,7 +141,7 @@
 
 /**< Default Session ID for Initialisation */
 #ifndef DEFAULT_SESSION
-#define DEFAULT_SESSION           "android4"
+#define DEFAULT_SESSION           "android5"
 #endif
 
 
