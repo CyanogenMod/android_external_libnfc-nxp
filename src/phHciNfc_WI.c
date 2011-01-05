@@ -54,7 +54,7 @@
 #define NXP_SE_EVENTS_INDEX             (0x05)                  
 
 /* Set Bit 0 and Bit 1 to report Start of transaction and End of transaction*/
-#define WI_ENABLE_EVENTS                (0x07) 
+#define WI_ENABLE_EVENTS                (0x04)
 #define WI_VIRTUALMODE                  (0x01)
 #define WI_OFFMODE                      (0x00)
 #define AID_SIZE                        (0x20)
