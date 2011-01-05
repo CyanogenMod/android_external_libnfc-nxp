@@ -93,10 +93,9 @@ static NFCSTATUS phFriNfc_Llcp_InternalSend( phFriNfc_Llcp_t                    
                                              phNfc_sData_t                      *psInfo );
 static bool_t phFriNfc_Llcp_HandlePendingSend ( phFriNfc_Llcp_t *Llcp );
 
-static uint8_t * phFriNfc_Llcp_AllocateAndCopy(phNfc_sData_t * pOrig)
+static phNfc_sData_t * phFriNfc_Llcp_AllocateAndCopy(phNfc_sData_t * pOrig)
 {
    phNfc_sData_t * pDest = NULL;
-   uint8_t * pCopyBuffer = NULL;
 
    if (pOrig == NULL)
    {
