@@ -136,7 +136,14 @@ static void phFriNfc_Llcp_Deallocate(phNfc_sData_t * pData)
 {
    if (pData != NULL)
    {
-      phOsalNfc_FreeMemory(pData->buffer);
+      if (pData->buffer != NULL)
+      {
+         phOsalNfc_FreeMemory(pData->buffer);
+      }
+      else
+      {
+         LLCP_PRINT("Warning, deallocating empty buffer");
+      }
       phOsalNfc_FreeMemory(pData);
    }
 }
@@ -160,6 +167,7 @@ static NFCSTATUS phFriNfc_Llcp_InternalDeactivate( phFriNfc_Llcp_t *Llcp )
       if (Llcp->psSendInfo != NULL)
       {
          phFriNfc_Llcp_Deallocate(Llcp->psSendInfo);
+         Llcp->psSendInfo = NULL;
          Llcp->psSendHeader = NULL;
          Llcp->psSendSequence = NULL;
       }
