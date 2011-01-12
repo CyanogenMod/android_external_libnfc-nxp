@@ -63,6 +63,7 @@
 
 #define NFCIP_ACTIVATE_DELAY       0x05U
 
+uint8_t nxp_nfc_isoxchg_timeout = NXP_ISO_XCHG_TIMEOUT;
 /*
 *************************** Structure and Enumeration ***************************
 */
@@ -2328,7 +2329,7 @@ phHciNfc_ReaderMgmt_Release(
                                         (uint8_t) pipe_id, HCP_MSG_TYPE_COMMAND, cmd);
                 hcp_message = &(hcp_packet->msg.message);
                 /* Frame Wait Timeout */
-                hcp_message->payload[i++] = NXP_ISO_XCHG_TIMEOUT ;
+                hcp_message->payload[i++] = nxp_nfc_isoxchg_timeout ;
                 phHciNfc_Append_HCPFrame((uint8_t *)hcp_message->payload,
                                             i, p_pipe_info->param_info,
                                             p_pipe_info->param_length);
