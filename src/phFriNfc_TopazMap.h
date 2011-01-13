@@ -597,6 +597,39 @@ NFCSTATUS phFriNfc_TopazDynamicMap_ChkNdef(    phFriNfc_NdefMap_t  *NdefMap);
  */
 void phFriNfc_TopazDynamicMap_Process( void        *Context,
                                 NFCSTATUS   Status);
+
+#ifdef FRINFC_READONLY_NDEF
+/*!
+ * \brief \copydoc page_ovr Initiates Writing of NDEF information to the Remote Device.
+ *
+ * The function initiates the writing of NDEF information to a Remote Device.
+ * It performs a reset of the state and starts the action (state machine).
+ * A periodic call of the \ref phFriNfc_NdefMap_Process has to be done once the action
+ * has been triggered.
+ *
+ * \param[in] psNdefMap Pointer to a valid instance of the \ref phFriNfc_NdefMap_t structure describing
+ *                    the component context.
+ *
+ *
+ * \retval NFCSTATUS_PENDING                        The action has been successfully triggered.
+ * \retval NFCSTATUS_INVALID_DEVICE_REQUEST         If Previous Operation is Write Ndef and Offset
+ *                                                  is Current then this error is displayed.
+ * \retval NFCSTATUS_EOF_NDEF_CONTAINER_REACHED               Last byte is written to the card after this
+ *                                                  no further writing is possible.
+ * \retval NFCSTATUS_SUCCESS                        Buffer provided by the user is completely written
+ *                                                  into the card.
+ * \retval NFCSTATUS_INVALID_DEVICE                 The device has not been opened or has been disconnected
+ *                                                  meanwhile.
+ * \retval NFCSTATUS_CMD_ABORTED                    The caller/driver has aborted the request.
+ * \retval NFCSTATUS_BUFFER_TOO_SMALL               The buffer provided by the caller is too small.
+ * \retval NFCSTATUS_RF_TIMEOUT                     No data has been received within the TIMEOUT period.
+ *
+ */
+NFCSTATUS
+phFriNfc_TopazDynamicMap_ConvertToReadOnly (
+    phFriNfc_NdefMap_t     *psNdefMap);
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
    
 
 #endif /* PHFRINFC_TOPAZMAP_H */

@@ -300,8 +300,8 @@ void phLibNfc_Ndef_Read_Cb(void* Context,NFCSTATUS status)
         {
             gpphLibContext->status.GenCb_pending_status = FALSE;
             if (gpphLibContext->psBufferedAuth != NULL && gpphLibContext->ndef_cntx.psNdefMap != NULL) {
-		    gpphLibContext->psBufferedAuth->addr = (uint8_t)
-		    gpphLibContext->ndef_cntx.psNdefMap->StdMifareContainer.currentBlock;
+                   gpphLibContext->psBufferedAuth->addr = (uint8_t)
+                   gpphLibContext->ndef_cntx.psNdefMap->StdMifareContainer.currentBlock;
             }
 
             if(NFCSTATUS_FAILED == status )
@@ -580,10 +580,15 @@ void phLibNfc_Ndef_Write_Cb(void* Context,NFCSTATUS status)
                                  gpphLibContext->ndef_cntx.NdefLength)
                 {
                     status = NFCSTATUS_NOT_ENOUGH_MEMORY;
-                }                
-            }			
-			else
-			{
+                }
+                else
+                {
+                    pLibNfc_Ctxt->ndef_cntx.NdefActualSize = 
+                                    pLibNfc_Ctxt->ndef_cntx.psUpperNdefMsg->length;
+                }
+            }           
+            else
+            {
                 gpphLibContext->LastTrancvSuccess = FALSE;
 				status = NFCSTATUS_FAILED;;
 			}
@@ -1437,6 +1442,9 @@ phLibNfc_ConvertToReadOnlyNdef (
 
                 case phHal_eJewel_PICC:
                 {
+// MC: Got the feedback this was #if 0'd because it was resetting the lock bits
+// read in check NDEF, and these should not be reset here already.
+#if 0
                     static uint16_t     data_cnt = 0;
 
                     /* Resets the component instance */
@@ -1449,6 +1457,7 @@ phLibNfc_ConvertToReadOnlyNdef (
                                         gpphLibContext->ndef_cntx.psNdefMap->SendRecvBuf,
                                         &(gpphLibContext->ndef_cntx.NdefSendRecvLen),
                                         &(data_cnt));
+#endif /* #if 0 */
 
 
                     for (fun_id = 0; fun_id < PH_FRINFC_NDEFMAP_CR; fun_id++)

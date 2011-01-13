@@ -526,6 +526,7 @@ void phFriNfc_TopazMap_Process( void       *Context,
                 if((CC_READ_ONLY_VALUE == *psNdefMap->SendRecvBuf)  
                     && (PH_FRINFC_TOPAZ_VAL1 == *psNdefMap->SendRecvLength))
                 {
+                    written_lock_byte = 0;
 #ifdef TOPAZ_RAW_SUPPORT
                     *psNdefMap->SendRecvBuf = PH_FRINFC_TOPAZ_CMD_READ;
 #else
@@ -1262,8 +1263,17 @@ static NFCSTATUS phFriNfc_Tpz_H_CallNxtOp(phFriNfc_NdefMap_t *NdefMap)
         }
         else
         {
-            Result = (PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
-                                NFCSTATUS_INVALID_FORMAT));
+            Result = NFCSTATUS_SUCCESS;
+            NdefMap->CardState = PH_NDEFMAP_CARD_STATE_INITIALIZED;
+            NdefMap->CardMemSize = 
+            NdefMap->TopazContainer.RemainingSize = (uint16_t)
+                        /* 
+                        4 is decremented from the max size because of the 4 CC bytes
+                        2 is decremented because of the NDEF TLV T and L byte 
+                        to get the actual data size
+                        */
+                        (PH_FRINFC_TOPAZ_MAX_CARD_SZ - PH_FRINFC_TOPAZ_VAL4 - 
+                        PH_FRINFC_TOPAZ_VAL2);
         }
         break;
 

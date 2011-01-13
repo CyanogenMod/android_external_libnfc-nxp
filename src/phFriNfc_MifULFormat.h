@@ -53,17 +53,25 @@
  *
  */
 /*@{*/
-#define PH_FRINFC_MFUL_FMT_RESET_INIT          0 /*!< Reset state */
-#define PH_FRINFC_MFUL_FMT_RD_16BYTES          1 /*!< Read 16 bytes */
-#define PH_FRINFC_MFUL_FMT_WR_OTPBYTES         2 /*!< Write OTP bytes */
-#define PH_FRINFC_MFUL_FMT_WR_TLV              3 /*!< Write TLV */  
+#define PH_FRINFC_MFUL_FMT_RESET_INIT               0 /*!< Reset state */
+#define PH_FRINFC_MFUL_FMT_RD_16BYTES               1 /*!< Read 16 bytes */
+#define PH_FRINFC_MFUL_FMT_WR_OTPBYTES              2 /*!< Write OTP bytes */
+#define PH_FRINFC_MFUL_FMT_WR_TLV                   3 /*!< Write TLV */  
 #ifdef PH_NDEF_MIFARE_ULC
-#define PH_FRINFC_MFUL_FMT_WR_TLV1             4 /*!< Write TLV (second part) */ 
+#define PH_FRINFC_MFUL_FMT_WR_TLV1                  4 /*!< Write TLV (second part) */ 
 #endif  /* #ifdef PH_NDEF_MIFARE_ULC */
 #ifdef FRINFC_READONLY_NDEF
-#define PH_FRINFC_MFUL_FMT_RO_RD_16BYTES       5 /*!< Read only the tag */
-#define PH_FRINFC_MFUL_FMT_RO_WR_LOCK_BYTES    6 /*!< Write lock bytes to make the tag Read only */
-#define PH_FRINFC_MFUL_FMT_RO_WR_OTP_BYTES     7 /*!< Write OTP bytes to make the tag Read only */
+#define PH_FRINFC_MFUL_FMT_RO_RD_16BYTES            5 /*!< Read only the tag */
+#define PH_FRINFC_MFUL_FMT_RO_WR_LOCK_BYTES         6 /*!< Write lock bytes to make the tag Read only */
+#define PH_FRINFC_MFUL_FMT_RO_WR_OTP_BYTES          7 /*!< Write OTP bytes to make the tag Read only */
+
+#ifdef PH_NDEF_MIFARE_ULC
+#define PH_FRINFC_MFUL_FMT_RO_RD_DYN_LOCK_BYTES     8 /*!< Read default dynamic lock bytes address */
+#define PH_FRINFC_MFUL_FMT_RO_WR_DYN_LOCK_BYTES     9 /*!< Write default dynamic lock bytes address */
+#define PH_FRINFC_MFUL_FMT_RO_PARSE_NDEF            10 /*!< Write default dynamic lock bytes address */
+#define PH_FRINFC_MFUL_FMT_RO_NDEF_PARSE_RD_BYTES   12 /*!< Read bytes from the card for parsing NDEF */
+#endif /* #ifdef PH_NDEF_MIFARE_ULC */
+
 #endif /* #ifdef FRINFC_READONLY_NDEF */
 
 /*@}*/

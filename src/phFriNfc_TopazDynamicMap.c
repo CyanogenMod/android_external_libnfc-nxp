@@ -20,10 +20,10 @@
 *
 * Project: NFC-FRI
 *
-* $Date: Tue Jun  8 17:19:18 2010 $
+* $Date: Wed Oct 27 10:21:29 2010 $
 * $Author: ing02260 $
-* $Revision: 1.38 $
-* $Aliases: NFC_FRI1.1_WK1023_R35_1 $
+* $Revision: 1.41 $
+* $Aliases:  $
 *
 */
 
@@ -43,8 +43,8 @@
 *
 */
 /*@{*/
-#define PHFRINFCTOPAZMAP_FILEREVISION "$Revision: 1.38 $"
-#define PHFRINFCTOPAZMAP_FILEALIASES  "$Aliases: NFC_FRI1.1_WK1023_R35_1 $"
+#define PHFRINFCTOPAZMAP_FILEREVISION "$Revision: 1.41 $"
+#define PHFRINFCTOPAZMAP_FILEALIASES  "$Aliases:  $"
 /*@}*/
 /*!
 * \name Topaz Mapping - Helper data structures and macros
@@ -53,7 +53,21 @@
 /*@{*/
 
 /********************************** Start of data structures *********************************/
+#ifdef FRINFC_READONLY_NDEF
 
+    #define DYN_CC_BLOCK_NUMBER                                     (0x01U)
+    #define DYN_STATIC_LOCK_BLOCK_NUM                               (0x0EU)
+
+    #define DYN_STATIC_LOCK0_BYTE_NUM                               (0x00U)
+    #define DYN_STATIC_LOCK0_BYTE_VALUE                             (0xFFU)
+
+    #define DYN_STATIC_LOCK1_BYTE_NUM                               (0x01U)
+    #define DYN_STATIC_LOCK1_BYTE_VALUE                             (0x7FU)
+
+    #define DYN_CC_RWA_BYTE_NUMBER                                  (0x03U)
+    #define DYN_CC_READ_ONLY_VALUE                                  (0x0FU)
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 /*!
 * \brief \copydoc page_ovr enum for the topaz sequence of execution. 
@@ -86,11 +100,29 @@ typedef enum phFriNfc_Tpz_WrSeq
     WR_NMN_E1
 }phFriNfc_Tpz_WrSeq_t;
 
+#ifdef FRINFC_READONLY_NDEF
+
+typedef enum phFriNfc_Tpz_RO_Seq
+{
+    WR_READONLY_CC, 
+    RD_LOCK_BYTES, 
+    WR_LOCK_BYTES, 
+    RD_STATIC_LOCK_BYTE0,
+    WR_STATIC_LOCK_BYTE0,
+    WR_STATIC_LOCK_BYTE1
+}phFriNfc_Tpz_RO_Seq_t;
+
+#endif /* #ifdef FRINFC_READONLY_NDEF  */
+
 /********************************** End of data structures *********************************/
 
 /********************************** Start of Macros *********************************/
 /* New state for TOPAZ dynamic  card*/
 #define PH_FRINFC_TOPAZ_STATE_RD_FOR_WR_NDEF            (0x10U)
+
+#ifdef FRINFC_READONLY_NDEF
+    #define PH_FRINFC_TOPAZ_STATE_READ_ONLY             (0x11U)
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 #define NIBBLE_SIZE                                     (0x04U)
 /* Byte shifting for the topaz */
@@ -110,7 +142,7 @@ typedef enum phFriNfc_Tpz_WrSeq
 /* First lock or reserved byte number in the static area of the card */
 #define TOPAZ_STATIC_LOCK_RES_START                     (0x68U)
 /* End lock or reserved byte number in the static area of the card */
-#define TOPAZ_STATIC_LOCK_RES_END                       (0x80U)
+#define TOPAZ_STATIC_LOCK_RES_END                       (0x78U)
 
 /* CC byte length */
 #define TOPAZ_CC_BYTES_LENGTH                           (0x04U)
@@ -168,6 +200,14 @@ so there are 4 segements in the card */
     (((block_no) + 1) + TOPAZ_STATIC_LOCK_BLOCK_AREAS) : \
     ((block_no) + 1))
 
+#ifdef FRINFC_READONLY_NDEF
+
+#define TOPAZ_CONVERT_BITS_TO_BYTES(bits_to_bytes) \
+            (((bits_to_bytes % TOPAZ_BYTE_SIZE_IN_BITS) > 0) ? \
+            ((bits_to_bytes / TOPAZ_BYTE_SIZE_IN_BITS) + 1) : \
+            (bits_to_bytes / TOPAZ_BYTE_SIZE_IN_BITS))
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 /********************************** End of Macros *********************************/
 
 /*@}*/
@@ -489,6 +529,21 @@ NFCSTATUS
 phFriNfc_Tpz_H_UpdateNdefTypeField (
     phFriNfc_NdefMap_t          *psNdefMap);
 
+#ifdef FRINFC_READONLY_NDEF
+
+static
+NFCSTATUS
+phFriNfc_Tpz_H_ProcessReadOnly (
+    phFriNfc_NdefMap_t          *psNdefMap);
+
+static 
+NFCSTATUS
+phFriNfc_Tpz_H_UpdateAndWriteLockBits (
+    phFriNfc_NdefMap_t          *psNdefMap);
+
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
+
 
 /*!
 * \brief Check whether a particular Remote Device is NDEF compliant.
@@ -521,6 +576,12 @@ NFCSTATUS  phFriNfc_TopazDynamicMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
         NdefMap->TopazContainer.CurrentBlock = 0;
         NdefMap->TopazContainer.WriteSeq = 0;
         NdefMap->TopazContainer.ExpectedSeq = 0;
+        
+        (void)memset ((void *)&(NdefMap->LockTlv), 0, 
+                        sizeof (phFriNfc_LockCntrlTLVCont_t));
+
+        (void)memset ((void *)&(NdefMap->MemTlv), 0, 
+                    sizeof (phFriNfc_ResMemCntrlTLVCont_t));
         
         /* Set card state */
         NdefMap->CardType = PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD;
@@ -648,6 +709,44 @@ NFCSTATUS phFriNfc_TopazDynamicMap_RdNdef( phFriNfc_NdefMap_t           *NdefMap
     
     return Result;
 }
+
+#ifdef FRINFC_READONLY_NDEF
+
+NFCSTATUS
+phFriNfc_TopazDynamicMap_ConvertToReadOnly (
+    phFriNfc_NdefMap_t     *psNdefMap)
+{
+    NFCSTATUS                   result = NFCSTATUS_SUCCESS;
+    uint8_t                     cc_read_only_byte = 0x0FU;
+
+    psNdefMap->State = PH_FRINFC_TOPAZ_STATE_READ_ONLY;
+    
+    psNdefMap->TopazContainer.read_only_seq = 0;
+
+
+
+    psNdefMap->TopazContainer.CurrentBlock = 0x01U;
+    psNdefMap->TopazContainer.ByteNumber = 0x03U;
+                    
+#ifdef TOPAZ_RAW_SUPPORT
+    *psNdefMap->SendRecvBuf = (uint8_t)PH_FRINFC_TOPAZ_CMD_WRITE_1E;
+#else 
+    psNdefMap->Cmd.JewelCmd = phHal_eJewel_Write1E;
+#endif /* #ifdef TOPAZ_RAW_SUPPORT */
+
+    result = phFriNfc_Tpz_H_NxpWrite (psNdefMap, &cc_read_only_byte, 
+                                    1);
+        
+    if (NFCSTATUS_PENDING == result)
+    {
+        psNdefMap->TopazContainer.read_only_seq = (uint8_t)WR_READONLY_CC;
+    }
+
+
+    return result;
+}
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 /*!
 * \brief Initiates Writing of NDEF information to the Remote Device.
@@ -793,6 +892,14 @@ void phFriNfc_TopazDynamicMap_Process( void       *Context,
                 Status = phFriNfc_Tpz_H_ChkReadID(NdefMap);
                 break;
             }
+
+#ifdef FRINFC_READONLY_NDEF
+            case PH_FRINFC_TOPAZ_STATE_READ_ONLY:
+            {
+                Status = phFriNfc_Tpz_H_ProcessReadOnly (NdefMap);
+                break;
+            }
+#endif /* #ifdef FRINFC_READONLY_NDEF */
             
             default:
             {
@@ -809,6 +916,364 @@ void phFriNfc_TopazDynamicMap_Process( void       *Context,
         phFriNfc_Tpz_H_Complete(NdefMap, Status);
     }
 }
+
+#ifdef FRINFC_READONLY_NDEF
+
+static 
+NFCSTATUS
+phFriNfc_Tpz_H_UpdateAndWriteLockBits (
+    phFriNfc_NdefMap_t          *psNdefMap)
+{
+    NFCSTATUS                       result = NFCSTATUS_SUCCESS;
+    phFriNfc_TopazCont_t            *ps_tpz_info = NULL;
+    phFriNfc_LockCntrlTLVCont_t     *ps_locktlv_info = NULL;
+    uint8_t                         remaining_lock_bits = 0;
+    uint8_t                         byte_index = 0;
+    uint8_t                         lock_bytes_value[TOPAZ_BYTES_PER_BLOCK] = {0};
+    uint8_t                         lock_byte_index = 0;
+    uint8_t                         no_of_bits_left_in_block = 0;
+
+    ps_tpz_info = &(psNdefMap->TopazContainer);
+    ps_locktlv_info = &(psNdefMap->LockTlv);
+
+    (void)memcpy ((void *)lock_bytes_value, (void *)psNdefMap->SendRecvBuf, 
+                    TOPAZ_BYTES_PER_BLOCK);
+
+    if (ps_tpz_info->CurrentBlock == ps_locktlv_info->BlkNum)
+    {
+        /* Get the lock bits that has to locked */
+        remaining_lock_bits = ps_locktlv_info->LockTlvBuff[1];
+        byte_index = (uint8_t)ps_locktlv_info->ByteNum;
+    }
+    else
+    {
+        /* This condition applies only for the lock bits not ending with 
+        " ps_locktlv_info->BlkNum ".
+        Calculate the remaining lock bits */
+        remaining_lock_bits = (uint8_t)(ps_locktlv_info->LockTlvBuff[1] - 
+                    ps_tpz_info->lock_bytes_written);
+    }
+
+    no_of_bits_left_in_block = (uint8_t)((TOPAZ_BYTES_PER_BLOCK - byte_index) * 
+                                TOPAZ_BYTE_SIZE_IN_BITS);
+
+    if (no_of_bits_left_in_block >= remaining_lock_bits)
+    {
+        /* Entire lock bits can be written */
+        uint8_t                 mod_value = 0;
+
+        mod_value = (uint8_t)(remaining_lock_bits % TOPAZ_BYTES_PER_BLOCK);
+
+        if (mod_value)
+        {
+            /* The lock bits ends in between of a byte */
+            /* lock bits to write is greater than 8 bits */
+            if (mod_value > TOPAZ_BYTE_SIZE_IN_BITS)
+            {
+                while (lock_byte_index < 
+                    (TOPAZ_CONVERT_BITS_TO_BYTES(remaining_lock_bits) - 1))
+                {
+                    /* Set 1b to all bits left in the block */
+                    lock_bytes_value[byte_index] = 0xFF;
+                    lock_byte_index = (uint8_t)(lock_byte_index + 1);
+                    byte_index = (uint8_t)(byte_index + 1);
+                }
+                /* Last byte of the lock bits shall be filled partially,
+                    Set only the remaining lock bits and dont change 
+                    the other bit value */
+                lock_bytes_value[byte_index] = 0;
+                lock_bytes_value[byte_index] = (uint8_t)
+                        SET_BITS8 (lock_bytes_value[byte_index], 0, 
+                                    mod_value, 1);
+            }
+            else
+            {
+                /* lock bits to write is less than 8 bits, so 
+                    there is only one byte to write.
+                    Set only the remaining lock bits and dont change 
+                    the other bit value */
+                lock_bytes_value[0] = (uint8_t)
+                        SET_BITS8 (lock_bytes_value[0], 0, 
+                                    mod_value, 1);
+            }            
+        } /* if (mod_value) */
+        else
+        {
+            /* The lock bits exactly ends at a byte 
+            MOD operation is 00, that means entire byte value shall be 0xFF, means
+            every bit shall be to 1 */
+
+            while (lock_byte_index < TOPAZ_CONVERT_BITS_TO_BYTES(remaining_lock_bits))
+            {
+                /* Set 1b to all bits left in the block */
+                lock_bytes_value[byte_index] = 0xFF;
+                lock_byte_index = (uint8_t)(lock_byte_index + 1);
+                byte_index = (uint8_t)(byte_index + 1);
+            }
+        } /* else of /* if (mod_value) */
+        ps_tpz_info->lock_bytes_written = remaining_lock_bits;
+    }
+    else /* if (no_of_bits_left_in_block >= remaining_lock_bits) */
+    {
+        /* Partial lock bits can be written. use next read to write 
+            the remaining lock bits  */
+        while (lock_byte_index <  (no_of_bits_left_in_block / 
+                            TOPAZ_BYTES_PER_BLOCK))
+        {
+            /* Set 1b to all bits left in the block */
+            lock_bytes_value[byte_index] = 0xFF;
+            lock_byte_index = (uint8_t)(lock_byte_index + 1);
+            byte_index = (uint8_t)(byte_index + 1);
+        }
+        ps_tpz_info->lock_bytes_written = (uint8_t)(no_of_bits_left_in_block / 
+                            TOPAZ_BYTES_PER_BLOCK);
+    } /* else of if (no_of_bits_left_in_block >= remaining_lock_bits) */
+
+#ifdef TOPAZ_RAW_SUPPORT
+    *psNdefMap->SendRecvBuf = PH_FRINFC_TOPAZ_CMD_WRITE_E8;
+#else
+    psNdefMap->Cmd.JewelCmd = phHal_eJewel_Write8E;
+#endif /* #ifdef TOPAZ_RAW_SUPPORT */
+
+    result = phFriNfc_Tpz_H_NxpWrite (psNdefMap, lock_bytes_value, 
+                                    sizeof (lock_bytes_value));
+    return result;
+}
+
+static
+NFCSTATUS
+phFriNfc_Tpz_H_ProcessReadOnly (
+    phFriNfc_NdefMap_t          *psNdefMap)
+{
+    NFCSTATUS                           result = NFCSTATUS_SUCCESS;
+    phFriNfc_Tpz_RO_Seq_t               e_readonly_seq = RD_LOCK_BYTES;
+    phFriNfc_TopazCont_t                *ps_tpz_info = NULL;
+    phFriNfc_LockCntrlTLVCont_t         *ps_locktlv_info = NULL;
+    static uint8_t                      static_lock_bytes[2] = {0};
+
+    ps_tpz_info = &(psNdefMap->TopazContainer);
+    ps_locktlv_info = &(psNdefMap->LockTlv);
+    e_readonly_seq = (phFriNfc_Tpz_RO_Seq_t)psNdefMap->TopazContainer.read_only_seq;
+
+    switch (e_readonly_seq)
+    {
+        case WR_READONLY_CC:
+        {
+            if (TOPAZ_WRITE_1_RESPONSE == *psNdefMap->SendRecvLength)
+            {
+                psNdefMap->TopazContainer.CurrentBlock = (uint8_t)
+                                psNdefMap->LockTlv.BlkNum;
+
+                e_readonly_seq = RD_LOCK_BYTES;
+#ifdef TOPAZ_RAW_SUPPORT
+
+                *psNdefMap->SendRecvBuf = PH_FRINFC_TOPAZ_CMD_READ8;
+
+#else 
+
+        /* Topaz command = Jewel Nxp Read */
+#ifdef PH_HAL4_ENABLE
+                psNdefMap->Cmd.JewelCmd = phHal_eJewel_Read;
+#else
+                psNdefMap->Cmd.JewelCmd = phHal_eJewelCmdListJewelRead;
+#endif  
+        
+                psNdefMap->Cmd.JewelCmd = phHal_eJewel_Read8;
+
+#endif /* #ifdef TOPAZ_RAW_SUPPORT */
+                /* Call read segment */
+                result = phFriNfc_Tpz_H_NxpRead (psNdefMap);
+            }
+            else
+            {
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_RECEIVE_LENGTH);
+            }
+            break;
+        }
+
+        case RD_LOCK_BYTES:
+        {
+            if (TOPAZ_READ_8_RESPONSE == *psNdefMap->SendRecvLength)
+            { 
+                result = phFriNfc_Tpz_H_UpdateAndWriteLockBits (psNdefMap);
+
+                if (NFCSTATUS_PENDING == result)
+                {
+                    e_readonly_seq = WR_LOCK_BYTES;
+                }
+            }
+            else
+            {
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_RECEIVE_LENGTH);
+            }
+            break;
+        }
+
+        case WR_LOCK_BYTES:
+        {
+            if (TOPAZ_WRITE_8_RESPONSE == *psNdefMap->SendRecvLength)
+            {
+                ps_tpz_info->CurrentBlock = (uint8_t)
+                                        (ps_tpz_info->CurrentBlock + 1); 
+                if (ps_locktlv_info->LockTlvBuff[1] - 
+                    ps_tpz_info->lock_bytes_written)
+                {                    
+#ifdef TOPAZ_RAW_SUPPORT
+
+                    *psNdefMap->SendRecvBuf = PH_FRINFC_TOPAZ_CMD_READ8;
+
+#else 
+
+                    /* Topaz command = Jewel Nxp Read */
+#ifdef PH_HAL4_ENABLE
+                    psNdefMap->Cmd.JewelCmd = phHal_eJewel_Read;
+#else
+                    psNdefMap->Cmd.JewelCmd = phHal_eJewelCmdListJewelRead;
+#endif  
+        
+                    psNdefMap->Cmd.JewelCmd = phHal_eJewel_Read8;
+
+#endif /* #ifdef TOPAZ_RAW_SUPPORT */
+                    /* Call read segment */
+                    result = phFriNfc_Tpz_H_NxpRead (psNdefMap);
+                    e_readonly_seq = RD_LOCK_BYTES;
+                }
+                else
+                {
+                    ps_tpz_info->CurrentBlock = (uint8_t)
+                                        DYN_STATIC_LOCK_BLOCK_NUM;
+                    ps_tpz_info->ByteNumber = (uint8_t)
+                                        DYN_STATIC_LOCK0_BYTE_NUM;
+#ifdef TOPAZ_RAW_SUPPORT
+
+                    *psNdefMap->SendRecvBuf = (uint8_t)PH_FRINFC_TOPAZ_CMD_READ8;
+
+#else 
+
+                    /* Topaz command = Jewel Nxp Read */
+#ifdef PH_HAL4_ENABLE
+                    psNdefMap->Cmd.JewelCmd = phHal_eJewel_Read;
+#else
+                    psNdefMap->Cmd.JewelCmd = phHal_eJewelCmdListJewelRead;
+#endif  
+        
+                    psNdefMap->Cmd.JewelCmd = phHal_eJewel_Read8;
+
+#endif /* #ifdef TOPAZ_RAW_SUPPORT */
+                    /* Call read segment */
+                    result = phFriNfc_Tpz_H_NxpRead (psNdefMap);
+                    e_readonly_seq = RD_STATIC_LOCK_BYTE0;
+
+                }                
+            }
+            else
+            {
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_RECEIVE_LENGTH);
+            }
+            break;
+        }
+        
+        case RD_STATIC_LOCK_BYTE0:
+        {
+            if (TOPAZ_READ_8_RESPONSE == *psNdefMap->SendRecvLength)
+            {
+                uint8_t                 lock_byte_value = 0;
+
+                (void)memcpy ((void *)static_lock_bytes, 
+                            (void *)(psNdefMap->SendRecvBuf + 
+                                ps_tpz_info->ByteNumber), 
+                            sizeof (static_lock_bytes));
+
+
+                lock_byte_value = (uint8_t)(static_lock_bytes[0] | 
+                                    DYN_STATIC_LOCK0_BYTE_VALUE);
+                    
+#ifdef TOPAZ_RAW_SUPPORT
+                    *psNdefMap->SendRecvBuf = (uint8_t)PH_FRINFC_TOPAZ_CMD_WRITE_1E;
+#else
+                    psNdefMap->Cmd.JewelCmd = phHal_eJewel_Write1E;
+#endif /* #ifdef TOPAZ_RAW_SUPPORT */
+
+                result = phFriNfc_Tpz_H_NxpWrite (psNdefMap, &lock_byte_value, 
+                                                    1);
+
+                    if (NFCSTATUS_PENDING == result)
+                    {
+                    e_readonly_seq = (uint8_t)WR_STATIC_LOCK_BYTE0;
+                    }
+                }                
+            else
+            {
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_RECEIVE_LENGTH);
+            }
+            break;
+        }        
+
+        case WR_STATIC_LOCK_BYTE0:
+        {
+            if (TOPAZ_WRITE_1_RESPONSE == *psNdefMap->SendRecvLength)
+            {
+                uint8_t                 lock_byte_value = 
+                                        (static_lock_bytes[1] | 
+                                        DYN_STATIC_LOCK1_BYTE_VALUE);
+
+                ps_tpz_info->CurrentBlock = (uint8_t)
+                                    DYN_STATIC_LOCK_BLOCK_NUM;
+                ps_tpz_info->ByteNumber = (uint8_t)
+                                    DYN_STATIC_LOCK1_BYTE_NUM;
+#ifdef TOPAZ_RAW_SUPPORT
+                *psNdefMap->SendRecvBuf = (uint8_t)PH_FRINFC_TOPAZ_CMD_WRITE_1E;
+#else
+                psNdefMap->Cmd.JewelCmd = phHal_eJewel_Write1E;
+#endif /* #ifdef TOPAZ_RAW_SUPPORT */
+
+                result = phFriNfc_Tpz_H_NxpWrite (psNdefMap, &lock_byte_value, 
+                                                    1);
+
+                if (NFCSTATUS_PENDING == result)
+                {
+                    e_readonly_seq = (uint8_t)WR_STATIC_LOCK_BYTE1;
+                }
+            }
+            else
+            {
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_RECEIVE_LENGTH);
+            }
+            break;
+        }
+
+        case WR_STATIC_LOCK_BYTE1:
+        {
+            if (TOPAZ_WRITE_1_RESPONSE == *psNdefMap->SendRecvLength)
+            {
+                /* READ ONLY successful */
+            }
+            else
+            {
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_RECEIVE_LENGTH);
+            }
+            break;
+        }
+
+        default:
+        {
+            result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_RECEIVE_LENGTH);
+            break;
+        }
+    }
+
+    psNdefMap->TopazContainer.read_only_seq = (uint8_t)e_readonly_seq;
+    return result;
+}
+
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 static 
 NFCSTATUS 
@@ -1278,7 +1743,7 @@ phFriNfc_Tpz_H_ChkReadID(
             compare_result = phOsalNfc_MemCompare (
                                 psNdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.Uid, 
                                 &psNdefMap->SendRecvBuf[PH_FRINFC_TOPAZ_VAL2],
-                                psNdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength);
+                                TOPAZ_UID_LENGTH_FOR_READ_WRITE);
             if (0 == compare_result)
             {
                 /* State has to be changed */
@@ -1449,9 +1914,9 @@ phFriNfc_Tpz_H_NxpRead (
 
             (void)memcpy ((void *)(psNdefMap->SendRecvBuf + send_index), 
                         (void *)psNdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.Uid, 
-                        psNdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength);
+                        TOPAZ_UID_LENGTH_FOR_READ_WRITE);
             send_index = (uint8_t)(send_index + 
-                        psNdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength);            
+                        TOPAZ_UID_LENGTH_FOR_READ_WRITE);            
         }
 
         psNdefMap->SendLength = send_index;
@@ -1570,9 +2035,8 @@ phFriNfc_Tpz_H_NxpWrite(
 
         (void)memcpy ((void *)(psNdefMap->SendRecvBuf + send_index), 
                     (void *)psNdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.Uid, 
-                    psNdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength);
-        send_index = (uint8_t)(send_index + 
-                    psNdefMap->psRemoteDevInfo->RemoteDevInfo.Jewel_Info.UidLength);
+                    TOPAZ_UID_LENGTH_FOR_READ_WRITE);
+        send_index = (uint8_t)(send_index + TOPAZ_UID_LENGTH_FOR_READ_WRITE);
 
 #endif /* #ifdef TOPAZ_RAW_SUPPORT */
 
@@ -2128,9 +2592,9 @@ phFriNfc_Tpz_H_CopyReadData (
         phFriNfc_Tpz_H_GetNDEFValueFieldAddrForRead (psNdefMap)) == 
         ps_tpz_info->CurrentSeg)
     {
-        copy_index = (uint16_t)(
+        copy_index = (uint16_t)(copy_index + (
                     phFriNfc_Tpz_H_GetNDEFValueFieldAddrForRead (
-                        psNdefMap) % TOPAZ_SEGMENT_READ_LENGTH);
+                        psNdefMap) % TOPAZ_SEGMENT_READ_LENGTH));
         skip_size = 0;
     }
 
@@ -2159,7 +2623,11 @@ phFriNfc_Tpz_H_CopyReadData (
             <= ps_locktlv_info->ByteAddr)
             )
         {
-            copy_till_address = ps_locktlv_info->ByteAddr;
+            if ((ps_locktlv_info->ByteAddr < TOPAZ_STATIC_LOCK_RES_START) || 
+                (ps_locktlv_info->ByteAddr >= (TOPAZ_STATIC_LOCK_RES_END + 8)))
+            {
+                copy_till_address = ps_locktlv_info->ByteAddr;
+            }
             skip_size = phFriNfc_Tpz_H_GetSkipSize (psNdefMap, 
                                                         ps_locktlv_info->ByteAddr);
         }
@@ -2179,10 +2647,14 @@ phFriNfc_Tpz_H_CopyReadData (
             <= ps_memtlv_info->ByteAddr)
             )
         {
-            copy_till_address = (uint16_t)
+            if ((ps_memtlv_info->ByteAddr < TOPAZ_STATIC_LOCK_RES_START) ||  
+                (ps_memtlv_info->ByteAddr >= (TOPAZ_STATIC_LOCK_RES_END + 8)))
+            {
+                copy_till_address = (uint16_t)
                             (((ps_memtlv_info->ByteAddr < copy_till_address) || 
                                 (0 == copy_till_address))?  
                             ps_memtlv_info->ByteAddr : copy_till_address);
+            }
 
             if (copy_till_address == ps_memtlv_info->ByteAddr)
             {
@@ -2284,6 +2756,11 @@ phFriNfc_Tpz_H_CopyReadData (
                 /* Copy the data in the user buffer */
                 copy_index = (uint16_t)(copy_index + copy_length); 
             }
+        }
+
+        if (copy_index != copy_till_address)
+        {
+            skip_size = 0;
         }
 
         if ((copy_index + skip_size) <= recv_length)
@@ -2455,6 +2932,10 @@ phFriNfc_Tpz_H_ParseTLVs (
                     /* All the 3 bytes are copied in the local buffer */
                     if (TOPAZ_MEM_LOCK_TLV_LENGTH == lock_mem_ndef_index)
                     {
+#ifdef FRINFC_READONLY_NDEF
+                        (void)memcpy ((void *)psNdefMap->LockTlv.LockTlvBuff, 
+                                (void *)lock_mem_buf, sizeof (lock_mem_buf));
+#endif /* #ifdef FRINFC_READONLY_NDEF */
                         /* Calculate the byte address and size of the lock bytes */
                         result = phFriNfc_Tpz_H_GetLockBytesInfo (psNdefMap, lock_mem_buf);
                         lock_mem_ndef_index = 0;
@@ -2712,6 +3193,7 @@ phFriNfc_Tpz_H_ParseTLVs (
                 ps_tpz_info->NDEFRWSize = (uint16_t)
                                         (ps_tpz_info->NDEFRWSize - 2);
                 ndef_tlv_byte_addr = 0;
+                result = NFCSTATUS_SUCCESS;
             }
         }
     }
@@ -3683,7 +4165,7 @@ phFriNfc_Tpz_H_GetLockBytesInfo (
         ByteAddr = PageAddr*2^BytesPerPage + ByteOffset
     */
     ps_locktlv_info->ByteAddr = (uint16_t)((page_address 
-                                * (2 << ps_locktlv_info->BytesPerPage))
+                                * (1 << ps_locktlv_info->BytesPerPage))
                                 + bytes_offset);
 
     
@@ -3746,7 +4228,7 @@ phFriNfc_Tpz_H_GetMemBytesInfo (
         ByteAddr = PageAddr * 2^BytesPerPage + ByteOffset
     */
     ps_memtlv_info->ByteAddr = (uint16_t)((page_address 
-                            * (2 << ps_memtlv_info->BytesPerPage))
+                            * (1 << ps_memtlv_info->BytesPerPage))
                             + bytes_offset);
 
     
