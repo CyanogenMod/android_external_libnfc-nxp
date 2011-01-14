@@ -181,7 +181,7 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
          if(psLocalLlcpSocket->bSocketSendPending == TRUE)
          {
             /* Test the RW window */
-            if(psLocalLlcpSocket->socket_VS != (psLocalLlcpSocket->socket_VSA + psLocalLlcpSocket->remoteRW))
+            if(CHECK_SEND_RW(psLocalLlcpSocket))
             {
                /* Set the Header */
                psLocalLlcpSocket->sLlcpHeader.dsap   = psLocalLlcpSocket->socket_dSap;
@@ -1265,7 +1265,7 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
                psLocalLlcpSocket->pfSocketRecv_Cb = NULL;
 
                /* Test if a send is pending with this socket */
-               if(psLocalLlcpSocket->bSocketSendPending == TRUE && (psLocalLlcpSocket->socket_VS != (psLocalLlcpSocket->socket_VSA + psLocalLlcpSocket->remoteRW)))
+               if(psLocalLlcpSocket->bSocketSendPending == TRUE && CHECK_SEND_RW(psLocalLlcpSocket))
                {
                   /* Test if a send is pending at LLC layer */
                   if(psTransport->bSendPending != TRUE)
@@ -1371,7 +1371,7 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
               }
 
               /* Test if a send is pending with this socket */
-              if((psLocalLlcpSocket->bSocketSendPending == TRUE) && (psLocalLlcpSocket->socket_VS != (psLocalLlcpSocket->socket_VSA + psLocalLlcpSocket->remoteRW)))
+              if((psLocalLlcpSocket->bSocketSendPending == TRUE) && CHECK_SEND_RW(psLocalLlcpSocket))
               {
                  /* Test if a send is pending at LLC layer */
                  if(psTransport->bSendPending != TRUE)
@@ -1533,7 +1533,7 @@ static void Handle_ReceiveReady_Frame(phFriNfc_LlcpTransport_t      *psTransport
          if(psLocalLlcpSocket->bSocketSendPending == TRUE)
          {
             /* Test the RW window */
-            if(psLocalLlcpSocket->socket_VS != (psLocalLlcpSocket->socket_VSA + psLocalLlcpSocket->remoteRW))
+            if(CHECK_SEND_RW(psLocalLlcpSocket))
             {
                /* Test if a send is pending at LLC layer */
                if(psTransport->bSendPending != TRUE)
@@ -1669,7 +1669,7 @@ static void Handle_ReceiveNotReady_Frame(phFriNfc_LlcpTransport_t      *psTransp
          psLocalLlcpSocket->socket_VSA = (uint8_t)sLlcpLocalSequence.nr;
 
          /* Test if a send is pendind */
-         if(psLocalLlcpSocket->bSocketSendPending == TRUE && (psLocalLlcpSocket->socket_VS != (psLocalLlcpSocket->socket_VSA + psLocalLlcpSocket->remoteRW)))
+         if(psLocalLlcpSocket->bSocketSendPending == TRUE && CHECK_SEND_RW(psLocalLlcpSocket))
          {
             /* Test if a send is pending at LLC layer */
             if(psTransport->bSendPending != TRUE)
@@ -2567,7 +2567,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Send(phFriNfc_LlcpTransport_
 
 
    /* Test the RW window */
-   if(pLlcpSocket->socket_VS == (pLlcpSocket->socket_VSA + pLlcpSocket->remoteRW))
+   if(!CHECK_SEND_RW(pLlcpSocket))
    {
       /* Store the Send CB and context */
       pLlcpSocket->pfSocketSend_Cb    = pSend_RspCb;
