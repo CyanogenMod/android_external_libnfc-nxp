@@ -2081,11 +2081,11 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
       {
          /* Call the CB */
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
-         return status;
+         goto clean_and_return;
       }
    }
 
-   /* Recive Window */
+   /* Receive Window */
    if(pLlcpSocket->sSocketOption.rw != PHFRINFC_LLCP_RW_DEFAULT)
    {
       /* Encode RW value */
@@ -2101,7 +2101,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
       {
          /* Call the CB */
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
-         return status;
+         goto clean_and_return;
       }
    }
 
@@ -2143,6 +2143,15 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
                                    phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
                                    pLlcpSocket->psTransport);
    }
+
+clean_and_return:
+   if(status != NFCSTATUS_PENDING)
+   {
+      LLCP_PRINT("Release Accept callback");
+      pLlcpSocket->pfSocketAccept_Cb = NULL;
+      pLlcpSocket->pAcceptContext = NULL;
+   }
+
    return status;
 }
 
@@ -2257,11 +2266,12 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Connect( phFriNfc_LlcpTransp
                                         miux);
       if(status != NFCSTATUS_SUCCESS)
       {
-         return status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
+         status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
+         goto clean_and_return;
       }
    }
 
-   /* Recive Window */
+   /* Receive Window */
    if(pLlcpSocket->sSocketOption.rw != PHFRINFC_LLCP_RW_DEFAULT)
    {
       /* Encode RW value */
@@ -2276,6 +2286,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Connect( phFriNfc_LlcpTransp
       if(status != NFCSTATUS_SUCCESS)
       {
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
+         goto clean_and_return;
       }
    }
 
@@ -2291,10 +2302,11 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Connect( phFriNfc_LlcpTransp
       if(status != NFCSTATUS_SUCCESS)
       {
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
+         goto clean_and_return;
       }
    }
 
-      /* Test if a send is pending */
+   /* Test if a send is pending */
    if(pLlcpSocket->psTransport->bSendPending == TRUE)
    {
       pLlcpSocket->bSocketConnectPending =  TRUE;
@@ -2324,6 +2336,14 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Connect( phFriNfc_LlcpTransp
                                    &pLlcpSocket->sSocketSendBuffer,
                                    phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
                                    pLlcpSocket->psTransport);
+   }
+
+clean_and_return:
+   if(status != NFCSTATUS_PENDING)
+   {
+      LLCP_PRINT("Release Connect callback");
+      pLlcpSocket->pfSocketConnect_Cb = NULL;
+      pLlcpSocket->pConnectContext = NULL;
    }
 
    return status;
@@ -2423,7 +2443,14 @@ NFCSTATUS phLibNfc_LlcpTransport_ConnectionOriented_Disconnect(phFriNfc_LlcpTran
                                    NULL,
                                    phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
                                    pLlcpSocket->psTransport);
+      if(status != NFCSTATUS_PENDING)
+      {
+         LLCP_PRINT("Release Disconnect callback");
+         pLlcpSocket->pfSocketConnect_Cb = NULL;
+         pLlcpSocket->pConnectContext = NULL;
+      }
    }
+
    return status;
 }
 
@@ -2621,6 +2648,12 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Send(phFriNfc_LlcpTransport_
                                       psBuffer,
                                       phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
                                       pLlcpSocket->psTransport);
+         if(status != NFCSTATUS_PENDING)
+         {
+            LLCP_PRINT("Release Send callback");
+            pLlcpSocket->pfSocketSend_Cb = NULL;
+            pLlcpSocket->pSendContext = NULL;
+         }
 
          /* Update VS */
          pLlcpSocket->socket_VS = (pLlcpSocket->socket_VS+1)%16;
@@ -2825,6 +2858,14 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
             status = NFCSTATUS_PENDING;
          }
       }
+   }
+
+   if(status != NFCSTATUS_PENDING)
+   {
+      /* Note: The receive callback must be released to avoid being called at abort */
+      LLCP_PRINT("Release Receive callback");
+      pLlcpSocket->pfSocketRecv_Cb = NULL;
+      pLlcpSocket->pRecvContext = NULL;
    }
 
    return status;
