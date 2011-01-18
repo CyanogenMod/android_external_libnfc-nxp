@@ -58,7 +58,8 @@
 #define NXP_FEL_CUR_IDM_PMM_LEN             0x08U
 
 #define FELICA_STATUS                       0x00U
-#define FELICA_TIMEOUT                      NXP_FELICA_XCHG_TIMEOUT
+
+uint8_t nxp_nfc_felica_timeout = NXP_FELICA_XCHG_TIMEOUT;
 
 /* Presence check command for felica tag */
 #define FELICA_REQ_MODE                     0x04U
@@ -908,7 +909,7 @@ phHciNfc_Send_Felica_Command(
                     hcp_message = &(hcp_packet->msg.message);
 
                     /* Time out */
-                    hcp_message->payload[i++] = FELICA_TIMEOUT ;
+                    hcp_message->payload[i++] = nxp_nfc_felica_timeout ;
                     /* Status */
                     hcp_message->payload[i++] = FELICA_STATUS;
 

@@ -855,6 +855,10 @@ NFCSTATUS phLibNfc_Download_Mode ();
 // bit [5..7]  => unused
 NFCSTATUS phLibNfc_SetIsoXchgTimeout(uint8_t timeout);
 NFCSTATUS phLibNfc_SetHciTimeout(uint32_t timeout_in_ms);
+// Felica timeout
+// [0]      -> timeout disabled
+// [1..255] -> timeout in ms
+NFCSTATUS phLibNfc_SetFelicaTimeout(uint8_t timeout_in_ms);
 
 /**
 * \ingroup grp_lib_nfc
