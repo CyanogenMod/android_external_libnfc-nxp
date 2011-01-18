@@ -521,8 +521,8 @@ phFriNfc_MfUL_CalcByteNum(phFriNfc_NdefMap_t *NdefMap)
         {
             if (NdefMap->MifareULContainer.ReadBuf[i + 1] == 0xFF)
             {
-                TemLength = NdefMap->MifareULContainer.ReadBuf[i + 2] |
-                ((uint16_t)NdefMap->MifareULContainer.ReadBuf[i + 3] << 8);
+                TemLength = NdefMap->MifareULContainer.ReadBuf[i + 3] |
+                ((uint16_t)NdefMap->MifareULContainer.ReadBuf[i + 2] << 8);
 
                 if (TemLength == NdefMap->TLVStruct.ActualSize)
                 {
@@ -1891,9 +1891,9 @@ static NFCSTATUS phFriNfc_MfUL_H_findNDEFTLV(phFriNfc_NdefMap_t     *NdefMap,
 
 
                 ShiftLength = 
-                    (((uint16_t) (NdefMap->SendRecvBuf[Temp16Bytes])
+                    (((uint16_t) (ShiftLength)
                         << PH_FRINFC_NDEFMAP_MFUL_SHIFT8) | 
-                        ShiftLength);
+                        NdefMap->SendRecvBuf[Temp16Bytes]);
 
     //          NdefMap->MifareULContainer.RemainingSize--;
 
