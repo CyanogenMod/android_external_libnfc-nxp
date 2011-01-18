@@ -56,6 +56,8 @@
 ################################################################################
 */
 
+/* HCI timeout value */
+uint32_t nxp_nfc_hci_response_timeout = NXP_NFC_HCI_TIMEOUT;
 
 /*
 ################################################################################
@@ -577,7 +579,7 @@ phHciNfc_Release_Lower(
     {
         /* Start the HCI Response Timer */
         phOsalNfc_Timer_Start( hci_resp_timer_id,
-                NXP_HCI_RESPONSE_TIMEOUT, phHciNfc_Response_Timeout, NULL);
+                nxp_nfc_hci_response_timeout, phHciNfc_Response_Timeout, NULL );
         HCI_DEBUG(" HCI : Timer %X Started \n", hci_resp_timer_id);
     }
 

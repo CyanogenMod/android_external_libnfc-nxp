@@ -117,6 +117,19 @@ NFCSTATUS phLibNfc_Download_Mode ()
    return phDal4Nfc_Download();
 }
 
+
+extern uint8_t nxp_nfc_isoxchg_timeout;
+NFCSTATUS phLibNfc_SetIsoXchgTimeout(uint8_t timeout) {
+    nxp_nfc_isoxchg_timeout = timeout;
+    return NFCSTATUS_SUCCESS;
+}
+
+extern uint32_t nxp_nfc_hci_response_timeout;
+NFCSTATUS phLibNfc_SetHciTimeout(uint32_t timeout_in_ms) {
+    nxp_nfc_hci_response_timeout = timeout_in_ms;
+    return NFCSTATUS_SUCCESS;
+}
+
 /**
 *    Initialize the phLibNfc interface.
 */

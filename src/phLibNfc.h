@@ -845,6 +845,17 @@ NFCSTATUS phLibNfc_HW_Reset ();
 
 NFCSTATUS phLibNfc_Download_Mode ();
 
+// timeout is 8 bits
+// bits [0..3] => timeout value, (256*16/13.56*10^6) * 2^value
+//                  [0] -> 0.0003s
+//                  ..
+//                  [14] -> 4.9s
+//                  [15] -> not allowed
+// bit [4]     => timeout enable
+// bit [5..7]  => unused
+NFCSTATUS phLibNfc_SetIsoXchgTimeout(uint8_t timeout);
+NFCSTATUS phLibNfc_SetHciTimeout(uint32_t timeout_in_ms);
+
 /**
 * \ingroup grp_lib_nfc
 *
