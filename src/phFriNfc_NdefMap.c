@@ -646,6 +646,11 @@ phFriNfc_NdefMap_ConvertToReadOnly (
             }
 
             case PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD:
+            {
+                result = phFriNfc_TopazDynamicMap_ConvertToReadOnly (NdefMap);
+                break;
+            }
+
             default:
             {
                 result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
