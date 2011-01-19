@@ -71,6 +71,11 @@ STATIC NFCSTATUS static_CheckDevice(phLibNfc_Handle hRemoteDevice)
 {
    phLibNfc_sRemoteDevInformation_t*   psRemoteDevInfo = (phLibNfc_sRemoteDevInformation_t*)hRemoteDevice;
 
+   if (hRemoteDevice == NULL)
+   {
+      return NFCSTATUS_INVALID_PARAMETER;
+   }
+
    /* If local device is the Initiator (remote is Target),
     * check if connection is correct
     */

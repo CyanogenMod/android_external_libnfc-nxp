@@ -826,8 +826,12 @@ NFCSTATUS phFriNfc_LlcpTransport_Connect( phFriNfc_LlcpTransport_Socket_t*      
    NFCSTATUS status = NFCSTATUS_SUCCESS;
    uint8_t i;
 
-      /* Check for NULL pointers */
-   if(pLlcpSocket == NULL || pConnect_RspCb == NULL || pContext == NULL)
+   /* Check for NULL pointers */
+   if(pConnect_RspCb == NULL)
+   {
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+   }
+   else if(pLlcpSocket == NULL || pConnect_RspCb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
       /* Call the CB */
