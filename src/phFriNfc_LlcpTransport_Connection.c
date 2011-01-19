@@ -125,7 +125,7 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
 
       case phFriNfc_LlcpTransportSocket_eSocketConnected:
          {
-            if(psTransport->pSocketTable[psTransport->socketIndex].sLlcpHeader.ptype == PHFRINFC_LLCP_PTYPE_I && psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb != NULL)
+            if(!psTransport->pSocketTable[psTransport->socketIndex].bSocketSendPending && psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb != NULL)
             {
                psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb(psTransport->pSocketTable[psTransport->socketIndex].pSendContext,status);
                psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb = NULL;
@@ -310,13 +310,10 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
             psLocalLlcpSocket->pSocketErrCb(psLocalLlcpSocket->pContext, PHFRINFC_LLCP_ERR_DISCONNECTED);
          }
          /* Call SEND IFRAME CB */
-         else if(psLocalLlcpSocket->pfSocketSend_Cb != NULL)
+         else if((psLocalLlcpSocket->pfSocketSend_Cb != NULL) && !psLocalLlcpSocket->bSocketSendPending)
          {
             psLocalLlcpSocket->pfSocketSend_Cb(psLocalLlcpSocket->pSendContext,status);
-            if(psTransport->pSocketTable[psTransport->socketIndex].bSocketSendPending != TRUE)
-            {
-               psLocalLlcpSocket->pfSocketSend_Cb = NULL;
-            }
+            psLocalLlcpSocket->pfSocketSend_Cb = NULL;
          }
       }
       /* Reset the current length of the send buffer */
@@ -325,7 +322,7 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
    else
    {
       /* Send CB error */
-      if(psTransport->pSocketTable[psTransport->socketIndex].sLlcpHeader.ptype == PHFRINFC_LLCP_PTYPE_I && psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb != NULL)
+      if(!psTransport->pSocketTable[psTransport->socketIndex].bSocketSendPending && psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb != NULL)
       {
          psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb(psTransport->pSocketTable[psTransport->socketIndex].pSendContext,status);
          psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb = NULL;
