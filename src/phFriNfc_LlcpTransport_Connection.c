@@ -377,9 +377,6 @@ static NFCSTATUS phFriNfc_Llcp_Send_DisconnectMode_Frame(phFriNfc_LlcpTransport_
                                                          uint8_t                     dmOpCode)
 {
    NFCSTATUS                       status = NFCSTATUS_SUCCESS;
-   phFriNfc_Llcp_sPacketHeader_t   sLocalLlcpHeader;
-   uint8_t                         dmValue;
-   phNfc_sData_t                   sLocalBuffer;
 
    /* Test if a send is pending */
    if(psTransport->bSendPending)
@@ -396,25 +393,24 @@ static NFCSTATUS phFriNfc_Llcp_Send_DisconnectMode_Frame(phFriNfc_LlcpTransport_
    }
    else
    {
-      /* Store the DM OpCode */
-      dmValue = dmOpCode;
-
       /* Set the header */
-      sLocalLlcpHeader.dsap  = dsap;
-      sLocalLlcpHeader.ptype = PHFRINFC_LLCP_PTYPE_DM;
-      sLocalLlcpHeader.ssap  = ssap;
+      psTransport->sDmHeader.dsap  = dsap;
+      psTransport->sDmHeader.ptype = PHFRINFC_LLCP_PTYPE_DM;
+      psTransport->sDmHeader.ssap  = ssap;
 
-      sLocalBuffer.buffer    = &dmValue;
-      sLocalBuffer.length    = PHFRINFC_LLCP_DM_LENGTH;
+      /* Save Operation Code to be provided in DM frame payload */
+      psTransport->DmInfoBuffer[2] = dmOpCode;
+      psTransport->sDmPayload.buffer    = &psTransport->DmInfoBuffer[2];
+      psTransport->sDmPayload.length    = PHFRINFC_LLCP_DM_LENGTH;
 
       /* Send Pending */
       psTransport->bSendPending = TRUE;
 
       /* Send DM frame */
       status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
-                                   &sLocalLlcpHeader,
+                                   &psTransport->sDmHeader,
                                    NULL,
-                                   &sLocalBuffer,
+                                   &psTransport->sDmPayload,
                                    phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
                                    psTransport);
    }
