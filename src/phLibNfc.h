@@ -2550,7 +2550,6 @@ extern NFCSTATUS phLibNfc_Llcp_GetRemoteInfo( phLibNfc_Handle                   
 * The options and working buffer are not required if the socket is used as a listening socket,
 * since it cannot be directly used for communication.
 *
-* \param[in]  hRemoteDevice         Peer handle obtained during device discovery process.
 * \param[in]  eType                 The socket type.
 * \param[in]  psOptions             The options to be used with the socket.
 * \param[in]  psWorkingBuffer       A working buffer to be used by the library.
@@ -2570,8 +2569,7 @@ extern NFCSTATUS phLibNfc_Llcp_GetRemoteInfo( phLibNfc_Handle                   
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_Socket( phLibNfc_Handle                  hRemoteDevice,
-                                       phLibNfc_Llcp_eSocketType_t      eType,
+extern NFCSTATUS phLibNfc_Llcp_Socket( phLibNfc_Llcp_eSocketType_t      eType,
                                        phLibNfc_Llcp_sSocketOptions_t*  psOptions,
                                        phNfc_sData_t*                   psWorkingBuffer,
                                        phLibNfc_Handle*                 phSocket,
@@ -2644,7 +2642,8 @@ extern NFCSTATUS phLibNfc_Llcp_SocketGetLocalOptions( phLibNfc_Handle           
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_SocketGetRemoteOptions( phLibNfc_Handle                  hSocket,
+extern NFCSTATUS phLibNfc_Llcp_SocketGetRemoteOptions( phLibNfc_Handle                  hRemoteDevice,
+                                                       phLibNfc_Handle                  hSocket,
                                                        phLibNfc_Llcp_sSocketOptions_t*  psRemoteOptions
                                                        );
 
@@ -2764,7 +2763,8 @@ extern NFCSTATUS phLibNfc_Llcp_Accept( phLibNfc_Handle                  hSocket,
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_Reject( phLibNfc_Handle                  hSocket,
+extern NFCSTATUS phLibNfc_Llcp_Reject( phLibNfc_Handle                  hRemoteDevice,
+                                       phLibNfc_Handle                  hSocket,
                                        pphLibNfc_LlcpSocketAcceptCb_t   pReject_RspCb,
                                        void*                            pContext);
 
@@ -2794,7 +2794,8 @@ extern NFCSTATUS phLibNfc_Llcp_Reject( phLibNfc_Handle                  hSocket,
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_Connect( phLibNfc_Handle                 hSocket,
+extern NFCSTATUS phLibNfc_Llcp_Connect( phLibNfc_Handle                 hRemoteDevice,
+                                        phLibNfc_Handle                 hSocket,
                                         uint8_t                         nSap,
                                         pphLibNfc_LlcpSocketConnectCb_t pConnect_RspCb,
                                         void*                           pContext
@@ -2826,7 +2827,8 @@ extern NFCSTATUS phLibNfc_Llcp_Connect( phLibNfc_Handle                 hSocket,
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_ConnectByUri( phLibNfc_Handle                 hSocket,
+extern NFCSTATUS phLibNfc_Llcp_ConnectByUri( phLibNfc_Handle                 hRemoteDevice,
+                                             phLibNfc_Handle                 hSocket,
                                              phNfc_sData_t*                  psUri,
                                              pphLibNfc_LlcpSocketConnectCb_t pConnect_RspCb,
                                              void*                           pContext
@@ -2856,7 +2858,8 @@ extern NFCSTATUS phLibNfc_Llcp_ConnectByUri( phLibNfc_Handle                 hSo
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_Disconnect( phLibNfc_Handle                    hSocket,
+extern NFCSTATUS phLibNfc_Llcp_Disconnect( phLibNfc_Handle                    hRemoteDevice,
+                                           phLibNfc_Handle                    hSocket,
                                            pphLibNfc_LlcpSocketDisconnectCb_t pDisconnect_RspCb,
                                            void*                              pContext
                                            );
@@ -2891,7 +2894,8 @@ extern NFCSTATUS phLibNfc_Llcp_Disconnect( phLibNfc_Handle                    hS
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_Recv( phLibNfc_Handle              hSocket,
+extern NFCSTATUS phLibNfc_Llcp_Recv( phLibNfc_Handle              hRemoteDevice,
+                                     phLibNfc_Handle              hSocket,
                                      phNfc_sData_t*               psBuffer,
                                      pphLibNfc_LlcpSocketRecvCb_t pRecv_RspCb,
                                      void*                        pContext
@@ -2924,7 +2928,8 @@ extern NFCSTATUS phLibNfc_Llcp_Recv( phLibNfc_Handle              hSocket,
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_RecvFrom( phLibNfc_Handle                   hSocket,
+extern NFCSTATUS phLibNfc_Llcp_RecvFrom( phLibNfc_Handle                   hRemoteDevice,
+                                         phLibNfc_Handle                   hSocket,
                                          phNfc_sData_t*                    psBuffer,
                                          pphLibNfc_LlcpSocketRecvFromCb_t  pRecv_Cb,
                                          void*                             pContext
@@ -2958,7 +2963,8 @@ extern NFCSTATUS phLibNfc_Llcp_RecvFrom( phLibNfc_Handle                   hSock
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_Send( phLibNfc_Handle              hSocket,
+extern NFCSTATUS phLibNfc_Llcp_Send( phLibNfc_Handle              hRemoteDevice,
+                                     phLibNfc_Handle              hSocket,
                                      phNfc_sData_t*               psBuffer,
                                      pphLibNfc_LlcpSocketSendCb_t pSend_RspCb,
                                      void*                        pContext
@@ -2992,7 +2998,8 @@ extern NFCSTATUS phLibNfc_Llcp_Send( phLibNfc_Handle              hSocket,
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
-extern NFCSTATUS phLibNfc_Llcp_SendTo( phLibNfc_Handle               hSocket,
+extern NFCSTATUS phLibNfc_Llcp_SendTo( phLibNfc_Handle               hRemoteDevice,
+                                       phLibNfc_Handle               hSocket,
                                        uint8_t                       nSap,
                                        phNfc_sData_t*                psBuffer,
                                        pphLibNfc_LlcpSocketSendCb_t  pSend_RspCb,
