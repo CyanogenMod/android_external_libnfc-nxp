@@ -23,7 +23,7 @@
  *
  * $Date: Wed Feb 17 15:18:08 2010 $
  * $Author: ing07385 $
- * $Revision: 1.35 $
+ * $Revision: 1.36 $
  * $Aliases: NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
  *
  */
@@ -521,8 +521,8 @@ phFriNfc_MfUL_CalcByteNum(phFriNfc_NdefMap_t *NdefMap)
         {
             if (NdefMap->MifareULContainer.ReadBuf[i + 1] == 0xFF)
             {
-                TemLength = NdefMap->MifareULContainer.ReadBuf[i + 3] |
-                ((uint16_t)NdefMap->MifareULContainer.ReadBuf[i + 2] << 8);
+                TemLength = NdefMap->MifareULContainer.ReadBuf[i + 2] |
+                ((uint16_t)NdefMap->MifareULContainer.ReadBuf[i + 3] << 8);
 
                 if (TemLength == NdefMap->TLVStruct.ActualSize)
                 {
@@ -646,8 +646,10 @@ void phFriNfc_MifareUL_Process( void        *Context,
                     PH_FRINFC_NDEFMAP_MFUL_RDBYTES_16)
                 {
                     if(NdefMap->MifareULContainer.ReadBufIndex < 
-                        (NdefMap->TLVStruct.ActualSize + (((NdefMap->TLVStruct.NdefTLVBlock - PH_FRINFC_NDEFMAP_MFUL_BLOCK4) 
+                        (NdefMap->TLVStruct.ActualSize + (((NdefMap->TLVStruct.NdefTLVBlock - 
+						PH_FRINFC_NDEFMAP_MFUL_BLOCK4) 
                             * PH_FRINFC_NDEFMAP_MFUL_VAL4) + (NdefMap->TLVStruct.NdefTLVByte - 1) + 4)))
+
                     {
                         Status = phFriNfc_MfUL_H_CopyRdBytes(NdefMap);
                     }
@@ -655,7 +657,8 @@ void phFriNfc_MifareUL_Process( void        *Context,
                     if (Status == NFCSTATUS_SUCCESS)
                     {
                         if(NdefMap->MifareULContainer.ReadBufIndex >= 
-                            (NdefMap->TLVStruct.ActualSize + (((NdefMap->TLVStruct.NdefTLVBlock - PH_FRINFC_NDEFMAP_MFUL_BLOCK4) 
+                            (NdefMap->TLVStruct.ActualSize + (((NdefMap->TLVStruct.NdefTLVBlock - 
+							PH_FRINFC_NDEFMAP_MFUL_BLOCK4) 
                             * PH_FRINFC_NDEFMAP_MFUL_VAL4) + (NdefMap->TLVStruct.NdefTLVByte - 1) + 4)))
                         {
 
@@ -1891,9 +1894,8 @@ static NFCSTATUS phFriNfc_MfUL_H_findNDEFTLV(phFriNfc_NdefMap_t     *NdefMap,
 
 
                 ShiftLength = 
-                    (((uint16_t) (ShiftLength)
-                        << PH_FRINFC_NDEFMAP_MFUL_SHIFT8) | 
-                        NdefMap->SendRecvBuf[Temp16Bytes]);
+                    (uint16_t) (NdefMap->SendRecvBuf[Temp16Bytes]
+                         | (ShiftLength << PH_FRINFC_NDEFMAP_MFUL_SHIFT8));
 
     //          NdefMap->MifareULContainer.RemainingSize--;
 
@@ -2397,6 +2399,12 @@ static void phFriNfc_MfUL_H_UpdateLen(phFriNfc_NdefMap_t        *NdefMap,
     {
         case PH_FRINFC_NDEFMAP_CHECK_OPE:
             *CRFlag = PH_FRINFC_NDEFMAP_MFUL_FLAG1;
+			/* Fix to check if the actual size in the TLV is greater than card */
+            if (NdefMap->TLVStruct.ActualSize > (NdefMap->CardMemSize - 2))
+            {
+                Result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+                                    NFCSTATUS_NO_NDEF_SUPPORT);
+            }
             break;
 
         case PH_FRINFC_NDEFMAP_READ_OPE:
@@ -2413,6 +2421,7 @@ static void phFriNfc_MfUL_H_UpdateLen(phFriNfc_NdefMap_t        *NdefMap,
             else
             {
                 NdefMap->MifareULContainer.CurrentBlock = (NdefMap->TLVStruct.NdefTLVBlock / 4) * 4;
+
                 Result = phFriNfc_MfUL_H_Rd16Bytes(NdefMap);
             }
 #if 0           
@@ -2444,11 +2453,70 @@ static NFCSTATUS phFriNfc_MfUL_H_CopyRdBytes(phFriNfc_NdefMap_t  *NdefMap)
     NFCSTATUS Result = NFCSTATUS_SUCCESS;
     uint16_t localCurrentBlock;
 
+#ifndef NDEF_READ_CHANGE
+	uint16_t			v_field_byte = 0;
+
+	if (NdefMap->MifareULContainer.CurrentBlock 
+		== NdefMap->TLVStruct.NdefTLVBlock)
+	{
+		v_field_byte = NdefMap->TLVStruct.NdefTLVByte;
+
+		/* Calculate the Value field of the TLV to read */
+		if (NdefMap->TLVStruct.ActualSize >= 0xFF)
+		{
+			
+			/* here 
+				3 is the 3 LENGTH bytes to skip  
+				4 is the block size
+				1 is to increment the byte number
+			*/
+			v_field_byte = (uint16_t)
+							(((v_field_byte + 3) % 4) + 1);
+		}
+		else
+		{
+			/* less than 0xFF */
+#if 0
+			if ((0x03 == v_field_byte) 
+				|| (0x04 == v_field_byte))
+			{
+				/*
+					here 
+					1 is the 1 LENGTH byte to skip  
+					4 is the block size
+					1 is to increment the byte number
+				*/
+				v_field_byte = (uint16_t)
+								(((v_field_byte + 1) % 4) + 1);
+			}
+			else
+			{
+				v_field_byte = (uint16_t)
+								(v_field_byte + 1);
+			}	
+#endif /* #if 0 */
+		}
+	}
+#endif /* #ifndef NDEF_READ_CHANGE */
+
+#ifndef NDEF_READ_CHANGE
+	(void)memcpy(&(NdefMap->MifareULContainer.ReadBuf[ 
+                NdefMap->MifareULContainer.ReadBufIndex]),
+                (void *)(NdefMap->SendRecvBuf + v_field_byte),
+                (*NdefMap->SendRecvLength - v_field_byte));
+
+	NdefMap->MifareULContainer.ReadBufIndex = (uint16_t)
+		(NdefMap->MifareULContainer.ReadBufIndex + 
+		(*NdefMap->SendRecvLength - v_field_byte));
+#else /* #ifndef NDEF_READ_CHANGE */
+
     (void)memcpy(&(NdefMap->MifareULContainer.ReadBuf[ 
                 NdefMap->MifareULContainer.ReadBufIndex]),
                 NdefMap->SendRecvBuf,
                 *NdefMap->SendRecvLength);
+
     NdefMap->MifareULContainer.ReadBufIndex=NdefMap->MifareULContainer.ReadBufIndex +*NdefMap->SendRecvLength;
+#endif /* #ifndef NDEF_READ_CHANGE */
 
     localCurrentBlock = NdefMap->MifareULContainer.CurrentBlock+
                             (uint8_t)((NdefMap->MifareULContainer.ReadBufIndex != 
@@ -3113,13 +3181,15 @@ static NFCSTATUS phFriNfc_MfUL_H_UpdateWrLen(phFriNfc_NdefMap_t *NdefMap)
 
             if (NdefMap->NumOfLReminWrite == 1)
             {
-                NdefMap->SendRecvBuf[1] = (uint8_t) ((NdefMap->ApduBuffIndex & 0xFF00) >> 8);
+                /* NdefMap->SendRecvBuf[1] = (uint8_t) ((NdefMap->ApduBuffIndex & 0xFF00) >> 8); */
+				NdefMap->SendRecvBuf[1] = (uint8_t) NdefMap->ApduBuffIndex;
                 
             }
             else if (NdefMap->NumOfLReminWrite == 2)
             {
-                NdefMap->SendRecvBuf[1]= (uint8_t) (NdefMap->ApduBuffIndex);                
-                NdefMap->SendRecvBuf[2] = (uint8_t) ((NdefMap->ApduBuffIndex & 0xFF00) >> 8);
+				NdefMap->SendRecvBuf[1] = (uint8_t) ((NdefMap->ApduBuffIndex & 0xFF00) >> 8);
+                NdefMap->SendRecvBuf[2]= (uint8_t) (NdefMap->ApduBuffIndex);
+                
             }
             else
             {
@@ -3140,15 +3210,16 @@ static NFCSTATUS phFriNfc_MfUL_H_UpdateWrLen(phFriNfc_NdefMap_t *NdefMap)
                 ByteNo++;
                 if  ((ByteNo == 3) || (ByteNo == 2))
                 {
-                    NdefMap->SendRecvBuf[ByteNo]= (uint8_t) (NdefMap->ApduBuffIndex);
+                    NdefMap->SendRecvBuf[ByteNo]= (uint8_t) ((NdefMap->ApduBuffIndex & 0xFF00) >> 8);
                     ByteNo++;
-                    NdefMap->SendRecvBuf[ByteNo] = (uint8_t) ((NdefMap->ApduBuffIndex & 0xFF00) >> 8);
+                    NdefMap->SendRecvBuf[ByteNo] = (uint8_t) (NdefMap->ApduBuffIndex);
                     ByteNo++;
                     NdefMap->NumOfLReminWrite = 0;
                 }
                 else if (ByteNo == 4)
                 {
-                    NdefMap->SendRecvBuf[ByteNo]= (uint8_t) (NdefMap->ApduBuffIndex);
+                    /* NdefMap->SendRecvBuf[ByteNo]= (uint8_t) (NdefMap->ApduBuffIndex); */
+					NdefMap->SendRecvBuf[ByteNo]= (uint8_t) ((NdefMap->ApduBuffIndex & 0xFF00) >> 8);
                     ByteNo++;
                     NdefMap->NumOfLReminWrite = 1;
                 }
