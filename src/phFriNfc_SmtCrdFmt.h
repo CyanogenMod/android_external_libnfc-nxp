@@ -246,6 +246,27 @@ typedef struct phFriNfc_Type4_AddInfo
     uint8_t     UpdMADBlk;
 } phFriNfc_MfStd_AddInfo_t;
 
+
+ /*
+ *  \ingroup grp_fri_smart_card_formatting
+ *  \brief NFC Smart Card Formatting Component ISO-15693 Additional Information Structure
+ *
+ *  This structure is used to specify additional information required to format the ISO-15693 card.
+ *  \note 
+ *         On requirement basis,structure will be filled/modified with other parametes
+ *         during the implementation phase.
+ *
+ */
+ typedef struct phFriNfc_ISO15693_AddInfo
+ {
+    /* Stores the current block executed */
+    uint16_t        current_block;
+    /* Sequence executed */
+    uint8_t         format_seq;
+    /* Maximum data size in the card */
+    uint16_t        max_data_size;
+ }phFriNfc_ISO15693_AddInfo_t;
+
 /**
  *  \ingroup grp_fri_smart_card_formatting
  *
@@ -264,6 +285,7 @@ typedef struct phFriNfc_sNdefSmtCrdFmt_AddInfo
    phFriNfc_Type2_AddInfo_t         Type2Info;
    phFriNfc_Type4_AddInfo_t         Type4Info;
    phFriNfc_MfStd_AddInfo_t         MfStdInfo;
+   phFriNfc_ISO15693_AddInfo_t      s_iso15693_info;
 
 }phFriNfc_sNdefSmtCrdFmt_AddInfo_t;
 

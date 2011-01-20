@@ -674,16 +674,16 @@ phFriNfc_NdefMap_ConvertToReadOnly (
                 break;
             }
 
+            case PH_FRINFC_NDEFMAP_ISO15693_CARD:
+            {
+                result = phFriNfc_ISO15693_ConvertToReadOnly (NdefMap);
+                break;
+            }
+
             default:
             {
                 result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
                                     NFCSTATUS_INVALID_REMOTE_DEVICE);
-                break;
-            }
-
-            case PH_FRINFC_NDEFMAP_ISO15693_CARD:
-            {
-                result = phFriNfc_ISO15693_ConvertToReadOnly (NdefMap);
                 break;
             }
         }
@@ -1407,7 +1407,7 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
 #ifndef PH_FRINFC_MAP_ISO15693_DISABLED
             case PH_FRINFC_NDEFMAP_ISO15693_CARD:
             {
-#if 0
+#if 1
                 uint16_t                    block_no = 0;
                 uint8_t                     byte_no = 0;
 
@@ -1423,14 +1423,12 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
                         NdefMap->ISO15693Container.actual_ndef_size);
 
                 *maxSize = (NdefMap->ISO15693Container.max_data_size - 
-                            ((NdefMap->ISO15693Container.actual_ndef_size > 0) ? 
-                            ((block_no * ISO15693_BYTES_PER_BLOCK) + byte_no) : 
-                            ISO15693_BYTES_PER_BLOCK));
-#else /* #if 0 */
+                            ((block_no * ISO15693_BYTES_PER_BLOCK) + byte_no));
+#else /* #if 1 */
                 /* 2 is used to exclude the T and L part of the TLV */
                 *maxSize = (NdefMap->ISO15693Container.max_data_size
                             - ISO15693_BYTES_PER_BLOCK - 2);
-#endif /* #if 0 */
+#endif /* #if 1 */
                 *actualSize = NdefMap->ISO15693Container.actual_ndef_size;
                 break;
             }

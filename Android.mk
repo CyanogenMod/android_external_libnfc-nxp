@@ -89,6 +89,7 @@ LOCAL_SRC_FILES += src/phFriNfc_DesfireFormat.c
 LOCAL_SRC_FILES += src/phFriNfc_MifULFormat.c
 LOCAL_SRC_FILES += src/phFriNfc_MifStdFormat.c
 LOCAL_SRC_FILES += src/phFriNfc_SmtCrdFmt.c
+LOCAL_SRC_FILES += src/phFriNfc_ISO15693Format.c
 
 #phFriNfc_OvrHal
 LOCAL_SRC_FILES += src/phFriNfc_OvrHal.c
