@@ -168,9 +168,11 @@ typedef enum
                                              element*/
     phLibNfc_eSE_EvtTypeTransaction=0x02,   /**<Indicates external reader trying to access secure element */ 
                                                                                        
-    phLibNfc_eSE_EvtConnectivity           /**<This event notifies the terminal host that it shall
+    phLibNfc_eSE_EvtConnectivity,           /**<This event notifies the terminal host that it shall
                                            send a connectivity event from UICC as defined in 
-                                           ETSI TS 102 622 V7.4.0 */                                                                                       
+                                           ETSI TS 102 622 V7.4.0 */
+    phLibNfc_eSE_EvtFieldOn,  // consider using phLibNfc_eSE_EvtConnectivity
+    phLibNfc_eSE_EvtFieldOff,
 } phLibNfc_eSE_EvtType_t;
 
 /**

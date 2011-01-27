@@ -213,8 +213,8 @@ STATIC void phLibNfc_SeNotification(void  *context,
                             &Se_Trans_Info,
                             status);
                         break;
-                    }					
-					case NFC_EVT_CONNECTIVITY:
+                    }
+                    case NFC_EVT_CONNECTIVITY:
                     {
                         (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
                             pLibContext->sSeContext.sSeCallabackInfo.pSeListenerCtxt,
@@ -223,17 +223,37 @@ STATIC void phLibNfc_SeNotification(void  *context,
                             &Se_Trans_Info,
                             status);
                         break;
-                    }	
-                    case NFC_EVT_START_OF_TRANSACTION: // PLG ++
-                    
-                    (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
+                    }
+                    case NFC_EVT_START_OF_TRANSACTION:
+                    {
+                        (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
                             pLibContext->sSeContext.sSeCallabackInfo.pSeListenerCtxt,
                             phLibNfc_eSE_EvtTypeTransaction,
                             pSeInfo->hSecureElement,
                             &Se_Trans_Info,
                             status);
-
-                    break; // PLG --
+                        break;
+                    }
+                    case NFC_EVT_FIELD_ON:
+                    {
+                        (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
+                            pLibContext->sSeContext.sSeCallabackInfo.pSeListenerCtxt,
+                            phLibNfc_eSE_EvtFieldOn,
+                            pSeInfo->hSecureElement,
+                            &Se_Trans_Info,
+                            status);
+                        break;
+                    }
+                    case NFC_EVT_FIELD_OFF:
+                    {
+                        (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
+                             pLibContext->sSeContext.sSeCallabackInfo.pSeListenerCtxt,
+                             phLibNfc_eSE_EvtFieldOff,
+                             pSeInfo->hSecureElement,
+                             &Se_Trans_Info,
+                             status);
+                        break;
+                    }
                     default:
                     {
                         break;
