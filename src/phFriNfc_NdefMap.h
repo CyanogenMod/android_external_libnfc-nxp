@@ -53,7 +53,7 @@
  *
  */
 /*@{*/
-#define PH_FRINFC_NDEFMAP_FILEREVISION "$Revision: 1.24 $"  /**< \ingroup grp_file_attributes */
+#define PH_FRINFC_NDEFMAP_FILEREVISION "$Revision: 1.25 $"  /**< \ingroup grp_file_attributes */
 #define PH_FRINFC_NDEFMAP_FILEALIASES  "$Aliases:  $"       /**< \ingroup grp_file_attributes */
 /*@}*/
 
@@ -739,6 +739,10 @@ typedef struct phFriNfc_TopazCont
         then this variable is used.
     */
     uint16_t            RemainingReadSize;
+#ifdef FRINFC_READONLY_NDEF
+    uint8_t             read_only_seq;
+    uint8_t             lock_bytes_written;
+#endif /* #ifdef FRINFC_READONLY_NDEF */
 
 }phFriNfc_TopazCont_t;
 

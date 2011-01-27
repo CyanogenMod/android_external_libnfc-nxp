@@ -143,7 +143,21 @@ typedef struct phFriNfc_Type2_AddInfo
     /* Stores the CC byte values. For Ex: 0xE1, 0x10 , 0x10, 0x00*/
    uint8_t OTPBytes[4];
 #ifdef FRINFC_READONLY_NDEF
-   uint8_t LockBytes[4];
+   uint8_t  LockBytes[4];
+
+#ifdef PH_NDEF_MIFARE_ULC
+   uint8_t  ReadData[16];
+   uint8_t  ReadDataIndex;
+   uint8_t  DynLockBytes[4];
+   uint8_t  BytesLockedPerLockBit;
+   uint8_t  LockBytesPerPage;
+   uint8_t  LockByteNumber;
+   uint8_t  LockBlockNumber;
+   uint8_t  NoOfLockBits;
+   uint8_t  DefaultLockBytesFlag;
+   uint8_t  LockBitsWritten;
+#endif /* #ifdef PH_NDEF_MIFARE_ULC */
+
 #endif /* #ifdef FRINFC_READONLY_NDEF */
    /* Current Block Address*/
    uint8_t CurrentBlock;
