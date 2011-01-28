@@ -187,6 +187,9 @@ extern char phOsalNfc_DbgTraceBuffer[];
                                              PHFRINFC_LLCP_TLV_MIUX_MASK) /**< Maximum size of a packet */
 /*@}*/
 
+/*========== MACROS ===========*/
+
+#define CHECK_SEND_RW(socket) ( (((socket)->socket_VS - (socket)->socket_VSA)  % 16) < (socket)->remoteRW )
 
 /*========== ENUMERATES ===========*/
 
