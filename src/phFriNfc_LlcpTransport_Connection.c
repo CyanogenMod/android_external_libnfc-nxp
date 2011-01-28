@@ -527,7 +527,7 @@ static NFCSTATUS phFriNfc_Llcp_Send_FrameReject_Frame(phFriNfc_LlcpTransport_t  
    NFCSTATUS                       status = NFCSTATUS_SUCCESS;
    phNfc_sData_t                   sFrmrBuffer;
    uint8_t                         flagValue;
-   uint8_t                         sequence;
+   uint8_t                         sequence = 0;
    uint8_t     index;
    uint8_t     socketFound = FALSE;
 
@@ -563,7 +563,10 @@ static NFCSTATUS phFriNfc_Llcp_Send_FrameReject_Frame(phFriNfc_LlcpTransport_t  
 
       /* Set FRMR Information Field */
       flagValue = (WFlag<<7) | (IFlag<<6) | (RFlag<<5) | (SFlag<<4) | rejectedPTYPE;
-      sequence = (uint8_t)((sLlcpSequence->ns<<4)|(sLlcpSequence->nr));
+      if (sLlcpSequence != NULL)
+      {
+         sequence = (uint8_t)((sLlcpSequence->ns<<4)|(sLlcpSequence->nr));
+      }
 
       psTransport->FrmrInfoBuffer[0] = flagValue;
       psTransport->FrmrInfoBuffer[1] = sequence;
