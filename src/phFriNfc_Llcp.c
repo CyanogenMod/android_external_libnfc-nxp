@@ -143,6 +143,8 @@ static void phFriNfc_Llcp_Deallocate(phNfc_sData_t * pData)
 
 static NFCSTATUS phFriNfc_Llcp_InternalDeactivate( phFriNfc_Llcp_t *Llcp )
 {
+   phFriNfc_Llcp_Send_CB_t pfSendCB;
+   void * pSendContext;
    if ((Llcp->state == PHFRINFC_LLCP_STATE_OPERATION_RECV) ||
        (Llcp->state == PHFRINFC_LLCP_STATE_OPERATION_SEND) ||
        (Llcp->state == PHFRINFC_LLCP_STATE_PAX)            ||
@@ -153,6 +155,25 @@ static NFCSTATUS phFriNfc_Llcp_InternalDeactivate( phFriNfc_Llcp_t *Llcp )
 
       /* Stop timer */
       phOsalNfc_Timer_Stop(Llcp->hSymmTimer);
+
+      /* Return delayed send operation in error, in any */
+      if (Llcp->psSendInfo != NULL)
+      {
+         phFriNfc_Llcp_Deallocate(Llcp->psSendInfo);
+         Llcp->psSendHeader = NULL;
+         Llcp->psSendSequence = NULL;
+      }
+      if (Llcp->pfSendCB != NULL)
+      {
+         /* Get Callback params */
+         pfSendCB = Llcp->pfSendCB;
+         pSendContext = Llcp->pSendContext;
+         /* Reset callback params */
+         Llcp->pfSendCB = NULL;
+         Llcp->pSendContext = NULL;
+         /* Call the callback */
+         (pfSendCB)(pSendContext, NFCSTATUS_FAILED);
+      }
 
       /* Notify service layer */
       Llcp->pfLink_CB(Llcp->pLinkContext, phFriNfc_LlcpMac_eLinkDeactivated);
