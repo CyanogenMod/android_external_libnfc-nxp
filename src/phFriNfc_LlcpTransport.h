@@ -246,6 +246,8 @@ struct phFriNfc_LlcpTransport
    phFriNfc_Llcp_sPacketSequence_t       sSequence;
 
   /**< Info field of pending DM packet*/
+   phFriNfc_Llcp_sPacketHeader_t         sDmHeader;
+   phNfc_sData_t                         sDmPayload;
    uint8_t                               DmInfoBuffer[3];
 
    uint8_t                               LinkStatusError;
