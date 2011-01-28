@@ -347,12 +347,6 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_Abort(phFriNfc_LlcpTranspo
       pLlcpSocket->pfSocketRecv_Cb = NULL;
    }
    pLlcpSocket->pRecvContext = NULL;
-   if (pLlcpSocket->pfSocketListen_Cb != NULL)
-   {
-      pLlcpSocket->pfSocketListen_Cb(pLlcpSocket->pListenContext, NULL);
-      pLlcpSocket->pfSocketListen_Cb = NULL;
-   }
-   pLlcpSocket->pListenContext = NULL;
    if (pLlcpSocket->pfSocketAccept_Cb != NULL)
    {
       pLlcpSocket->pfSocketAccept_Cb(pLlcpSocket->pAcceptContext, NFCSTATUS_ABORTED);
@@ -373,6 +367,8 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_Abort(phFriNfc_LlcpTranspo
    pLlcpSocket->pDisonnectContext = NULL;
 
    pLlcpSocket->pfSocketRecvFrom_Cb = NULL;
+   pLlcpSocket->pfSocketListen_Cb = NULL;
+   pLlcpSocket->pListenContext = NULL;
 }
 
 static NFCSTATUS phFriNfc_Llcp_Send_DisconnectMode_Frame(phFriNfc_LlcpTransport_t*   psTransport,
