@@ -642,7 +642,7 @@ NFCSTATUS phFriNfc_LlcpTransport_Listen(phFriNfc_LlcpTransport_Socket_t*        
    /* Test the length of the SN */
    else if(psServiceName->length > PHFRINFC_LLCP_SN_MAX_LENGTH)
    {
-         return status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
    else
    {
@@ -689,54 +689,46 @@ NFCSTATUS phFriNfc_LlcpTransport_Accept(phFriNfc_LlcpTransport_Socket_t*        
    if(pLlcpSocket == NULL || psOptions == NULL || psWorkingBuffer == NULL || pErr_Cb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pAccept_RspCb(pContext,status);
    }
    /* Check for socket state */
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
-      /* Call the CB */
-      pAccept_RspCb(pContext,status);
    }
    /* Check for socket type */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionOriented)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pAccept_RspCb(pContext,status);
    }
    /* Test the socket options */
    else if(psOptions->rw > PHFRINFC_LLCP_RW_MAX)
    {
-      /* Call the callback */
-      pAccept_RspCb(pContext,status);
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-   }
-
-   /* Set the Max length for the Send and Receive Window Buffer */
-   pLlcpSocket->bufferSendMaxLength   = psOptions->miu;
-   pLlcpSocket->bufferRwMaxLength     = psOptions->miu * ((psOptions->rw & PHFRINFC_LLCP_TLV_RW_MASK));
-   pLlcpSocket->bufferLinearLength    = psWorkingBuffer->length - pLlcpSocket->bufferSendMaxLength - pLlcpSocket->bufferRwMaxLength;
-
-   /* Test the buffers length */
-   if((pLlcpSocket->bufferSendMaxLength + pLlcpSocket->bufferRwMaxLength) > psWorkingBuffer->length  
-       || ((pLlcpSocket->bufferLinearLength < PHFRINFC_LLCP_MIU_DEFAULT)  && (pLlcpSocket->bufferLinearLength != 0)))
-   {
-       /* Call the callback */
-      pAccept_RspCb(pContext,status);
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_BUFFER_TOO_SMALL);
    }
    else
    {
-      pLlcpSocket->psTransport->socketIndex = pLlcpSocket->index;
+      /* Set the Max length for the Send and Receive Window Buffer */
+      pLlcpSocket->bufferSendMaxLength   = psOptions->miu;
+      pLlcpSocket->bufferRwMaxLength     = psOptions->miu * ((psOptions->rw & PHFRINFC_LLCP_TLV_RW_MASK));
+      pLlcpSocket->bufferLinearLength    = psWorkingBuffer->length - pLlcpSocket->bufferSendMaxLength - pLlcpSocket->bufferRwMaxLength;
 
-      status  = phFriNfc_LlcpTransport_ConnectionOriented_Accept(pLlcpSocket,
-                                                                 psOptions,
-                                                                 psWorkingBuffer,
-                                                                 pErr_Cb,
-                                                                 pAccept_RspCb,
-                                                                 pContext);
+      /* Test the buffers length */
+      if((pLlcpSocket->bufferSendMaxLength + pLlcpSocket->bufferRwMaxLength) > psWorkingBuffer->length
+          || ((pLlcpSocket->bufferLinearLength < PHFRINFC_LLCP_MIU_DEFAULT)  && (pLlcpSocket->bufferLinearLength != 0)))
+      {
+         status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_BUFFER_TOO_SMALL);
+      }
+      else
+      {
+         pLlcpSocket->psTransport->socketIndex = pLlcpSocket->index;
+
+         status  = phFriNfc_LlcpTransport_ConnectionOriented_Accept(pLlcpSocket,
+                                                                    psOptions,
+                                                                    psWorkingBuffer,
+                                                                    pErr_Cb,
+                                                                    pAccept_RspCb,
+                                                                    pContext);
+      }
    }
    return status;
 }
@@ -768,22 +760,16 @@ NFCSTATUS phFriNfc_LlcpTransport_Reject( phFriNfc_LlcpTransport_Socket_t*       
    if(pLlcpSocket == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pReject_RspCb(pContext,status);
    }
    /* Check for socket state */
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
-      /* Call the CB */
-      pReject_RspCb(pContext,status);
    }
    /* Check for socket type */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionOriented)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pReject_RspCb(pContext,status);
    }
    else
    {
@@ -827,37 +813,25 @@ NFCSTATUS phFriNfc_LlcpTransport_Connect( phFriNfc_LlcpTransport_Socket_t*      
    uint8_t i;
 
    /* Check for NULL pointers */
-   if(pConnect_RspCb == NULL)
+   if(pLlcpSocket == NULL || pConnect_RspCb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-   }
-   else if(pLlcpSocket == NULL || pConnect_RspCb == NULL || pContext == NULL)
-   {
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pConnect_RspCb(pContext,FALSE,status);
    }
    /* Test the port number value */
    else if(nSap<02 || nSap>63)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pConnect_RspCb(pContext,FALSE,status);
    }
    /* Test if the socket is a connectionOriented socket */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionOriented)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pConnect_RspCb(pContext,FALSE,status);
    }
 
    /* Test if the socket is not in connecting or connected state*/
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketCreated && pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
-      /* Call the CB */
-      pConnect_RspCb(pContext,FALSE,status);
    }
    else 
    {
@@ -923,27 +897,21 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectByUri(phFriNfc_LlcpTransport_Socket_t*  
    if(pLlcpSocket == NULL || pConnect_RspCb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pConnect_RspCb(pContext,FALSE,status);
    }
    /* Test if the socket is a connectionOriented socket */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionOriented)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pConnect_RspCb(pContext,FALSE,status);
    }
    /* Test if the socket is not in connect pending or connected state*/
    else if(pLlcpSocket->eSocket_State == phFriNfc_LlcpTransportSocket_eSocketConnecting || pLlcpSocket->eSocket_State == phFriNfc_LlcpTransportSocket_eSocketConnected)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pConnect_RspCb(pContext,FALSE,status);
    }
    /* Test the length of the SN */
    else if(psUri->length > PHFRINFC_LLCP_SN_MAX_LENGTH)
    {
-         return status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
    else 
    {
@@ -966,7 +934,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectByUri(phFriNfc_LlcpTransport_Socket_t*  
                                                                  pConnect_RspCb,
                                                                  pContext);
    }
-   
+
    return status;
 }
 
@@ -1003,22 +971,16 @@ NFCSTATUS phFriNfc_LlcpTransport_Disconnect(phFriNfc_LlcpTransport_Socket_t*    
    if(pLlcpSocket == NULL || pDisconnect_RspCb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pDisconnect_RspCb(pContext,status);
    }
    /* Test if the socket is a connectionOriented socket */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionOriented)
    {
-       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pDisconnect_RspCb(pContext,status);
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
    /* Test if the socket is connected  state*/
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketConnected)
    {
        status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pDisconnect_RspCb(pContext,status);
    }
    else
    {
@@ -1066,36 +1028,26 @@ NFCSTATUS phFriNfc_LlcpTransport_Send(phFriNfc_LlcpTransport_Socket_t*          
    if(pLlcpSocket == NULL || psBuffer == NULL || pSend_RspCb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pSend_RspCb(pContext,status);
    }
    /* Test if the socket is a connectionOriented socket */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionOriented)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pSend_RspCb(pContext,status);
    }
    /* Test if the socket is in connected state */
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketConnected)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
-      /* Call the CB */
-      pSend_RspCb(pContext,status);
    }
    /* Test the length of the buffer */
    else if(psBuffer->length > pLlcpSocket->remoteMIU )
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pSend_RspCb(pContext,status);
    }
    /* Test if a send is pending */
    else if(pLlcpSocket->bSocketSendPending == TRUE)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_REJECTED);
-      /* Call the CB */
-      pSend_RspCb(pContext,status);
    }
    else
    {
@@ -1142,34 +1094,25 @@ NFCSTATUS phFriNfc_LlcpTransport_Recv( phFriNfc_LlcpTransport_Socket_t*         
 {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
 
-
    /* Check for NULL pointers */
    if(pLlcpSocket == NULL || psBuffer == NULL || pRecv_RspCb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pRecv_RspCb(pContext,status);
    }
    /* Test if the socket is a connectionOriented socket */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionOriented)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pRecv_RspCb(pContext,status);
    }
    /* Test if the socket is in connected state */
    else if(pLlcpSocket->eSocket_State == phFriNfc_LlcpTransportSocket_eSocketDefault)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      /* Call the CB */
-      pRecv_RspCb(pContext,status);
    }
    /* Test if a receive is pending */
    else if(pLlcpSocket->bSocketRecvPending == TRUE)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_REJECTED);
-      /* Call the CB */
-      pRecv_RspCb(pContext,status);
    }
    else
    {
@@ -1178,7 +1121,6 @@ NFCSTATUS phFriNfc_LlcpTransport_Recv( phFriNfc_LlcpTransport_Socket_t*         
                                                               pRecv_RspCb,
                                                               pContext);
    }
-
 
    return status;
 }
@@ -1221,59 +1163,53 @@ NFCSTATUS phFriNfc_LlcpTransport_SendTo( phFriNfc_LlcpTransport_Socket_t        
    NFCSTATUS status = NFCSTATUS_SUCCESS;
    phFriNfc_Llcp_sLinkParameters_t  LlcpRemoteLinkParamInfo;
 
-
    if(pLlcpSocket == NULL || psBuffer == NULL || pSend_RspCb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      pSend_RspCb(pContext,status);
    }
    /* Test the port number value */
    else if(nSap<2 || nSap>63)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      pSend_RspCb(pContext,status);
-      return status;
    }
    /* Test if the socket is a connectionless socket */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionLess)
    {
        status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-       pSend_RspCb(pContext,status);
-       return status;
    }
    /* Test if the socket is in an updated state */
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
-      pSend_RspCb(pContext,status);
-      return status;
-   }
-   /* Get the local parameters of the LLCP Link */
-   status = phFriNfc_Llcp_GetRemoteInfo(pLlcpSocket->psTransport->pLlcp,&LlcpRemoteLinkParamInfo);
-   if(status != NFCSTATUS_SUCCESS)
-   {
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
-   }
-   /* Test the length of the socket buffer for ConnectionLess mode*/
-   else if(psBuffer->length > LlcpRemoteLinkParamInfo.miu)
-   {
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      pSend_RspCb(pContext,status);
-   }
-   /* Test if the link is in error state */
-   else if(pLlcpSocket->psTransport->LinkStatusError)
-   {
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_REJECTED);
-      pSend_RspCb(pContext,status);
    }
    else
    {
-      status = phFriNfc_LlcpTransport_Connectionless_SendTo(pLlcpSocket,
-                                                            nSap,
-                                                            psBuffer,
-                                                            pSend_RspCb,
-                                                            pContext);
+      /* Get the local parameters of the LLCP Link */
+      status = phFriNfc_Llcp_GetRemoteInfo(pLlcpSocket->psTransport->pLlcp,&LlcpRemoteLinkParamInfo);
+      if(status != NFCSTATUS_SUCCESS)
+      {
+         status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
+      }
+      /* Test the length of the socket buffer for ConnectionLess mode*/
+      else if(psBuffer->length > LlcpRemoteLinkParamInfo.miu)
+      {
+         status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+      }
+      /* Test if the link is in error state */
+      else if(pLlcpSocket->psTransport->LinkStatusError)
+      {
+         status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_REJECTED);
+      }
+      else
+      {
+         status = phFriNfc_LlcpTransport_Connectionless_SendTo(pLlcpSocket,
+                                                               nSap,
+                                                               psBuffer,
+                                                               pSend_RspCb,
+                                                               pContext);
+      }
    }
+
    return status;
 }
 
@@ -1313,26 +1249,22 @@ NFCSTATUS phFriNfc_LlcpTransport_RecvFrom( phFriNfc_LlcpTransport_Socket_t      
    if(pLlcpSocket == NULL || psBuffer == NULL || pRecv_Cb == NULL || pContext == NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-      pRecv_Cb(pContext,0x00,status);
    }
    /* Test if the socket is a connectionless socket */
    else if(pLlcpSocket->eSocket_Type != phFriNfc_LlcpTransport_eConnectionLess)
    {
-       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-       pRecv_Cb(pContext,0x00,status);
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
    /* Test if the socket is in an updated state */
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
-      pRecv_Cb(pContext,0x00,status);
    }
    else
    {
       if(pLlcpSocket->bSocketRecvPending)
       {
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_REJECTED);
-         pRecv_Cb(pContext,0x00,status);
       }
       else
       {
@@ -1342,5 +1274,6 @@ NFCSTATUS phFriNfc_LlcpTransport_RecvFrom( phFriNfc_LlcpTransport_Socket_t      
                                                                  pContext);
       }
    }
+
    return status;
 }

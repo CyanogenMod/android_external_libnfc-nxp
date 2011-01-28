@@ -2088,8 +2088,6 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
       {
          /* Call the CB */
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
-         /* Call the callback */
-         pAccept_RspCb(pLlcpSocket->pAcceptContext,status);
          return status;
       }
    }
@@ -2110,8 +2108,6 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Accept(phFriNfc_LlcpTranspor
       {
          /* Call the CB */
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
-         /* Call the callback */
-         pAccept_RspCb(pLlcpSocket->pAcceptContext,status);
          return status;
       }
    }
@@ -2583,8 +2579,8 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Send(phFriNfc_LlcpTransport_
       /* Store send buffer pointer */
       pLlcpSocket->sSocketSendBuffer = *psBuffer;
 
-     /* Set status */
-     status = NFCSTATUS_PENDING;
+      /* Set status */
+      status = NFCSTATUS_PENDING;
    }
    else
    {
@@ -2686,9 +2682,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
    {
       if (pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketConnected)
       {
-          /* Call the Receive CB */
-          pRecv_RspCb(pContext,NFCSTATUS_FAILED);
-          return NFCSTATUS_SUCCESS;
+          return NFCSTATUS_FAILED;
       }
       
       /* Test If data is present in the RW Buffer */
@@ -2723,6 +2717,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
             /* Reset the ReceiverBusyCondition Flag */
             pLlcpSocket->ReceiverBusyCondition = FALSE;
             /* RR */
+            /* TODO: report status? */
             phFriNfc_Llcp_Send_ReceiveReady_Frame(pLlcpSocket);
          }
       }
@@ -2801,6 +2796,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
                   /* Reset the ReceiverBusyCondition Flag */
                   pLlcpSocket->ReceiverBusyCondition = FALSE;
                   /* RR */
+                  /* TODO: report status? */
                   phFriNfc_Llcp_Send_ReceiveReady_Frame(pLlcpSocket);
                }
             }
@@ -2811,30 +2807,30 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
          else
          {
             /* Call the Receive CB   */
-            pRecv_RspCb(pContext,NFCSTATUS_FAILED);
+            status = NFCSTATUS_FAILED;
          }
       }
       else
       {
          if (pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketConnected)
          {
-             /* Call the Receive CB */
-             pRecv_RspCb(pContext,NFCSTATUS_FAILED);
-             return NFCSTATUS_SUCCESS;
+             status = NFCSTATUS_FAILED;
          }
+         else
+         {
+            /* Set Receive pending */
+            pLlcpSocket->bSocketRecvPending = TRUE;
 
-         /* Set Receive pending */
-         pLlcpSocket->bSocketRecvPending = TRUE;
+            /* Store the buffer pointer */
+            pLlcpSocket->sSocketRecvBuffer = psBuffer;
 
-         /* Store the buffer pointer */
-         pLlcpSocket->sSocketRecvBuffer = psBuffer;
+            /* Store the Recv CB and context */
+            pLlcpSocket->pfSocketRecv_Cb  = pRecv_RspCb;
+            pLlcpSocket->pRecvContext     = pContext;
 
-         /* Store the Recv CB and context */
-         pLlcpSocket->pfSocketRecv_Cb  = pRecv_RspCb;
-         pLlcpSocket->pRecvContext     = pContext;
-
-         /* Set status */
-         status = NFCSTATUS_PENDING;
+            /* Set status */
+            status = NFCSTATUS_PENDING;
+         }
       }
    }
 
