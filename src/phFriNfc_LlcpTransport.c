@@ -1045,7 +1045,7 @@ NFCSTATUS phFriNfc_LlcpTransport_Send(phFriNfc_LlcpTransport_Socket_t*          
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
    /* Test if a send is pending */
-   else if(pLlcpSocket->bSocketSendPending == TRUE)
+   else if(pLlcpSocket->pfSocketSend_Cb != NULL)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_REJECTED);
    }
