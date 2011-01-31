@@ -364,6 +364,7 @@ typedef struct phNfc_sDeviceCapabilities_t
     phNfc_sSupProtocol_t    EmulationSupProtocol;    /**< Supported protocols
                                                        (Bitmapped) in Emulation 
                                                         mode. */
+    char                    firmware_update_info; /** */
 } phNfc_sDeviceCapabilities_t;
 
 
