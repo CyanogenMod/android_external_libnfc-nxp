@@ -2459,7 +2459,10 @@ static NFCSTATUS phFriNfc_MfUL_H_CopyRdBytes(phFriNfc_NdefMap_t  *NdefMap)
 	if (NdefMap->MifareULContainer.CurrentBlock 
 		== NdefMap->TLVStruct.NdefTLVBlock)
 	{
-		v_field_byte = NdefMap->TLVStruct.NdefTLVByte;
+		if (NdefMap->CardMemSize > (0x12 * PH_FRINFC_NDEFMAP_MFUL_MUL8))
+		{
+			v_field_byte = NdefMap->TLVStruct.NdefTLVByte;
+		}
 
 		/* Calculate the Value field of the TLV to read */
 		if (NdefMap->TLVStruct.ActualSize >= 0xFF)
