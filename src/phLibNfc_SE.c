@@ -448,7 +448,10 @@ NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle,
                 }
                 if(Status==NFCSTATUS_SUCCESS)
                 {
-                    pLibContext->sSeContext.eActivatedMode = phLibNfc_SE_ActModeVirtual;
+                    if(pLibContext->sSeContext.eActivatedMode != phLibNfc_SE_ActModeWired)
+                    {
+                        pLibContext->sSeContext.eActivatedMode = phLibNfc_SE_ActModeVirtual;
+                    }
                     pLibContext->sCardEmulCfg.emuType = eEmulationType;
                     Status = phHal4Nfc_ConfigParameters(
                                             pLibContext->psHwReference,
@@ -513,7 +516,12 @@ NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle,
                 if(Status==NFCSTATUS_SUCCESS)
                 {
                     pLibContext->sCardEmulCfg.emuType = eEmulationType;
-                    pLibContext->sSeContext.eActivatedMode = phLibNfc_SE_ActModeOff;
+
+                    if(pLibContext->sSeContext.eActivatedMode != phLibNfc_SE_ActModeWired)
+                    {
+                         pLibContext->sSeContext.eActivatedMode = phLibNfc_SE_ActModeOff;
+                    }
+
                     Status = phHal4Nfc_ConfigParameters(pLibContext->psHwReference,
                                                             NFC_EMULATION_CONFIG,           
                                                             (phHal_uConfig_t*)&pLibContext->sCardEmulCfg,
