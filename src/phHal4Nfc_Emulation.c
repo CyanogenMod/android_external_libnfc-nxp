@@ -164,6 +164,7 @@ NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
                         Hal4Ctxt->psADDCtxtInfo->nbr_of_devices = 0;
                         Hal4Ctxt->psADDCtxtInfo->smx_discovery = TRUE;
                         sSmxCfg.PollDevInfo.PollCfgInfo.EnableIso14443A = TRUE;
+                        sSmxCfg.PollDevInfo.PollCfgInfo.DisableCardEmulation = TRUE;
                         /*Switch mode to wired*/
                         CfgStatus = phHciNfc_Switch_SmxMode (
                                                     Hal4Ctxt->psHciHandle,
