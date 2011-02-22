@@ -224,6 +224,11 @@ void phOsalNfc_Timer_Start(uint32_t TimerId,
    its.it_interval.tv_nsec = 0;
    its.it_value.tv_sec     = RegTimeCnt / 1000;
    its.it_value.tv_nsec    = 1000000 * (RegTimeCnt % 1000);
+   if(its.it_value.tv_sec == 0 && its.it_value.tv_nsec == 0)
+   {
+     // this would inadvertently stop the timer
+     its.it_value.tv_nsec = 1;
+   }
 
    timers[TimerId].callback = Application_callback;
    timers[TimerId].pContext = pContext;
