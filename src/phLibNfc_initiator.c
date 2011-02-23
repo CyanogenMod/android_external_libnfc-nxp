@@ -55,7 +55,7 @@
 *************************** Global Variables **********************************
 */
 
-
+#define PN544_IO_TIMEOUT_RESPONSE 0x89
 
 /*
 *************************** Static Function Declaration ***********************
@@ -1154,9 +1154,16 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
                         phLibNfc_Reconnect_Mifare_Cb,
                         (void *)gpphLibContext);
         }
+        else if ((PHNFCSTATUS(status) == PN544_IO_TIMEOUT_RESPONSE) ||
+                 (PHNFCSTATUS(status) == NFCSTATUS_RF_TIMEOUT))
+        {
+            // 0x89, 0x09 HCI response values from PN544 indicate timeout
+            trans_status = NFCSTATUS_TARGET_LOST;
+        }
         else
         {
-            trans_status = NFCSTATUS_TARGET_LOST;
+            // PN544 did get some reply from tag, just not valid
+            trans_status = NFCSTATUS_FAILED;
         }
         /*Update the state machine */
         phLibNfc_UpdateCurState(status,gpphLibContext);
