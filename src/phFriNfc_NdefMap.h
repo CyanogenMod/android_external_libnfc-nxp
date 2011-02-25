@@ -20,9 +20,9 @@
  *
  * Project: NFC-FRI
  *
- * $Date: Tue Jul 27 08:58:22 2010 $
+ * $Date: Mon Dec 13 14:14:14 2010 $
  * $Author: ing02260 $
- * $Revision: 1.24 $
+ * $Revision: 1.25 $
  * $Aliases:  $
  *
  */
@@ -107,6 +107,8 @@
 #ifdef DESFIRE_EV1
 #define PH_FRINFC_NDEFMAP_ISO14443_4A_CARD_EV1            9 /**< \internal Iso 14443-4A EV1 */
 #endif /* #ifdef DESFIRE_EV1 */
+
+#define PH_FRINFC_NDEFMAP_ISO15693_CARD                   10 /**< \internal ISO 15693 */
 
 
 #ifdef PH_NDEF_MIFARE_ULC
@@ -245,7 +247,41 @@ typedef enum
 #ifndef PH_FRINFC_EXCLUDE_FROM_TESTFW /* */
 
 
+#ifndef PH_FRINFC_MAP_ISO15693_DISABLED
 
+#define ISO15693_MAX_DATA_TO_STORE           0x04U
+
+typedef struct phFriNfc_ISO15693Cont
+{
+    /**< \internal block number that is executed */
+    uint16_t    current_block;
+    /**< \internal The state of the operation */
+    uint8_t     state;
+    /**< \internal Completion routine index */
+    uint8_t     cr_index;
+    /**< \internal Execution sequence */
+    uint8_t     ndef_seq;
+    /**< \internal NDEF TLV size */
+    uint16_t    actual_ndef_size;
+    /**< \internal NDEF TLV size */
+    uint16_t    max_data_size;
+    /**< \internal NDEF TLV TYPE block number */
+    uint16_t    ndef_tlv_type_blk;
+    /**< \internal NDEF TLV TYPE byte number in the 
+        "ndef_tlv_type_blk" */
+    uint8_t     ndef_tlv_type_byte;
+    /**< \internal Store the remaining bytes that can be used for 
+    READ with continue option */
+    uint8_t     store_read_data[ISO15693_MAX_DATA_TO_STORE];
+    uint8_t     store_length;
+    /**< \internal Remaining size that can be read */
+    uint16_t    remaining_size_to_read;
+    uint8_t     read_capabilities;
+
+
+}phFriNfc_ISO15693Cont_t;
+
+#endif /* #ifndef PH_FRINFC_MAP_ISO15693_DISABLED */
 
 
 
@@ -902,6 +938,10 @@ typedef struct phFriNfc_NdefMap
         /** \internal Mifare UL capability container structure. */
         phFriNfc_TopazCont_t            TopazContainer;
 #endif  /* PH_FRINFC_MAP_TOPAZ_DISABLED */
+
+#ifndef PH_FRINFC_MAP_ISO15693_DISABLED
+        phFriNfc_ISO15693Cont_t         ISO15693Container;
+#endif /* #ifndef PH_FRINFC_MAP_ISO15693_DISABLED */
 
 #ifdef PHFRINFC_OVRHAL_MOCKUP
         phFriNfc_MockupCont_t MochupContainer;
