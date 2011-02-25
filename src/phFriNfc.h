@@ -20,10 +20,10 @@
  *
  * Project: NFC-FRI
  *
- * $Date: Thu Feb 11 18:45:30 2010 $
- * $Author: ing04880 $
- * $Revision: 1.19 $
- * $Aliases: NFC_FRI1.1_WK1007_R33_1 $
+ * $Date: Mon Dec 13 14:14:13 2010 $
+ * $Author: ing02260 $
+ * $Revision: 1.20 $
+ * $Aliases:  $
  *
  */
 
@@ -58,6 +58,10 @@
 #define PH_FRINFC_MAP_TOPAZ_DYNAMIC_DISABLED
 #endif
 
+#ifdef DISABLE_ISO15693_MAPPING
+#define PH_FRINFC_MAP_ISO15693_DISABLED
+#endif
+
 
 #ifdef DISABLE_FORMAT
 #define PH_FRINFC_FMT_DESFIRE_DISABLED
@@ -75,8 +79,8 @@
  */
 /*@{*/
 
-#define PH_FRINFC_FILEREVISION "$Revision: 1.19 $"   /**< \ingroup grp_file_attributes */
-#define PH_FRINFC_FILEALIASES  "$Aliases: NFC_FRI1.1_WK1007_R33_1 $"       /**< \ingroup grp_file_attributes */
+#define PH_FRINFC_FILEREVISION "$Revision: 1.20 $"   /**< \ingroup grp_file_attributes */
+#define PH_FRINFC_FILEALIASES  "$Aliases:  $"       /**< \ingroup grp_file_attributes */
 
 /*@}*/
 
