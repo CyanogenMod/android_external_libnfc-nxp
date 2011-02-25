@@ -21,10 +21,10 @@
  *
  * Project: NFC-FRI
  *
- * $Date: Wed Sep 23 14:41:56 2009 $
- * $Author: ing07336 $
- * $Revision: 1.8 $
- * $Aliases: NFC_FRI1.1_WK941_PREP1,NFC_FRI1.1_WK941_PREP2,NFC_FRI1.1_WK941_1,NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
+ * $Date: Mon Dec 13 14:14:13 2010 $
+ * $Author: ing02260 $
+ * $Revision: 1.9 $
+ * $Aliases:  $
  *
  */
 
@@ -39,6 +39,9 @@
 #include <phFriNfc_MifULFormat.h>
 #include <phFriNfc_DesfireFormat.h>
 #include <phFriNfc_MifStdFormat.h>
+#ifndef PH_FRINFC_FMT_ISO15693_DISABLED
+    #include <phFriNfc_ISO15693Format.h>
+#endif /* #ifndef PH_FRINFC_FMT_ISO15693_DISABLED */
 
 
 /*! \ingroup grp_file_attributes
@@ -145,6 +148,10 @@ NFCSTATUS phFriNfc_NdefSmtCrd_Reset(phFriNfc_sNdefSmtCrdFmt_t       *NdefSmtCrdF
 #ifndef PH_FRINFC_FMT_MIFAREUL_DISABLED
         phFriNfc_MfUL_Reset(NdefSmtCrdFmt);
 #endif /* #ifndef PH_FRINFC_FMT_MIFAREUL_DISABLED */
+
+#ifndef PH_FRINFC_FMT_ISO15693_DISABLED
+        phFriNfc_ISO15693_FmtReset (NdefSmtCrdFmt);
+#endif /* #ifndef PH_FRINFC_FMT_ISO15693_DISABLED */
 
 #ifdef PHFRINFC_OVRHAL_MOCKUP
         /*Reset Desfire Cap Container elements*/
@@ -392,6 +399,13 @@ NFCSTATUS phFriNfc_NdefSmtCrd_Format( phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt, 
             break;
 #endif  /* PHFRINFC_OVRHAL_MOCKUP */
 
+#ifndef PH_FRINFC_FMT_ISO15693_DISABLED
+            case phHal_eISO15693_PICC:
+            {
+                Result = phFriNfc_ISO15693_Format (NdefSmtCrdFmt);
+                break;
+            }
+#endif /* #ifndef PH_FRINFC_FMT_ISO15693_DISABLED */
             default :
                 /*  Remote device is not recognised.
                 Probably not NDEF compliant */
@@ -473,6 +487,14 @@ void phFriNfc_NdefSmtCrd_Process(void        *Context,
                                             NFCSTATUS_INVALID_REMOTE_DEVICE);               
 #endif  /* PH_FRINFC_FMT_TOPAZ_DISABLED*/
             break;
+
+#ifndef PH_FRINFC_FMT_ISO15693_DISABLED
+            case phHal_eISO15693_PICC :
+            {
+                phFriNfc_ISO15693_FmtProcess (NdefSmtCrdFmt, Status);
+                break;
+            }
+#endif /* #ifndef PH_FRINFC_FMT_ISO15693_DISABLED */
 
 #ifdef PHFRINFC_OVRHAL_MOCKUP
             case phHal_eOpModesMockup:

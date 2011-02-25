@@ -41,7 +41,7 @@
 
 /* Get the NDEF TLV VALUE field block and byte address */
 #define ISO15693_GET_VALUE_FIELD_BLOCK_NO(blk, byte_addr, ndef_size) \
-    (((byte_addr + 1 + ((ndef_size >= ISO15693_THREE_BYTE_LENGTH_ID) ? 3 : 1)) >= \
+    (((byte_addr + 1 + ((ndef_size >= ISO15693_THREE_BYTE_LENGTH_ID) ? 3 : 1)) > \
     (ISO15693_BYTES_PER_BLOCK - 1)) ? (blk + 1) : blk)
 
 #define ISO15693_GET_VALUE_FIELD_BYTE_NO(blk, byte_addr, ndef_size) \
