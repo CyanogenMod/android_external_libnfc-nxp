@@ -50,6 +50,10 @@
 #include <phFriNfc_FelicaMap.h>
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED */
 
+#ifndef PH_FRINFC_MAP_ISO15693_DISABLED
+#include <phFriNfc_ISO15693Map.h>
+#endif  /* PH_FRINFC_MAP_ISO15693_DISABLED */
+
 #ifdef PHFRINFC_OVRHAL_MOCKUP
 #include <phFriNfc_MockupMap.h>
 #endif  /* PHFRINFC_OVRHAL_MOCKUP */
@@ -404,6 +408,15 @@ NFCSTATUS phFriNfc_NdefMap_RdNdef(  phFriNfc_NdefMap_t  *NdefMap,
 #endif  /* PH_FRINFC_MAP_TOPAZ_DYNAMIC_DISABLED */
 #endif  /* PH_FRINFC_MAP_TOPAZ_DISABLED */
 
+#ifndef PH_FRINFC_MAP_ISO15693_DISABLED
+                case PH_FRINFC_NDEFMAP_ISO15693_CARD:
+                    status =  phFriNfc_ISO15693_RdNdef(  NdefMap,
+                        PacketData,
+                        PacketDataLength,
+                        Offset);
+                    break;
+#endif /* #ifndef PH_FRINFC_MAP_ISO15693_DISABLED */
+
 #ifdef PHFRINFC_OVRHAL_MOCKUP
                 case PH_FRINFC_NDEFMAP_MOCKUP_CARD :
                     /*  Mockup card selected. Call Mockup Write */
@@ -596,6 +609,15 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
 #endif  /* PH_FRINFC_MAP_TOPAZ_DYNAMIC_DISABLED */
 #endif  /* PH_FRINFC_MAP_TOPAZ_DISABLED */
 
+#ifndef PH_FRINFC_MAP_ISO15693_DISABLED
+                case PH_FRINFC_NDEFMAP_ISO15693_CARD:
+                    status =  phFriNfc_ISO15693_WrNdef(  NdefMap,
+                        PacketData,
+                        PacketDataLength,
+                        Offset);
+                    break;
+#endif /* #ifndef PH_FRINFC_MAP_ISO15693_DISABLED */
+
 
 #ifdef PHFRINFC_OVRHAL_MOCKUP
                 case PH_FRINFC_NDEFMAP_MOCKUP_CARD :
@@ -618,6 +640,7 @@ NFCSTATUS phFriNfc_NdefMap_WrNdef(  phFriNfc_NdefMap_t  *NdefMap,
 }
 
 #ifdef FRINFC_READONLY_NDEF
+
 NFCSTATUS
 phFriNfc_NdefMap_ConvertToReadOnly (
     phFriNfc_NdefMap_t          *NdefMap)
@@ -657,10 +680,17 @@ phFriNfc_NdefMap_ConvertToReadOnly (
                                     NFCSTATUS_INVALID_REMOTE_DEVICE);
                 break;
             }
+
+            case PH_FRINFC_NDEFMAP_ISO15693_CARD:
+            {
+                result = phFriNfc_ISO15693_ConvertToReadOnly (NdefMap);
+                break;
+            }
         }
     }
     return result;
 }
+
 #endif /* #ifdef FRINFC_READONLY_NDEF */
 
 /*!
@@ -721,6 +751,17 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
 
             switch ( NdefMap->psRemoteDevInfo->RemDevType )
             {
+#ifndef PH_FRINFC_MAP_ISO15693_DISABLED
+            case phHal_eISO15693_PICC:
+            {
+                status = phFriNfc_ISO15693_ChkNdef (NdefMap);
+                break;
+            }
+#else /* #ifndef PH_FRINFC_MAP_ISO15693_DISABLED */
+            status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, 
+                                NFCSTATUS_INVALID_REMOTE_DEVICE);
+#endif /* #ifndef PH_FRINFC_MAP_ISO15693_DISABLED */
+
             case phHal_eMifare_PICC:
             case phHal_eISO14443_3A_PICC:
                 /*  Remote device is Mifare card . Check for Mifare
@@ -1156,6 +1197,9 @@ NFCSTATUS phFriNfc_NdefMap_EraseNdef(phFriNfc_NdefMap_t *NdefMap)
 #ifndef PH_FRINFC_MAP_TOPAZ_DYNAMIC_DISABLED
             case  PH_FRINFC_NDEFMAP_TOPAZ_DYNAMIC_CARD :
 #endif
+#ifndef PH_FRINFC_MAP_ISO15693_DISABLED
+            case PH_FRINFC_NDEFMAP_ISO15693_CARD:
+#endif
 #endif
                 /*  Mifare card selected. Call Mifare Write */
                 status =  phFriNfc_NdefMap_WrNdef( NdefMap,
@@ -1359,6 +1403,38 @@ NFCSTATUS phFriNfc_NdefMap_GetContainerSize(const phFriNfc_NdefMap_t *NdefMap,ui
                 *actualSize += NdefMap->FelicaAttrInfo.LenBytes[2];
                 break;
 #endif  /* PH_FRINFC_MAP_FELICA_DISABLED */
+
+#ifndef PH_FRINFC_MAP_ISO15693_DISABLED
+            case PH_FRINFC_NDEFMAP_ISO15693_CARD:
+            {
+#if 0
+                uint16_t                    block_no = 0;
+                uint8_t                     byte_no = 0;
+
+                block_no = (uint16_t)
+                    ISO15693_GET_VALUE_FIELD_BLOCK_NO (
+                        NdefMap->ISO15693Container.ndef_tlv_type_blk, 
+                        NdefMap->ISO15693Container.ndef_tlv_type_byte, 
+                        NdefMap->ISO15693Container.actual_ndef_size);
+                byte_no = (uint8_t)
+                    ISO15693_GET_VALUE_FIELD_BYTE_NO (
+                        NdefMap->ISO15693Container.ndef_tlv_type_blk, 
+                        NdefMap->ISO15693Container.ndef_tlv_type_byte, 
+                        NdefMap->ISO15693Container.actual_ndef_size);
+
+                *maxSize = (NdefMap->ISO15693Container.max_data_size - 
+                            ((NdefMap->ISO15693Container.actual_ndef_size > 0) ? 
+                            ((block_no * ISO15693_BYTES_PER_BLOCK) + byte_no) : 
+                            ISO15693_BYTES_PER_BLOCK));
+#else /* #if 0 */
+                /* 2 is used to exclude the T and L part of the TLV */
+                *maxSize = (NdefMap->ISO15693Container.max_data_size
+                            - ISO15693_BYTES_PER_BLOCK - 2);
+#endif /* #if 0 */
+                *actualSize = NdefMap->ISO15693Container.actual_ndef_size;
+                break;
+            }
+#endif
 
 #ifdef PHFRINFC_OVRHAL_MOCKUP
             case PH_FRINFC_NDEFMAP_MOCKUP_CARD :
