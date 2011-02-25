@@ -19,10 +19,10 @@
 
  * Project: NFC FRI 1.1
  *
- * $Date: Thu Apr 22 13:59:50 2010 $
- * $Author: ing07385 $
- * $Revision: 1.70 $
- * $Aliases: NFC_FRI1.1_WK1014_SDK,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1019_SDK,NFC_FRI1.1_WK1024_SDK $
+ * $Date: Mon Dec 13 14:14:15 2010 $
+ * $Author: ing02260 $
+ * $Revision: 1.74 $
+ * $Aliases:  $
  *
  */
 
@@ -1441,6 +1441,7 @@ phLibNfc_ConvertToReadOnlyNdef (
                 }
 
                 case phHal_eJewel_PICC:
+                case phHal_eISO15693_PICC:
                 {
 // MC: Got the feedback this was #if 0'd because it was resetting the lock bits
 // read in check NDEF, and these should not be reset here already.
