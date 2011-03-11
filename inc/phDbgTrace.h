@@ -31,7 +31,7 @@
 #define PHDBGTRACE_H
 /*@}*/
 
-
+#include <stdio.h>
 
 
 #ifdef PHDBG_TRACES 
