@@ -212,7 +212,6 @@ NFCSTATUS phFriNfc_LlcpMac_ChkLlcp (phFriNfc_LlcpMac_t                  *LlcpMac
                                     phHal_sRemoteDevInformation_t       *psRemoteDevInfo,
                                     phFriNfc_LlcpMac_Chk_CB_t           ChkLlcpMac_Cb,
                                     void                                *pContext);
-/**
 
 /**
  * \ingroup grp_fri_nfc_llcp_mac
