@@ -40,7 +40,7 @@
 #include <phLibNfc_initiator.h>
 #include <phLibNfc_discovery.h>
 #include <phNfcStatus.h>
-#include <utils/Log.h>
+#include <cutils/log.h>
 /*
 *************************** Macro's  ******************************************
 */
