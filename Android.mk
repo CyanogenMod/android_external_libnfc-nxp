@@ -6,7 +6,7 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_PRELINK_MODULE := false
+
 LOCAL_ARM_MODE := arm
 
 #phLibNfc
@@ -141,7 +141,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 
-LOCAL_PRELINK_MODULE := false
+
 
 LOCAL_SRC_FILES += src/phFriNfc_NdefRecord.c
 
