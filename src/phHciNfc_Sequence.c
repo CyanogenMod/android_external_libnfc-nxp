@@ -1587,7 +1587,7 @@ phHciNfc_PollLoop_Sequence(
 #define NFCIP_ACTIVE_SHIFT	0x03U
 #define NFCIP_PASSIVE_MASK	0x07U
                 uint8_t mode = ( NXP_NFCIP_ACTIVE_DEFAULT << NFCIP_ACTIVE_SHIFT ) |
-									( DEFAULT_NFCIP_MODE_SUPPORT & NFCIP_PASSIVE_MASK );
+									( DEFAULT_NFCIP_TARGET_MODE_SUPPORT & NFCIP_PASSIVE_MASK );
                 status = 
                     phHciNfc_NfcIP_SetMode( psHciContext, pHwRef, NFCIP_TARGET,
                      (uint8_t) mode );
@@ -1610,7 +1610,7 @@ phHciNfc_PollLoop_Sequence(
             {
                 status = 
                     phHciNfc_NfcIP_SetMode( psHciContext, pHwRef, NFCIP_INITIATOR,
-                     (uint8_t) (speed & DEFAULT_NFCIP_MODE_SUPPORT));
+                     (uint8_t) (speed & DEFAULT_NFCIP_INITIATOR_MODE_SUPPORT));
                 if(NFCSTATUS_PENDING == status)
                 {
 #if defined (NFCIP_TGT_DISABLE_CFG)
