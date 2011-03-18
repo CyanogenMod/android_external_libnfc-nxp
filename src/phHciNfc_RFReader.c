@@ -593,7 +593,7 @@ phHciNfc_ReaderMgmt_Initialise(
                 }
                 case NFCIP1_INITIATOR_MODE_CONFIG:
                 {
-                    uint8_t mode = DEFAULT_NFCIP_MODE_SUPPORT;
+                    uint8_t mode = DEFAULT_NFCIP_INITIATOR_MODE_SUPPORT;
                     status = phHciNfc_NfcIP_SetMode( psHciContext, pHwRef,
                                                 NFCIP_INITIATOR, mode);
                     if(status == NFCSTATUS_PENDING )
