@@ -302,6 +302,7 @@ static NFCSTATUS phFriNfc_Llcp_HandleAggregatedPacket( phFriNfc_Llcp_t *Llcp,
                                                        phNfc_sData_t *psRawPacket )
 {
    phNfc_sData_t  sInfo;
+   phNfc_sData_t  sCurrentInfo;
    uint16_t       length;
    NFCSTATUS      status;
 
@@ -326,8 +327,8 @@ static NFCSTATUS phFriNfc_Llcp_HandleAggregatedPacket( phFriNfc_Llcp_t *Llcp,
       /* Read length */
       length = (sInfo.buffer[0] << 8) | sInfo.buffer[1];
       /* Update info buffer */
-      sInfo.buffer += sizeof(sInfo.length);
-      sInfo.length -= sizeof(sInfo.length);
+      sInfo.buffer += 2; /*Size of length field is 2*/
+      sInfo.length -= 2; /*Size of length field is 2*/
       /* Check if declared length fits in remaining space */
       if (length > sInfo.length)
       {
@@ -348,10 +349,12 @@ static NFCSTATUS phFriNfc_Llcp_HandleAggregatedPacket( phFriNfc_Llcp_t *Llcp,
       /* Read length */
       length = (sInfo.buffer[0] << 8) | sInfo.buffer[1];
       /* Update info buffer */
-      sInfo.buffer += sizeof(sInfo.length);
-      sInfo.length -= sizeof(sInfo.length);
+      sInfo.buffer += 2;        /* Size of length field is 2 */
+      sInfo.length -= 2;    /*Size of length field is 2*/
       /* Handle aggregated packet */
-      status = phFriNfc_Llcp_HandleIncomingPacket(Llcp, &sInfo);
+      sCurrentInfo.buffer=sInfo.buffer;
+      sCurrentInfo.length=length;
+      status = phFriNfc_Llcp_HandleIncomingPacket(Llcp, &sCurrentInfo);
       if ( (status != NFCSTATUS_SUCCESS) &&
            (status != NFCSTATUS_PENDING) )
       {
