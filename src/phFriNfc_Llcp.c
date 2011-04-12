@@ -408,7 +408,7 @@ static NFCSTATUS phFriNfc_Llcp_ParseLinkParams( phNfc_sData_t                   
             if (sValueBuffer.length != PHFRINFC_LLCP_TLV_LENGTH_VERSION)
             {
                /* Error : Ill-formed VERSION parameter TLV */
-               return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+               break;
             }
             /* Get VERSION */
             version = sValueBuffer.buffer[0];
@@ -420,7 +420,7 @@ static NFCSTATUS phFriNfc_Llcp_ParseLinkParams( phNfc_sData_t                   
             if (sValueBuffer.length != PHFRINFC_LLCP_TLV_LENGTH_MIUX)
             {
                /* Error : Ill-formed MIUX parameter TLV */
-               return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+               break;
             }
             /* Get MIU */
             sParams.miu = PHFRINFC_LLCP_MIU_DEFAULT + ((sValueBuffer.buffer[0] << 8) | sValueBuffer.buffer[1]) & PHFRINFC_LLCP_TLV_MIUX_MASK;
@@ -432,7 +432,7 @@ static NFCSTATUS phFriNfc_Llcp_ParseLinkParams( phNfc_sData_t                   
             if (sValueBuffer.length != PHFRINFC_LLCP_TLV_LENGTH_WKS)
             {
                /* Error : Ill-formed MIUX parameter TLV */
-               return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+               break;
             }
             /* Get WKS */
             sParams.wks = (sValueBuffer.buffer[0] << 8) | sValueBuffer.buffer[1];
@@ -446,7 +446,7 @@ static NFCSTATUS phFriNfc_Llcp_ParseLinkParams( phNfc_sData_t                   
             if (sValueBuffer.length != PHFRINFC_LLCP_TLV_LENGTH_LTO)
             {
                /* Error : Ill-formed LTO parameter TLV */
-               return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+               break;
             }
             /* Get LTO */
             sParams.lto = sValueBuffer.buffer[0];
@@ -458,7 +458,7 @@ static NFCSTATUS phFriNfc_Llcp_ParseLinkParams( phNfc_sData_t                   
             if (sValueBuffer.length != PHFRINFC_LLCP_TLV_LENGTH_OPT)
             {
                /* Error : Ill-formed OPT parameter TLV */
-               return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+               break;;
             }
             /* Get OPT */
             sParams.option = sValueBuffer.buffer[0] & PHFRINFC_LLCP_TLV_OPT_MASK;
@@ -467,7 +467,7 @@ static NFCSTATUS phFriNfc_Llcp_ParseLinkParams( phNfc_sData_t                   
          default:
          {
             /* Error : Unknown Type */
-            return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+            break;
          }
       }
    }

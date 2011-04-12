@@ -627,7 +627,7 @@ static NFCSTATUS phFriNfc_Llcp_GetSocket_Params(phNfc_sData_t                   
                if(sValueBuffer.length == 0)
                {
                   /* Error : Ill-formed SN parameter TLV */
-                  return PHNFCSTVAL(CID_FRI_NFC_LLCP,NFCSTATUS_INVALID_PARAMETER);
+                  break;
                }
                /* Get the Service Name */
                *psServiceName = sValueBuffer;
@@ -639,7 +639,7 @@ static NFCSTATUS phFriNfc_Llcp_GetSocket_Params(phNfc_sData_t                   
                if (sValueBuffer.length != PHFRINFC_LLCP_TLV_LENGTH_RW)
                {
                   /* Error : Ill-formed MIUX parameter TLV */
-                  return PHNFCSTVAL(CID_FRI_NFC_LLCP,NFCSTATUS_INVALID_PARAMETER);
+                  break;
                }
                *pRemoteRW_Size = sValueBuffer.buffer[0];
             }break;
@@ -650,10 +650,16 @@ static NFCSTATUS phFriNfc_Llcp_GetSocket_Params(phNfc_sData_t                   
                if (sValueBuffer.length != PHFRINFC_LLCP_TLV_LENGTH_MIUX)
                {
                   /* Error : Ill-formed MIUX parameter TLV */
-                  return PHNFCSTVAL(CID_FRI_NFC_LLCP,NFCSTATUS_INVALID_PARAMETER);
+                  break;
                }
                *pRemoteMIU = PHFRINFC_LLCP_MIU_DEFAULT + (((sValueBuffer.buffer[0] << 8) | sValueBuffer.buffer[1]) & PHFRINFC_LLCP_TLV_MIUX_MASK);
             }break;
+
+            default:
+            {
+               /* Error : Unknown type */
+               break;
+            }
          }
       }
    }
