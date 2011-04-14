@@ -478,7 +478,7 @@ void phHal4Nfc_RecvCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo)
             Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
                 = PH_OSALNFC_INVALID_TIMER_ID;
             Hal4Ctxt->psTrcvCtxtInfo->RecvDataBufferStatus 
-                = NFCSTATUS_MORE_INFORMATION;
+                = NFCSTATUS_PENDING;
         }       
     }
     if(NULL == Hal4Ctxt->psTrcvCtxtInfo)
