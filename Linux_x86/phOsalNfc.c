@@ -150,3 +150,26 @@ void phOsalNfc_RaiseException(phOsalNfc_ExceptionType_t eExceptionType, uint16_t
     }
 }
 
+/*!
+ * \brief display data bytes.
+ *        This function displays data bytes for debug purpose
+ * \param[in] pString pointer to string to be displayed.
+ * \param[in] length number of bytes to be displayed.
+ * \param[in] pBuffer pointer to data bytes to be displayed.
+ *
+ */
+void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer)
+{
+    char print_buffer[512]; // Max length 512 for the download mode
+    int i;
+
+    if(NULL!=pString && length > 1 && length < 34)
+    {
+        print_buffer[0] = '\0';
+        for (i = 0; i < length; i++) {
+            snprintf(&print_buffer[i*5], 6, " 0x%02X", pBuffer[i]);
+        }
+        LOGD("> NFC I2C %s: %s", pString,print_buffer);
+    }
+}
+
