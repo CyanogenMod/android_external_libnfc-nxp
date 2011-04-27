@@ -30,6 +30,7 @@
 
 #include <unistd.h>
 #include <pthread.h>
+#include <stdlib.h>
 #ifdef ANDROID
 #include <linux/ipc.h>
 #else
@@ -681,8 +682,20 @@ int phDal4Nfc_ReaderThread(void * pArg)
 	memsetRet=memset(gReadWriteContext.pReadBuffer,0,gReadWriteContext.nNbOfBytesToRead);
 
 	/* Wait for IRQ !!!  */
-	gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
-        
+    gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
+
+    /* TODO: Remove this hack
+     * Reading the value 0x57 indicates a HW I2C error at I2C address 0x57
+     * (pn544). There should not be false positives because a read of length 1
+     * must be a HCI length read, and a length of 0x57 is impossible (max is 33).
+     */
+    if(gReadWriteContext.nNbOfBytesToRead == 1 && gReadWriteContext.pReadBuffer[0] == 0x57)
+    {
+        DAL_PRINT("NOTHING TO READ, RECOVER");
+        phOsalNfc_RaiseException(phOsalNfc_e_UnrecovFirmwareErr,1);
+    }
+    else
+    {
         DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
         DAL_PRINT("ReadBuff[]={ ");
@@ -691,17 +704,16 @@ int phDal4Nfc_ReaderThread(void * pArg)
           DAL_DEBUG("0x%x ", gReadWriteContext.pReadBuffer[i]);
         }
         DAL_PRINT("}\n");
-	
+
         /* read completed immediately */
-	sMsg.eMsgType= PHDAL4NFC_READ_MESSAGE;
-	/* Update the state */
-	phDal4Nfc_FillMsg(&sMsg,&OsalMsg);
-	phDal4Nfc_DeferredCall((pphDal4Nfc_DeferFuncPointer_t)phDal4Nfc_DeferredCb,(void *)pmsgType);
-	memsetRet=memset(&sMsg,0,sizeof(phDal4Nfc_Message_t));
-	memsetRet=memset(&OsalMsg,0,sizeof(phOsalNfc_Message_t));
+        sMsg.eMsgType= PHDAL4NFC_READ_MESSAGE;
+        /* Update the state */
+        phDal4Nfc_FillMsg(&sMsg,&OsalMsg);
+        phDal4Nfc_DeferredCall((pphDal4Nfc_DeferFuncPointer_t)phDal4Nfc_DeferredCb,(void *)pmsgType);
+        memsetRet=memset(&sMsg,0,sizeof(phDal4Nfc_Message_t));
+        memsetRet=memset(&OsalMsg,0,sizeof(phOsalNfc_Message_t));
+    }
 
-
-        
     } /* End of thread Loop*/
     return TRUE;
 }
