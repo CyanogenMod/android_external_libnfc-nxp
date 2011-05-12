@@ -2647,33 +2647,32 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Recv( phFriNfc_LlcpTransport
          if(dataLengthRead != 0)
          {
             /* Test If data is present in the RW Buffer */
-            if(pLlcpSocket->indexRwRead != pLlcpSocket->indexRwWrite)
+            while(pLlcpSocket->indexRwRead != pLlcpSocket->indexRwWrite)
             {
-               do
+               /* Get the data length available in the linear buffer  */
+               dataLengthAvailable = phFriNfc_Llcp_CyclicFifoAvailable(&pLlcpSocket->sCyclicFifoBuffer);
+
+               /* Exit if not enough memory available in linear buffer */
+               if(dataLengthAvailable < pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].length)
                {
-                  /* Get the data length available in the linear buffer  */
-                  dataLengthAvailable = phFriNfc_Llcp_CyclicFifoAvailable(&pLlcpSocket->sCyclicFifoBuffer);
+                  break;
+               }
 
-                  /* Test if enought place is available */
-                  if(dataLengthAvailable > pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].length )
-                  {
-                     /* Write data into the linear buffer */
-                     dataLengthWrite = phFriNfc_Llcp_CyclicFifoWrite(&pLlcpSocket->sCyclicFifoBuffer,
-                                                                     pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].buffer,
-                                                                     pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].length);
-                     /* Update VR */
-                     pLlcpSocket->socket_VR = (pLlcpSocket->socket_VR+1)%16;
+               /* Write data into the linear buffer */
+               dataLengthWrite = phFriNfc_Llcp_CyclicFifoWrite(&pLlcpSocket->sCyclicFifoBuffer,
+                                                               pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].buffer,
+                                                               pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].length);
+               /* Update VR */
+               pLlcpSocket->socket_VR = (pLlcpSocket->socket_VR+1)%16;
 
-                     /* Set flag bufferized to TRUE */
-                     dataBufferized = TRUE;
+               /* Set flag bufferized to TRUE */
+               dataBufferized = TRUE;
 
-                     /* Update RW Buffer length */
-                     pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].length = 0;
+               /* Update RW Buffer length */
+               pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].length = 0;
 
-                     /* Update Value Rw Read Index*/
-                     pLlcpSocket->indexRwRead++;
-                  }
-               }while(dataLengthAvailable > pLlcpSocket->sSocketRwBufferTable[(pLlcpSocket->indexRwRead%pLlcpSocket->localRW)].length);
+               /* Update Value Rw Read Index*/
+               pLlcpSocket->indexRwRead++;
             }
 
             /* Test if data has been bufferized after a read access */
