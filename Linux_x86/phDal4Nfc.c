@@ -661,6 +661,7 @@ int phDal4Nfc_ReaderThread(void * pArg)
     phDal4Nfc_Message_t      sMsg;
     phOsalNfc_Message_t      OsalMsg ;
     int i;
+    int i2c_error_count;
 
     pthread_setname_np(pthread_self(), "reader");
 
@@ -677,6 +678,9 @@ int phDal4Nfc_ReaderThread(void * pArg)
         sem_wait(&nfc_read_sem);
         DAL_PRINT("RX Thread Sem UnLock\n");
         /* Issue read operation.*/
+
+    i2c_error_count = 0;
+retry:
 	gReadWriteContext.nNbOfBytesRead=0;
 	DAL_DEBUG("\n*New *** *****Request Length = %d",gReadWriteContext.nNbOfBytesToRead);
 	memsetRet=memset(gReadWriteContext.pReadBuffer,0,gReadWriteContext.nNbOfBytesToRead);
@@ -691,11 +695,18 @@ int phDal4Nfc_ReaderThread(void * pArg)
      */
     if(gReadWriteContext.nNbOfBytesToRead == 1 && gReadWriteContext.pReadBuffer[0] == 0x57)
     {
+        i2c_error_count++;
+        DAL_DEBUG("Read 0x57 %d times\n", i2c_error_count);
+        if (i2c_error_count < 5) {
+            usleep(2000);
+            goto retry;
+        }
         DAL_PRINT("NOTHING TO READ, RECOVER");
         phOsalNfc_RaiseException(phOsalNfc_e_UnrecovFirmwareErr,1);
     }
     else
     {
+        i2c_error_count = 0;
         DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
         DAL_PRINT("ReadBuff[]={ ");
