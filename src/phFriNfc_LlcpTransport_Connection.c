@@ -42,6 +42,8 @@ static NFCSTATUS phFriNfc_Llcp_Send_ReceiveReady_Frame(phFriNfc_LlcpTransport_So
 
 static NFCSTATUS phFriNfc_Llcp_Send_ReceiveNotReady_Frame(phFriNfc_LlcpTransport_Socket_t*   pLlcpSocket);
 
+static NFCSTATUS static_performSendInfo(phFriNfc_LlcpTransport_Socket_t * psLlcpSocket);
+
 /**********   End Function definition   ***********/
 
 /* TODO: comment functionphFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB */
@@ -183,31 +185,7 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
             /* Test the RW window */
             if(CHECK_SEND_RW(psLocalLlcpSocket))
             {
-               /* Set the Header */
-               psLocalLlcpSocket->sLlcpHeader.dsap   = psLocalLlcpSocket->socket_dSap;
-               psLocalLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_I;
-               psLocalLlcpSocket->sLlcpHeader.ssap   = psLocalLlcpSocket->socket_sSap;
-
-               /* Set Sequence Numbers */
-               psLocalLlcpSocket->sSequence.ns = psLocalLlcpSocket->socket_VS;
-               psLocalLlcpSocket->sSequence.nr = psLocalLlcpSocket->socket_VR;
-
-               /* Send Pending */
-               psTransport->bSendPending = TRUE;
-
-               /* Store the index of the socket */
-               psTransport->socketIndex = psLocalLlcpSocket->index ;
-
-               /* Send I_PDU */
-               result =  phFriNfc_Llcp_Send(psTransport->pLlcp,
-                                            &psLocalLlcpSocket->sLlcpHeader,
-                                            &psLocalLlcpSocket->sSequence,
-                                            &psLocalLlcpSocket->sSocketSendBuffer,
-                                            phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
-                                            psTransport);
-
-               /* Update VS */
-               psLocalLlcpSocket->socket_VS = (psLocalLlcpSocket->socket_VS+1)%16;
+               result = static_performSendInfo(psLocalLlcpSocket);
 
                /* Reset Send Pending Flag */
                psLocalLlcpSocket->bSocketSendPending = FALSE;
@@ -328,6 +306,46 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
          psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb = NULL;
       }
    }
+}
+
+static NFCSTATUS static_performSendInfo(phFriNfc_LlcpTransport_Socket_t * psLlcpSocket)
+{
+   phFriNfc_LlcpTransport_t   *psTransport = psLlcpSocket->psTransport;
+   NFCSTATUS                  status;
+
+   /* Reset Send Pending */
+   psLlcpSocket->bSocketSendPending = FALSE;
+
+   /* Send Pending */
+   psTransport->bSendPending = TRUE;
+
+   /* Set the Header */
+   psLlcpSocket->sLlcpHeader.dsap   = psLlcpSocket->socket_dSap;
+   psLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_I;
+   psLlcpSocket->sLlcpHeader.ssap   = psLlcpSocket->socket_sSap;
+
+   /* Set Sequence Numbers */
+   psLlcpSocket->sSequence.ns = psLlcpSocket->socket_VS;
+   psLlcpSocket->sSequence.nr = psLlcpSocket->socket_VR;
+
+   /* Update the VRA */
+   psLlcpSocket->socket_VRA = psLlcpSocket->socket_VR;
+
+   /* Store the index of the socket */
+   psTransport->socketIndex = psLlcpSocket->index;
+
+   /* Send I_PDU */
+   status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
+                                &psLlcpSocket->sLlcpHeader,
+                                &psLlcpSocket->sSequence,
+                                &psLlcpSocket->sSocketSendBuffer,
+                                phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
+                                psTransport);
+
+   /* Update VS */
+   psLlcpSocket->socket_VS = (psLlcpSocket->socket_VS+1)%16;
+
+   return status;
 }
 
 static void phFriNfc_LlcpTransport_ConnectionOriented_Abort(phFriNfc_LlcpTransport_Socket_t * pLlcpSocket)
@@ -1269,34 +1287,7 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
                   /* Test if a send is pending at LLC layer */
                   if(psTransport->bSendPending != TRUE)
                   {
-                     /* Reset Send Pending */
-                     psLocalLlcpSocket->bSocketSendPending = FALSE;
-
-                     /* Send Pending */
-                     psTransport->bSendPending = TRUE;
-
-                     /* Store the index of the socket */
-                     psTransport->socketIndex = psLocalLlcpSocket->index;
-
-                     /* Set the Header */
-                     psLocalLlcpSocket->sLlcpHeader.dsap   = psLocalLlcpSocket->socket_dSap;
-                     psLocalLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_I;
-                     psLocalLlcpSocket->sLlcpHeader.ssap   = psLocalLlcpSocket->socket_sSap;
-
-                     /* Set Sequence Numbers */
-                     psLocalLlcpSocket->sSequence.ns = psLocalLlcpSocket->socket_VS;
-                     psLocalLlcpSocket->sSequence.nr = psLocalLlcpSocket->socket_VR;
-
-                     /* Send I_PDU */
-                     status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
-                                                  &psLocalLlcpSocket->sLlcpHeader,
-                                                  &psLocalLlcpSocket->sSequence,
-                                                  &psLocalLlcpSocket->sSocketSendBuffer,
-                                                  phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
-                                                  psTransport);
-
-                     /* Update VS */
-                     psLocalLlcpSocket->socket_VS = (psLocalLlcpSocket->socket_VS+1)%16;
+                     status = static_performSendInfo(psLocalLlcpSocket);
                   }
                }
                else
@@ -1375,34 +1366,7 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
                  /* Test if a send is pending at LLC layer */
                  if(psTransport->bSendPending != TRUE)
                  {
-                    /* Reset Send Pending */
-                    psLocalLlcpSocket->bSocketSendPending = FALSE;
-
-                    /* Send Pending */
-                    psTransport->bSendPending = TRUE;
-
-                    /* Store the index of the socket */
-                    psTransport->socketIndex = psLocalLlcpSocket->index;
-
-                    /* Set the Header */
-                    psLocalLlcpSocket->sLlcpHeader.dsap   = psLocalLlcpSocket->socket_dSap;
-                    psLocalLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_I;
-                    psLocalLlcpSocket->sLlcpHeader.ssap   = psLocalLlcpSocket->socket_sSap;
-
-                    /* Set Sequence Numbers */
-                    psLocalLlcpSocket->sSequence.ns = psLocalLlcpSocket->socket_VS;
-                    psLocalLlcpSocket->sSequence.nr = psLocalLlcpSocket->socket_VR;
-
-                    /* Send I_PDU */
-                    status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
-                                                 &psLocalLlcpSocket->sLlcpHeader,
-                                                 &psLocalLlcpSocket->sSequence,
-                                                 &psLocalLlcpSocket->sSocketSendBuffer,
-                                                 phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
-                                                 psTransport);
-
-                    /* Update VS */
-                    psLocalLlcpSocket->socket_VS = (psLocalLlcpSocket->socket_VS+1)%16;
+                    status = static_performSendInfo(psLocalLlcpSocket);
                  }
               }
               else
@@ -1537,34 +1501,7 @@ static void Handle_ReceiveReady_Frame(phFriNfc_LlcpTransport_t      *psTransport
                /* Test if a send is pending at LLC layer */
                if(psTransport->bSendPending != TRUE)
                {
-                  /* Reset Send Pending */
-                  psLocalLlcpSocket->bSocketSendPending = FALSE;;
-
-                  /* Send Pending */
-                  psTransport->bSendPending = TRUE;
-
-                  /* Store the index of the socket */
-                  psTransport->socketIndex = psLocalLlcpSocket->index;
-
-                  /* Set the Header */
-                  psLocalLlcpSocket->sLlcpHeader.dsap   = psLocalLlcpSocket->socket_dSap;
-                  psLocalLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_I;
-                  psLocalLlcpSocket->sLlcpHeader.ssap   = psLocalLlcpSocket->socket_sSap;
-
-                  /* Set Sequence Numbers */
-                  psLocalLlcpSocket->sSequence.ns = psLocalLlcpSocket->socket_VS;
-                  psLocalLlcpSocket->sSequence.nr = psLocalLlcpSocket->socket_VR;
-
-                  /* Send I_PDU */
-                  status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
-                                               &psLocalLlcpSocket->sLlcpHeader,
-                                               &psLocalLlcpSocket->sSequence,
-                                               &psLocalLlcpSocket->sSocketSendBuffer,
-                                               phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
-                                               psTransport);
-
-                  /* Update VS */
-                  psLocalLlcpSocket->socket_VS = (psLocalLlcpSocket->socket_VS+1)%16;
+                  status = static_performSendInfo(psLocalLlcpSocket);
                }
             }
          }
@@ -1673,34 +1610,7 @@ static void Handle_ReceiveNotReady_Frame(phFriNfc_LlcpTransport_t      *psTransp
             /* Test if a send is pending at LLC layer */
             if(psTransport->bSendPending != TRUE)
             {
-               /* Reset Send Pending */
-               psLocalLlcpSocket->bSocketSendPending = FALSE;
-
-               /* Send Pending */
-               psTransport->bSendPending = TRUE;
-
-               /* Set the Header */
-               psLocalLlcpSocket->sLlcpHeader.dsap   = psLocalLlcpSocket->socket_dSap;
-               psLocalLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_I;
-               psLocalLlcpSocket->sLlcpHeader.ssap   = psLocalLlcpSocket->socket_sSap;
-
-               /* Set Sequence Numbers */
-               psLocalLlcpSocket->sSequence.ns = psLocalLlcpSocket->socket_VS;
-               psLocalLlcpSocket->sSequence.nr = psLocalLlcpSocket->socket_VR;
-
-               /* Store the index of the socket */
-               psTransport->socketIndex = psLocalLlcpSocket->index;
-
-               /* Send I_PDU */
-               status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
-                                            &psLocalLlcpSocket->sLlcpHeader,
-                                            &psLocalLlcpSocket->sSequence,
-                                            &psLocalLlcpSocket->sSocketSendBuffer,
-                                            phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
-                                            psTransport);
-
-               /* Update VS */
-               psLocalLlcpSocket->socket_VS = (psLocalLlcpSocket->socket_VS+1)%16;
+               status = static_performSendInfo(psLocalLlcpSocket);
             }
          }
       }
@@ -2610,59 +2520,32 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Send(phFriNfc_LlcpTransport_
    }
    else
    {
+      /* Store send buffer pointer */
+      pLlcpSocket->sSocketSendBuffer = *psBuffer;
+
+      /* Store the Send CB and context */
+      pLlcpSocket->pfSocketSend_Cb    = pSend_RspCb;
+      pLlcpSocket->pSendContext       = pContext;
+
       /* Test if a send is pending */
       if(pLlcpSocket->psTransport->bSendPending == TRUE)
       {
-         /* Store the Send CB and context */
-         pLlcpSocket->pfSocketSend_Cb    = pSend_RspCb;
-         pLlcpSocket->pSendContext       = pContext;
-
          /* Set Send pending */
          pLlcpSocket->bSocketSendPending = TRUE;
-
-         /* Store send buffer pointer */
-         pLlcpSocket->sSocketSendBuffer = *psBuffer;
 
          /* Set status */
          status = NFCSTATUS_PENDING;
       }
       else
       {
-         /* Store the Send CB and context */
-         pLlcpSocket->pfSocketSend_Cb    = pSend_RspCb;
-         pLlcpSocket->pSendContext       = pContext;
-
-         /* Set the Header */
-         pLlcpSocket->sLlcpHeader.dsap   = pLlcpSocket->socket_dSap;
-         pLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_I;
-         pLlcpSocket->sLlcpHeader.ssap   = pLlcpSocket->socket_sSap;
-
-         /* Set Sequence Numbers */
-         pLlcpSocket->sSequence.ns = pLlcpSocket->socket_VS;
-         pLlcpSocket->sSequence.nr = pLlcpSocket->socket_VR;
-
-         /* Send Pending */
-         pLlcpSocket->psTransport->bSendPending = TRUE;
-
-         /* Store the index of the socket */
-         pLlcpSocket->psTransport->socketIndex = pLlcpSocket->index;
-
-         /* Send I_PDU */
-         status =  phFriNfc_Llcp_Send(pLlcpSocket->psTransport->pLlcp,
-                                      &pLlcpSocket->sLlcpHeader,
-                                      &pLlcpSocket->sSequence,
-                                      psBuffer,
-                                      phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB,
-                                      pLlcpSocket->psTransport);
+         /* Perform I-Frame send */
+         status = static_performSendInfo(pLlcpSocket);
          if(status != NFCSTATUS_PENDING)
          {
             LLCP_PRINT("Release Send callback");
             pLlcpSocket->pfSocketSend_Cb = NULL;
             pLlcpSocket->pSendContext = NULL;
          }
-
-         /* Update VS */
-         pLlcpSocket->socket_VS = (pLlcpSocket->socket_VS+1)%16;
       }
 
    }
