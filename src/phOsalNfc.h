@@ -154,6 +154,19 @@ void phOsalNfc_DbgTrace(uint8_t data[], uint32_t size);
  */
 void phOsalNfc_DbgString(const char *pString);
 
+/*!
+ * \ingroup grp_osal_nfc
+ * \brief Print data buffer
+ *
+ * Outputs given string to debug port.
+ *
+ * \param[in] pString pointer to string to be displayed.
+ * \param[in] length number of bytes to be displayed.
+ * \param[in] pBuffer pointer to data bytes to be displayed.
+ *
+ * \retval None
+ */
+void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer);
 
 /*!
  * \ingroup grp_osal_nfc

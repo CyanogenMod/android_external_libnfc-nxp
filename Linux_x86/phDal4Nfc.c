@@ -707,6 +707,7 @@ retry:
     else
     {
         i2c_error_count = 0;
+        phOsalNfc_PrintData("Received buffer", (uint16_t)gReadWriteContext.nNbOfBytesRead, gReadWriteContext.pReadBuffer);
         DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
         DAL_PRINT("ReadBuff[]={ ");
@@ -847,6 +848,11 @@ void phDal4Nfc_DeferredCb (void  *params)
             break;
         case PHDAL4NFC_WRITE_MESSAGE:
             DAL_PRINT(" Dal deferred write called \n");
+
+#ifdef LOW_LEVEL_TRACES
+            phOsalNfc_PrintData("Send buffer", (uint16_t)gReadWriteContext.nNbOfBytesToWrite, gReadWriteContext.pWriteBuffer);
+#endif
+
             /* DAL_DEBUG("dalMsg->transactInfo.length : %d\n", dalMsg->transactInfo.length); */
             /* Make a Physical WRITE */
             usleep(3000); /* Wait 3ms before issuing a Write */
