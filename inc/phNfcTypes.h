@@ -978,10 +978,12 @@ typedef enum phNfc_eP2PMode_t
 {
     phNfc_eDefaultP2PMode  = 0x00U,
     phNfc_ePassive106 = 0x01U,
-    phNfc_ePassive212 = 0x02U, 
-    phNfc_ePassive424 = 0x04U, 
-    phNfc_eActive     = 0x08U, 
-    phNfc_eP2P_ALL    = 0x0FU,
+    phNfc_ePassive212 = 0x02U,
+    phNfc_ePassive424 = 0x04U,
+    phNfc_eActive106 = 0x08U,
+    phNfc_eActive212 = 0x10U,
+    phNfc_eActive424 = 0x20U,
+    phNfc_eP2P_ALL   = 0x27U,  /* All Passive and 424 Active */
     phNfc_eInvalidP2PMode = 0xFFU
 } phNfc_eP2PMode_t;
 

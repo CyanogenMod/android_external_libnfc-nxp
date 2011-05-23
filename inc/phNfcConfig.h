@@ -141,7 +141,7 @@
 
 /**< Default Session ID for Initialisation */
 #ifndef DEFAULT_SESSION
-#define DEFAULT_SESSION           "android7"
+#define DEFAULT_SESSION           "android8"
 #endif
 
 
@@ -240,7 +240,7 @@
 #define DEV_MGMT_ACT_GRD_TO_DEFAULT       0x20U
 #endif
 
-/**<  NFCIP Active Mode Configuration
+/**<  NFCIP Active Mode Default Configuration (when acting as Target)
        0x01     106 kbps
        0x02     212 kbps
        0x04     424 kbps
@@ -323,7 +323,7 @@
 /**< Macro to Enable the Peer to Peer Feature */
 #define ENABLE_P2P
 
-#define DEFAULT_NFCIP_INITIATOR_MODE_SUPPORT   0x0FU
+#define DEFAULT_NFCIP_INITIATOR_MODE_SUPPORT   0x3FU
 #define DEFAULT_NFCIP_TARGET_MODE_SUPPORT      0x0FU
 
 /**< Macro to Enable the ISO14443-B Feature */
