@@ -117,6 +117,7 @@ extern char phOsalNfc_DbgTraceBuffer[];
  /*@{*/
 #define PHFRINFC_LLCP_SAP_LINK                     0x00 /**< Link SAP.*/
 #define PHFRINFC_LLCP_SAP_SDP                      0x01 /**< Service Discovery Protocol SAP.*/
+#define PHFRINFC_LLCP_SAP_WKS_FIRST                0x02 /**< Other Well-Known Services defined by the NFC Forum.*/
 #define PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST     0x10 /**< First SAP number from SDP-avertised SAP range.*/
 #define PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST   0x20 /**< First SAP number from SDP-unavertised SAP range.*/
 #define PHFRINFC_LLCP_SAP_NUMBER                   0x40 /**< Number of possible SAP values (also first invalid value).*/

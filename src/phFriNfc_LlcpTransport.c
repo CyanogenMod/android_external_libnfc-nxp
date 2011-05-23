@@ -32,6 +32,11 @@
 #include <phFriNfc_LlcpTransport_Connectionless.h>
 #include <phFriNfc_LlcpTransport_Connection.h>
 
+/* local macros */
+
+/* Check if (a <= x < b) */
+#define IS_BETWEEN(x, a, b) (((x)>=(a)) && ((x)<(b)))
+
 
 /* TODO: comment function Transport recv CB */
 static void phFriNfc_LlcpTransport__Recv_CB(void            *pContext,
@@ -644,6 +649,20 @@ NFCSTATUS phFriNfc_LlcpTransport_Listen(phFriNfc_LlcpTransport_Socket_t*        
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
+   /* Test the SAP range for SDP-advertised services */
+   else if((psServiceName->length > 0) &&
+           (!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST, PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST)) &&
+           (!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_WKS_FIRST, PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST)))
+   {
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+   }
+   /* Test the SAP range for non SDP-advertised services */
+   else if((psServiceName->length == 0) &&
+           (!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST, PHFRINFC_LLCP_SAP_NUMBER)) &&
+           (!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_WKS_FIRST, PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST)))
+   {
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+   }
    else
    {
       status = phFriNfc_LlcpTransport_ConnectionOriented_Listen(pLlcpSocket,
@@ -847,14 +866,22 @@ NFCSTATUS phFriNfc_LlcpTransport_Connect( phFriNfc_LlcpTransport_Socket_t*      
                pLlcpSocket->socket_sSap++;
             }
          }
+         pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
       }
-      pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
 
-      status = phFriNfc_LlcpTransport_ConnectionOriented_Connect(pLlcpSocket,
-                                                                 nSap,
-                                                                 NULL,
-                                                                 pConnect_RspCb,
-                                                                 pContext);
+      /* Test the SAP range for non SDP-advertised services */
+      if(!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST, PHFRINFC_LLCP_SAP_NUMBER))
+      {
+         status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+      }
+      else
+      {
+         status = phFriNfc_LlcpTransport_ConnectionOriented_Connect(pLlcpSocket,
+                                                                    nSap,
+                                                                    NULL,
+                                                                    pConnect_RspCb,
+                                                                    pContext);
+      }
    }
    
    return status;
@@ -927,12 +954,22 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectByUri(phFriNfc_LlcpTransport_Socket_t*  
                pLlcpSocket->socket_sSap++;
             }
          }
+         pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
       }
-      status = phFriNfc_LlcpTransport_ConnectionOriented_Connect(pLlcpSocket,
-                                                                 PHFRINFC_LLCP_SAP_DEFAULT,
-                                                                 psUri,
-                                                                 pConnect_RspCb,
-                                                                 pContext);
+
+      /* Test the SAP range for non SDP-advertised services */
+      if(!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST, PHFRINFC_LLCP_SAP_NUMBER))
+      {
+         status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+      }
+      else
+      {
+         status = phFriNfc_LlcpTransport_ConnectionOriented_Connect(pLlcpSocket,
+                                                                    PHFRINFC_LLCP_SAP_DEFAULT,
+                                                                    psUri,
+                                                                    pConnect_RspCb,
+                                                                    pContext);
+      }
    }
 
    return status;
