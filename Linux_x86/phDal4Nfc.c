@@ -707,7 +707,9 @@ retry:
     else
     {
         i2c_error_count = 0;
+#ifdef LOW_LEVEL_TRACES
         phOsalNfc_PrintData("Received buffer", (uint16_t)gReadWriteContext.nNbOfBytesRead, gReadWriteContext.pReadBuffer);
+#endif
         DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
         DAL_PRINT("ReadBuff[]={ ");
