@@ -223,6 +223,12 @@
 #define LINK_CONNECTION_TIMEOUT         1000U
 #endif 
 
+/**< Defines ACK time out value for LLC timer,
+    150 is in milliseconds */
+#ifndef LINK_ACK_TIMEOUT
+#define LINK_ACK_TIMEOUT                1U
+#endif
+
 
 /**< Defines Firmware Download Completion Timeout value ,
     120000 is in milliseconds */

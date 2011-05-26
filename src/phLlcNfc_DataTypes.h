@@ -105,78 +105,80 @@
 #endif /* #if (!defined (LLC_TRACE) && !defined (LLC_DATA_BYTES)) */
 
 
-/* If the below MACRO (RECV_NR_CHECK_ENABLE) is 
-ENABLED : then check for the NR frame received from PN544 in the I frame is 
-    added. This shall be greater than sent NS from the HOST. 
-    This is used to stop the timer 
-DISABLED : dont check the N9R) frame received from the PN544
+/* If the below MACRO (RECV_NR_CHECK_ENABLE) is
+DEFINED : then check for the NR frame received from PN544 in the I frame is
+    added. This shall be greater than sent NS from the HOST.
+    This is used to stop the timer
+COMMENTED : dont check the N(R) frame received from the PN544
 */    
 /* #define RECV_NR_CHECK_ENABLE */
 
-/* If the below MACRO (LLC_UPP_LAYER_NTFY_WRITE_RSP_CB) is 
-ENABLED : then if an I frame is received and the 
-        upper layer response callback (before another READ is pended) is called 
-        only after sending S frame and wait for the callback and then notify the 
+/* If the below MACRO (LLC_UPP_LAYER_NTFY_WRITE_RSP_CB) is
+DEFINED : then if an I frame is received and the
+        upper layer response callback (before another READ is pended) is called
+        only after sending S frame and wait for the callback and then notify the
         upper layer 
-DISABLED : then if an I frame is received and the 
-            upper layer response callback (before another READ is pended) is called 
-            immediately after sending S frame (not waiting for the sent S frame 
+COMMENTED : then if an I frame is received and the
+            upper layer response callback (before another READ is pended) is called
+            immediately after sending S frame (not waiting for the sent S frame
             callback)  
 */
-#define LLC_UPP_LAYER_NTFY_WRITE_RSP_CB
+/* #define LLC_UPP_LAYER_NTFY_WRITE_RSP_CB */
 
-/* PN544 continuously sends an incorrect I frames to the HOST, 
+/* PN544 continuously sends an incorrect I frames to the HOST,
     even after the REJ frame from HOST to PN544
-If the below MACRO (LLC_RR_INSTEAD_OF_REJ) is 
-ENABLED : then if the received NS = (expected NR - 1) then instead of REJ 
+If the below MACRO (LLC_RR_INSTEAD_OF_REJ) is
+DEFINED : then if the received NS = (expected NR - 1) then instead of REJ
         RR frame is sent
-DISABLED : then REJ frame is sent
+COMMENTED : then REJ frame is sent
 */
 #define LLC_RR_INSTEAD_OF_REJ
 
 #define SEND_UFRAME
 
-/* If the below MACRO (CTRL_WIN_SIZE_COUNT) is 
-ENABLED : then window size will be maximum
-DISABLED : then window size is 1
+/* If the below MACRO (CTRL_WIN_SIZE_COUNT) is
+DEFINED : then window size will be maximum
+COMMENTED : then window size is 1
 */
 #define CTRL_WIN_SIZE_COUNT
 
 /* 
 If the below MACRO (LLC_URSET_NO_DELAY) is
-ENABLED : then after receiving the UA frame, then immediately this will be  
+DEFINED : then after receiving the UA frame, then immediately this will be
             notified or further operation will be carried on.
-DISABLED : then after receiving the UA frame, then a timer is started, to  
+COMMENTED : then after receiving the UA frame, then a timer is started, to
             delay the notifiation or to carry on the next operation
 */
 #define LLC_URSET_NO_DELAY 
 
-#ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB
-
-    /* NO definition is required */
-
-#else
-
     /* 
-    This macro is useful only if the LLC_UPP_LAYER_NTFY_WRITE_RSP_CB is DISABLED
     If the below MACRO (LLC_RELEASE_FLAG) is
-    ENABLED : then whenever LLC release is called the g_release_flag variable 
-                will be made TRUE. Also, NO notification is allowed to the 
+DEFINED : then whenever LLC release is called the g_release_flag variable
+                will be made TRUE. Also, NO notification is allowed to the
                 upper layer.
-    DISABLED : g_release_flag is not declared and not used
+COMMENTED : g_release_flag is not declared and not used
     */
     #define LLC_RELEASE_FLAG
 
-#endif /* #ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB */
 
  /* 
-    Actually, there is a send and receive error count, if either of them reaches 
+    Actually, there is a send and receive error count, if either of them reaches
     limit, then exception is raised.
     If the below MACRO (LLC_RSET_INSTEAD_OF_EXCEPTION) is
-    ENABLED : then exception is not raised, instead a U RSET command is sent.
-    DISABLED : then exception is raised
+DEFINED : then exception is not raised, instead a U RSET command is sent.
+COMMENTED : then exception is raised
     */
 /* #define LLC_RSET_INSTEAD_OF_EXCEPTION */
+
+#ifndef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB
+    /*
+    If the below MACRO (PIGGY_BACK) is
+    DEFINED : After receiving I frame, wait till the ACK timer to expire to send an ACK to PN544.
+    COMMENTED : immediately ACK the received I frame
+    */
+    #define PIGGY_BACK
+
+#endif /* LLC_UPP_LAYER_NTFY_WRITE_RSP_CB */
 
 #define LLC_SEND_ERROR_COUNT
 
@@ -191,7 +193,7 @@ DISABLED : then after receiving the UA frame, then a timer is started, to
 #define PH_LLCNFC_CRC_LENGTH                        (2)
 #define PH_LLCNFC_MAX_LLC_PAYLOAD                   ((PH_LLCNFC_MAX_IFRAME_BUFLEN) + (4))
 /** Maximum timer used in the Llc */
-#define PH_LLCNFC_MAX_TIMER_USED                    (2)
+#define PH_LLCNFC_MAX_TIMER_USED                    (3)
 /** Maximum timer used in the Llc */
 #define PH_LLCNFC_MAX_ACK_GUARD_TIMER               (4)
 /** Maximum I frame that can be stored */
@@ -496,7 +498,7 @@ typedef struct phLlcNfc_Timerinfo
 
 #ifdef PIGGY_BACK
     /** This will store the ack time out values */
-    uint16_t                ack_to_value[PH_LLCNFC_MAX_ACK_GUARD_TIMER];
+    uint16_t                ack_to_value;
 #endif /* #ifdef PIGGY_BACK */
 
     /** This is a timer flag 
@@ -547,6 +549,9 @@ typedef struct phLlcNfc_Frame
     /** Store the I frames, that has been received, Storage will be 
         till the window size */
     phLlcNfc_StoreIFrame_t          s_recv_store;
+
+    /** Response received count to send the ACK once it reaches the window size */
+    uint8_t                         resp_recvd_count;
 #endif /* #ifdef PIGGY_BACK */
 
     /** To receive the packet sent by below layer */

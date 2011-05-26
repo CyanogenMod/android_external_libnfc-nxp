@@ -48,7 +48,6 @@
 /***************************** Macros *******************************/
 #define PH_LLCNFC_APPEND_LEN                        (4)
 #define LLC_NS_FRAME_HEADER_MASK                    (0x38U)
-
 /************************ End of macros *****************************/
 
 /*********************** Local functions ****************************/
@@ -81,8 +80,8 @@ phLlcNfc_Interface_Register(
 )
 {
     NFCSTATUS                   result = NFCSTATUS_SUCCESS;
-    phNfcIF_sCallBack_t         if_cb;
-    phNfcIF_sReference_t        sreference;
+    phNfcIF_sCallBack_t         if_cb = {0,0,0,0};
+    phNfcIF_sReference_t        sreference = {0,0,0};
     
     if ((NULL == psLlcCtxt) || (NULL == psIFConfig))
     {
@@ -247,13 +246,24 @@ phLlcNfc_Interface_Write(
             PH_LLCNFC_STRING (";\n");
     
 #endif /* LLC_DATA_BYTES */
+
+            psLlcCtxt->s_frameinfo.s_llcpacket.llcbuf_len = (uint8_t)llcBufferLength;
+            (void)memcpy ((void *)&(psLlcCtxt->s_frameinfo.s_llcpacket.s_llcbuf),
+                        (void *)pLlcBuffer, llcBufferLength);
+
             result = psLlcCtxt->lower_if.send(psLlcCtxt->lower_if.pcontext, 
                                                 psLlcCtxt->phwinfo, 
-                                                pLlcBuffer, 
+                                                (uint8_t *)&(psLlcCtxt->s_frameinfo.s_llcpacket.s_llcbuf),
                                                 (uint16_t)llcBufferLength);
             if(NFCSTATUS_PENDING == result)
             {
                 psLlcCtxt->s_frameinfo.write_pending = TRUE;
+#ifdef PIGGY_BACK
+                /* Stop the ACK timer, as the ACK or I frame is sent */
+                phLlcNfc_StopTimers (PH_LLCNFC_ACKTIMER, 0);
+                /* ACK is sent, so reset the response received count */
+                psLlcCtxt->s_frameinfo.resp_recvd_count = 0;
+#endif /* #ifdef PIGGY_BACK */
             }
         }
     }
@@ -279,7 +289,7 @@ phLlcNfc_WrResp_Cb(
     phLlcNfc_Frame_t            *ps_frame_info = NULL;
     phLlcNfc_LlcPacket_t        *ps_recv_pkt = NULL;
     phLlcNfc_StoreIFrame_t      *ps_store_frame = NULL;
-    phNfc_sCompletionInfo_t     notifyinfo;
+    phNfc_sCompletionInfo_t     notifyinfo = {0,0,0};
     uint8_t                     count = 0;
 
     PH_LLCNFC_PRINT("\n\nLLC : WRITE RESP CB CALLED\n\n");
@@ -497,6 +507,7 @@ phLlcNfc_WrResp_Cb(
                     }
                     else 
                     {
+                        /* ***** This notification needs to be disabled ***** */
                         if(NULL != ps_llc_ctxt->cb_for_if.send_complete) 
                         {
                             pCompInfo->length = (pCompInfo->length - 
@@ -650,7 +661,7 @@ phLlcNfc_RdResp_Cb(
     phLlcNfc_LlcPacket_t        *ps_recv_pkt = NULL;
     phLlcNfc_Payload_t          *ps_llc_payload = NULL;
     pphNfcIF_Notification_CB_t  notifyul = NULL;
-    phNfc_sCompletionInfo_t     notifyinfo;
+    phNfc_sCompletionInfo_t     notifyinfo = {0,0,0};
 
     PH_LLCNFC_PRINT("\n\nLLC : READ RESP CB CALLED\n\n");
     
@@ -932,7 +943,7 @@ phLlcNfc_H_SendInfo (
 {
     phLlcNfc_LlcPacket_t        *ps_recv_pkt = NULL;
     phLlcNfc_Frame_t            *ps_frame_info = NULL;
-    phNfc_sTransactionInfo_t    comp_info;
+    phNfc_sTransactionInfo_t    comp_info = {0,0,0,0,0};
 
     ps_frame_info = &(psLlcCtxt->s_frameinfo);
     ps_recv_pkt = &(ps_frame_info->s_recvpacket);

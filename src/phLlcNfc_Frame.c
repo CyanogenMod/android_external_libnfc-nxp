@@ -52,7 +52,6 @@
 #ifdef LLC_RELEASE_FLAG
     extern uint8_t             g_release_flag;
 #endif /* #ifdef LLC_RELEASE_FLAG */
-
 /************************ End of global variables *****************************/
 
 /*********************** Local functions ****************************/
@@ -103,28 +102,6 @@ void
 phLlcNfc_H_ProcessSFrame (  
     phLlcNfc_Context_t      *psLlcCtxt
 );
-
-/**
-* \ingroup grp_hal_nfc_llc_helper
-*
-* \brief LLC component <b>Create S frame</b> function
-*
-* \copydoc page_reg This is a helper function which, creates the S frame
-*
-* \param[in/out] psFrameInfo    Generic frame information
-* \param[in/out] cmdType        Command type of S frame
-*
-* \retval NFCSTATUS_SUCCESS                Operation successful.
-* \retval NFCSTATUS_INVALID_PARAMETER      At least one parameter of the function is invalid.
-*
-*/
-static 
-NFCSTATUS
-phLlcNfc_H_CreateSFramePayload (
-    phLlcNfc_Frame_t    *psFrameInfo, 
-    phLlcNfc_LlcCmd_t   cmdType
-);
-
 
 /**
 * \ingroup grp_hal_nfc_llc_helper
@@ -433,10 +410,10 @@ phLlcNfc_H_CreateUFramePayload (
     return result;
 }
 
-static 
 NFCSTATUS
 phLlcNfc_H_CreateSFramePayload (
     phLlcNfc_Frame_t    *psFrameInfo, 
+    phLlcNfc_LlcPacket_t    *psLlcPacket,
     phLlcNfc_LlcCmd_t   cmdType
 )
 {
@@ -451,7 +428,7 @@ phLlcNfc_H_CreateSFramePayload (
     phLlcNfc_Buffer_t       *ps_llc_buf = NULL;
     uint8_t                 length = 0;
     
-    ps_llc_buf = &(psFrameInfo->s_llcpacket.s_llcbuf);
+    ps_llc_buf = &(psLlcPacket->s_llcbuf);
 
     /* Initial S frame header */
     ps_llc_buf->sllcpayload.llcheader = PH_LLCNFC_S_HEADER_INIT;
@@ -467,11 +444,10 @@ phLlcNfc_H_CreateSFramePayload (
                 (ps_llc_buf->sllcpayload.llcheader | (uint8_t)cmdType);
 
     /* Maximum S frame length */
-    psFrameInfo->s_llcpacket.llcbuf_len = (uint8_t)
-                                            PH_LLCNFC_MAX_S_FRAME_LEN;
+    psLlcPacket->llcbuf_len = (uint8_t)PH_LLCNFC_MAX_S_FRAME_LEN;
     /* S frame length byte value */
     ps_llc_buf->llc_length_byte = (uint8_t)
-                            (psFrameInfo->s_llcpacket.llcbuf_len - 1);
+                            (psLlcPacket->llcbuf_len - 1);
 
     /* 
         psFrameInfo->s_llcpacket.s_llcbuf : 
@@ -493,7 +469,7 @@ phLlcNfc_H_CreateSFramePayload (
         (psFrameInfo->s_llcpacket.llcbuf_len - 3) : 
                 is the array index of the second CRC byte to be calculated
     */
-    length = psFrameInfo->s_llcpacket.llcbuf_len;
+    length = psLlcPacket->llcbuf_len;
     phLlcNfc_H_ComputeCrc(
         (uint8_t *)ps_llc_buf, (length - 2),
         &(ps_llc_buf->sllcpayload.llcpayload[(length - 4)]),
@@ -760,7 +736,7 @@ phLlcNfc_H_SendUserIFrame (
 {
     NFCSTATUS               result = NFCSTATUS_SUCCESS;    
     phLlcNfc_Frame_t        *ps_frame_info = NULL;
-    phLlcNfc_LlcPacket_t    *ps_create_packet = NULL;
+    phLlcNfc_LlcPacket_t    s_create_packet;
     phLlcNfc_LlcPacket_t    *ps_get_packet = NULL;
     phLlcNfc_Payload_t      *ps_llc_payload = NULL;
     phLlcNfc_StoreIFrame_t  *ps_store_frame = NULL;
@@ -778,7 +754,6 @@ phLlcNfc_H_SendUserIFrame (
     else
     {
         ps_frame_info = &(psLlcCtxt->s_frameinfo);
-        ps_create_packet = &(ps_frame_info->s_llcpacket);
         ps_store_frame = &(ps_frame_info->s_send_store);
 
         if (
@@ -788,7 +763,7 @@ phLlcNfc_H_SendUserIFrame (
         {
             /* Get the stored I frame, only if the new frame is sent 
                 from the upper layer */
-            result = phLlcNfc_H_IFrameList_Peek (psListInfo, &ps_get_packet, 
+            result = phLlcNfc_H_IFrameList_Peek (psListInfo, &ps_get_packet,
                                                 ps_frame_info->n_s);
         }
 
@@ -800,25 +775,25 @@ phLlcNfc_H_SendUserIFrame (
             llc_header = (uint8_t)(llc_header | ps_frame_info->n_r);
 
             /* Create the packet */
-            (void)memcpy ((void *)ps_create_packet, (void *)ps_get_packet, 
+            (void)memcpy ((void *)&(s_create_packet), (void *)ps_get_packet,
                         sizeof (phLlcNfc_LlcPacket_t));
 
-            ps_create_packet->s_llcbuf.sllcpayload.llcheader = llc_header;
-            ps_llc_payload = &(ps_create_packet->s_llcbuf.sllcpayload);
+            s_create_packet.s_llcbuf.sllcpayload.llcheader = llc_header;
+            ps_llc_payload = &(s_create_packet.s_llcbuf.sllcpayload);
 
             /* Length of the complete llc buffer, sent to PN544 */
-            length = ps_create_packet->llcbuf_len;
+            length = s_create_packet.llcbuf_len;
 
             /* Compute CRC for the created packet */
-            phLlcNfc_H_ComputeCrc ((uint8_t *)&(ps_create_packet->s_llcbuf), 
+            phLlcNfc_H_ComputeCrc ((uint8_t *)&(s_create_packet.s_llcbuf),
                         (length - 2),
                         (uint8_t *)&(ps_llc_payload->llcpayload[(length - 4)]), 
                         (uint8_t *)&(ps_llc_payload->llcpayload[(length - 3)]));
 
             /* Send the i frame */
-            result = phLlcNfc_Interface_Write (psLlcCtxt, 
-                            (uint8_t *)&(ps_create_packet->s_llcbuf), 
-                            (uint32_t)ps_create_packet->llcbuf_len);
+            result = phLlcNfc_Interface_Write (psLlcCtxt,
+                            (uint8_t *)&(s_create_packet.s_llcbuf),
+                            (uint32_t)s_create_packet.llcbuf_len);
 
             ps_frame_info->write_status = result;
 
@@ -865,7 +840,7 @@ phLlcNfc_H_SendRejectedIFrame (
 {
     NFCSTATUS               result = NFCSTATUS_SUCCESS;    
     phLlcNfc_Frame_t        *ps_frame_info = NULL;
-    phLlcNfc_LlcPacket_t    *ps_create_packet = NULL;
+    phLlcNfc_LlcPacket_t    s_create_packet;
     phLlcNfc_LlcPacket_t    *ps_get_packet = NULL;
     phLlcNfc_Payload_t      *ps_llc_payload = NULL;
     phLlcNfc_StoreIFrame_t  *ps_store_frame = NULL;
@@ -883,7 +858,6 @@ phLlcNfc_H_SendRejectedIFrame (
     else
     {
         ps_frame_info = &(psLlcCtxt->s_frameinfo);
-        ps_create_packet = &(ps_frame_info->s_llcpacket);
         ps_store_frame = &(ps_frame_info->s_send_store);
 
 
@@ -898,7 +872,7 @@ phLlcNfc_H_SendRejectedIFrame (
                 ps_store_frame->s_llcpacket[ns_rejected].frame_to_send)
             {
                 /* Above check is added to know only if   */
-                result = phLlcNfc_H_IFrameList_Peek (psListInfo, &ps_get_packet, 
+                result = phLlcNfc_H_IFrameList_Peek (psListInfo, &ps_get_packet,
                                                     ns_rejected);
             }
             else
@@ -918,25 +892,25 @@ phLlcNfc_H_SendRejectedIFrame (
             llc_header = (uint8_t)(llc_header | ps_frame_info->n_r);
 
             /* Create the packet */
-            (void)memcpy ((void *)ps_create_packet, (void *)ps_get_packet, 
+            (void)memcpy ((void *)&(s_create_packet), (void *)ps_get_packet,
                         sizeof (phLlcNfc_LlcPacket_t));
 
-            ps_create_packet->s_llcbuf.sllcpayload.llcheader = llc_header;
-            ps_llc_payload = &(ps_create_packet->s_llcbuf.sllcpayload);
+            s_create_packet.s_llcbuf.sllcpayload.llcheader = llc_header;
+            ps_llc_payload = &(s_create_packet.s_llcbuf.sllcpayload);
 
             /* Length of the complete llc buffer, sent to PN544 */
-            length = ps_create_packet->llcbuf_len;
+            length = s_create_packet.llcbuf_len;
 
             /* Compute CRC for the created packet */
-            phLlcNfc_H_ComputeCrc ((uint8_t *)&(ps_create_packet->s_llcbuf), 
+            phLlcNfc_H_ComputeCrc ((uint8_t *)&(s_create_packet.s_llcbuf),
                         (length - 2),
                         (uint8_t *)&(ps_llc_payload->llcpayload[(length - 4)]), 
                         (uint8_t *)&(ps_llc_payload->llcpayload[(length - 3)]));
 
             /* Send the i frame */
             result = phLlcNfc_Interface_Write (psLlcCtxt, 
-                            (uint8_t *)&(ps_create_packet->s_llcbuf), 
-                            (uint32_t)ps_create_packet->llcbuf_len);
+                            (uint8_t *)&(s_create_packet.s_llcbuf),
+                            (uint32_t)s_create_packet.llcbuf_len);
 
             ps_frame_info->write_status = result;
 
@@ -946,7 +920,7 @@ phLlcNfc_H_SendRejectedIFrame (
                     so update the below variable */
                 ps_frame_info->write_wait_call = (phLlcNfc_eSentFrameType_t)
                                 (((ns_rejected != ps_store_frame->start_pos) && 
-                                (resend_i_frame != ps_frame_info->write_wait_call))? 
+                                (resend_i_frame != ps_frame_info->write_wait_call))?
                                 rejected_i_frame : ps_frame_info->write_wait_call);
             }
             else
@@ -1009,7 +983,7 @@ phLlcNfc_H_SendTimedOutIFrame (
     NFCSTATUS               result = NFCSTATUS_SUCCESS;    
     phLlcNfc_Frame_t        *ps_frame_info = NULL;
     phLlcNfc_Timerinfo_t    *ps_timer_info = NULL;
-    phLlcNfc_LlcPacket_t    *ps_create_packet = NULL;
+    phLlcNfc_LlcPacket_t    s_create_packet;
     phLlcNfc_LlcPacket_t    *ps_get_packet = NULL;
     phLlcNfc_Payload_t      *ps_llc_payload = NULL;
     phLlcNfc_StoreIFrame_t  *ps_store_frame = NULL;
@@ -1033,7 +1007,6 @@ phLlcNfc_H_SendTimedOutIFrame (
 
         ps_frame_info = &(psLlcCtxt->s_frameinfo);
         ps_timer_info = &(psLlcCtxt->s_timerinfo);
-        ps_create_packet = &(ps_frame_info->s_llcpacket);
         ps_store_frame = &(ps_frame_info->s_send_store);        
         
         timer_index = ps_timer_info->index_to_send;
@@ -1043,12 +1016,13 @@ phLlcNfc_H_SendTimedOutIFrame (
         PH_LLCNFC_DEBUG("SEND TIMEOUT CALL WIN SIZE CNT : 0x%02X\n", ps_store_frame->winsize_cnt);
         PH_LLCNFC_DEBUG("SEND TIMEOUT CALL START POS : 0x%02X\n", ps_store_frame->start_pos);
         PH_LLCNFC_DEBUG("SEND TIMEOUT CALL N S value : 0x%02X\n", ps_frame_info->n_s);
+        PH_LLCNFC_DEBUG("SEND TIMEOUT TIMER INDEX : 0x%02X\n", timer_index);
         PH_LLCNFC_DEBUG("SEND TIMEOUT CALL frame type : 0x%02X\n", ps_timer_info->frame_type[timer_index]);
 
         if (resend_i_frame == ps_timer_info->frame_type[timer_index])
         {
             /* Get the stored I frame */
-            result = phLlcNfc_H_IFrameList_Peek (psListInfo, &ps_get_packet, 
+            result = phLlcNfc_H_IFrameList_Peek (psListInfo, &ps_get_packet,
                                                 ns_index);
         }        
 
@@ -1061,25 +1035,25 @@ phLlcNfc_H_SendTimedOutIFrame (
             llc_header = (uint8_t)(llc_header | ps_frame_info->n_r);
 
             /* create the packet */
-            (void)memcpy ((void *)ps_create_packet, (void *)ps_get_packet, 
+            (void)memcpy ((void *)&(s_create_packet), (void *)ps_get_packet,
                         sizeof (phLlcNfc_LlcPacket_t));
 
-            ps_create_packet->s_llcbuf.sllcpayload.llcheader = llc_header;
-            ps_llc_payload = &(ps_create_packet->s_llcbuf.sllcpayload);
+            s_create_packet.s_llcbuf.sllcpayload.llcheader = llc_header;
+            ps_llc_payload = &(s_create_packet.s_llcbuf.sllcpayload);
 
             /* Length of the complete llc buffer, sent to PN544 */
-            length = ps_create_packet->llcbuf_len;
+            length = s_create_packet.llcbuf_len;
 
             /* Compute CRC */
-            phLlcNfc_H_ComputeCrc((uint8_t *)&(ps_create_packet->s_llcbuf), 
+            phLlcNfc_H_ComputeCrc((uint8_t *)&(s_create_packet.s_llcbuf),
                         (length - 2),
-                        (uint8_t *)&(ps_llc_payload->llcpayload[(length - 4)]), 
+                        (uint8_t *)&(ps_llc_payload->llcpayload[(length - 4)]),
                         (uint8_t *)&(ps_llc_payload->llcpayload[(length - 3)]));
 
             /* Send the i frame */
             result = phLlcNfc_Interface_Write (psLlcCtxt, 
-                            (uint8_t *)&(ps_create_packet->s_llcbuf), 
-                            (uint32_t)ps_create_packet->llcbuf_len);
+                            (uint8_t *)&(s_create_packet.s_llcbuf),
+                            (uint32_t)s_create_packet.llcbuf_len);
 
             ps_frame_info->write_status = result;
             PH_LLCNFC_DEBUG("SEND TIMEOUT CALL Write status : 0x%02X\n", result);
@@ -1102,9 +1076,9 @@ phLlcNfc_H_SendTimedOutIFrame (
 
                 PH_LLCNFC_DEBUG("SEND TIMEOUT CALL timer index : 0x%02X\n", timer_index);
 
-                PH_LLCNFC_DEBUG("SEND TIMEOUT CALL GUARD TO VALUE : 0x%02X\n", ps_timer_info->guard_to_value[(timer_index - 1)]);
                 if (timer_index > 0)
                 {                    
+                    PH_LLCNFC_DEBUG("SEND TIMEOUT CALL GUARD TO VALUE : 0x%02X\n", ps_timer_info->guard_to_value[(timer_index - 1)]);
                     /* Copy the maximum time-out value. */
                     time_out_value = (uint16_t)
                         ((ps_timer_info->guard_to_value[(timer_index - 1)] >= 
@@ -1212,12 +1186,6 @@ phLlcNfc_H_ProcessIFrame (
     uint8_t                     recvd_nr = 0;    
 #endif /* #ifdef RECV_NR_CHECK_ENABLE */
 
-#ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB
-    /* Nothing required in this define */
-#else
-    uint8_t                     prev_local_nr = 0;
-#endif /* #ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB */
-
     ps_frame_info = &(psLlcCtxt->s_frameinfo);
     ps_store_frame = &(ps_frame_info->s_send_store);
     ps_recv_pkt = &(ps_frame_info->s_recvpacket);
@@ -1259,12 +1227,6 @@ phLlcNfc_H_ProcessIFrame (
         phLlcNfc_StopTimers (PH_LLCNFC_GUARDTIMER, no_of_del_frames);
     }
 
-#ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB
-    /* Nothing required in this define */
-#else
-    prev_local_nr = ps_frame_info->n_r;
-#endif /* #ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB */
-
     /* Received buffer, N(S) value = N(R) of host (our 
         structure) then send RR type of s frame else send 
         REJ type of s frame */
@@ -1290,7 +1252,6 @@ phLlcNfc_H_ProcessIFrame (
                         ps_recv_pkt->s_llcbuf.sllcpayload.llcpayload), 
                         psLlcCtxt->recvbuf_length);
         
-        
 #if defined (LLC_SEND_RR_ACK)
 
         if (((ns_index < ps_frame_info->n_r) && 
@@ -1308,6 +1269,11 @@ phLlcNfc_H_ProcessIFrame (
             /* Update the N(R) value in I and S frame context  */
             ps_frame_info->n_r = ((ps_frame_info->n_r + 1)
                                     % PH_LLCNFC_MOD_NS_NR);
+
+#ifdef PIGGY_BACK
+            ps_frame_info->resp_recvd_count = (uint8_t)
+                                    (ps_frame_info->resp_recvd_count + 1);
+#endif /* #ifdef PIGGY_BACK */
 
         }
 
@@ -1334,9 +1300,7 @@ phLlcNfc_H_ProcessIFrame (
         {
             dont_send_s_frame = TRUE;
 #ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB
-
             phLlcNfc_H_SendInfo (psLlcCtxt);
-
 #endif /* #ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB */        
         }
         else
@@ -1349,15 +1313,10 @@ phLlcNfc_H_ProcessIFrame (
                             resend_s_frame : s_frame);
         }
 
-#ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB
-
-        /* Nothing required in this define */
-
-#else /* #ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB */
-
+#ifdef PIGGY_BACK
         phLlcNfc_H_SendInfo (psLlcCtxt);
+#endif /* #ifdef PIGGY_BACK */
 
-#endif /* #ifdef LLC_UPP_LAYER_NTFY_WRITE_RSP_CB */
     }
     else
     {
@@ -1425,23 +1384,61 @@ phLlcNfc_H_ProcessIFrame (
 
 #endif /* #ifdef LLC_RELEASE_FLAG */
     {
-        result = phLlcNfc_Interface_Read(psLlcCtxt, 
+        (void)phLlcNfc_Interface_Read(psLlcCtxt,
                         PH_LLCNFC_READWAIT_OFF, 
                         &(ps_recv_pkt->s_llcbuf.llc_length_byte),
                         (uint8_t)PH_LLCNFC_BYTES_INIT_READ);
     
+#ifdef PIGGY_BACK
+        /* Check if any write call is performed or not */
+        if (NFCSTATUS_PENDING != result)
+        {
+            /* No write is performed, So, now check */
+            if (NFCSTATUS_BUSY == PHNFCSTATUS (ps_frame_info->write_status))
+            {
+                /* Any how write cannot be done and some frame is ready to be sent
+                so this frame will act as the ACK */
+                result = phLlcNfc_H_WriteWaitCall (psLlcCtxt);
+            }
+        }
 
+        if (NFCSTATUS_PENDING != result)
+        {
+            if (ps_frame_info->window_size == ps_frame_info->resp_recvd_count)
+            {
+                phLlcNfc_LlcPacket_t    s_packet_info;
+                /* Create S frame */
+                (void)phLlcNfc_H_CreateSFramePayload (ps_frame_info, &(s_packet_info), cmdtype);
+
+                result = phLlcNfc_Interface_Write(psLlcCtxt,
+                            (uint8_t *)&(s_packet_info.s_llcbuf),
+                            (uint32_t)(s_packet_info.llcbuf_len));
+
+
+                if (0 == ps_frame_info->send_error_count)
+                {
+                    ps_frame_info->write_wait_call = invalid_frame;
+                }
+                ps_frame_info->sent_frame_type = eframe_type;
+            }
+            else
+            {
+                result = phLlcNfc_StartTimers (PH_LLCNFC_ACKTIMER, 0);
+            }
+        }
+#else /* #ifdef PIGGY_BACK */
 
         if ((TRUE != ps_frame_info->write_pending) &&  
             (PH_LLCNFC_READPEND_REMAIN_BYTE != ps_frame_info->read_pending) && 
             (FALSE == dont_send_s_frame))
         {
+            phLlcNfc_LlcPacket_t    s_packet_info = {0};
             /* Create S frame */
-            (void)phLlcNfc_H_CreateSFramePayload (ps_frame_info, cmdtype);
+            (void)phLlcNfc_H_CreateSFramePayload (ps_frame_info, &(s_packet_info), cmdtype);
 
             result = phLlcNfc_Interface_Write(psLlcCtxt,
-                        (uint8_t *)&(ps_frame_info->s_llcpacket.s_llcbuf), 
-                        (uint32_t)(ps_frame_info->s_llcpacket.llcbuf_len));
+                        (uint8_t *)&(s_packet_info.s_llcbuf),
+                        (uint32_t)(s_packet_info.llcbuf_len));
 
 
             if (0 == ps_frame_info->send_error_count)
@@ -1450,6 +1447,7 @@ phLlcNfc_H_ProcessIFrame (
             }
             ps_frame_info->sent_frame_type = eframe_type;
         }
+#endif /* #ifdef PIGGY_BACK */
     }
 
     return ;
@@ -1962,13 +1960,16 @@ phLlcNfc_H_SendRejectFrame(
                       )
 {
     NFCSTATUS       result = NFCSTATUS_SUCCESS;
+    phLlcNfc_LlcPacket_t    s_packet_info = {0};
+
     result = phLlcNfc_H_CreateSFramePayload(
-                                    &(psLlcCtxt->s_frameinfo), 
+                                    &(psLlcCtxt->s_frameinfo),
+                                    &(s_packet_info),
                                     phLlcNfc_e_rej);
     /* Send the "S" frame to the lower layer */
     result = phLlcNfc_Interface_Write(psLlcCtxt,
-        (uint8_t *)&(psLlcCtxt->s_frameinfo.s_llcpacket.s_llcbuf), 
-        (uint32_t)(psLlcCtxt->s_frameinfo.s_llcpacket.llcbuf_len));
+        (uint8_t *)&(s_packet_info.s_llcbuf),
+        (uint32_t)(s_packet_info.llcbuf_len));
 
     if (NFCSTATUS_PENDING == result)
     {
@@ -2160,23 +2161,22 @@ phLlcNfc_H_SendRSETFrame (
                       )
 {
     NFCSTATUS                   result = NFCSTATUS_SUCCESS;
-    phLlcNfc_LlcPacket_t        *ps_packet_info = NULL;
+    phLlcNfc_LlcPacket_t        s_packet_info;
     phLlcNfc_Frame_t            *ps_frame_info = NULL;
     
     ps_frame_info = &(psLlcCtxt->s_frameinfo);
-    ps_packet_info = &(psLlcCtxt->s_frameinfo.s_llcpacket);
 
-    result = phLlcNfc_H_CreateUFramePayload(psLlcCtxt, 
-                                    ps_packet_info, 
-                                    &(ps_packet_info->llcbuf_len), 
+    result = phLlcNfc_H_CreateUFramePayload(psLlcCtxt,
+                                    &(s_packet_info),
+                                    &(s_packet_info.llcbuf_len),
                                     phLlcNfc_e_rset);
 
     if (NFCSTATUS_SUCCESS == result)
     {
         /* Call DAL write */
-        result = phLlcNfc_Interface_Write(psLlcCtxt, 
-                            (uint8_t*)&(ps_packet_info->s_llcbuf), 
-                            (uint32_t)ps_packet_info->llcbuf_len);
+        result = phLlcNfc_Interface_Write(psLlcCtxt,
+                            (uint8_t*)&(s_packet_info.s_llcbuf),
+                            (uint32_t)s_packet_info.llcbuf_len);
     }
 
     ps_frame_info->write_status = result;

@@ -228,7 +228,7 @@ phLlcNfc_Init (
 {
     NFCSTATUS               result = NFCSTATUS_SUCCESS;
     phLlcNfc_Context_t      *ps_llc_ctxt = (phLlcNfc_Context_t*)pContext;
-    phLlcNfc_LlcPacket_t    *ps_packet_info = NULL;
+    phLlcNfc_LlcPacket_t    s_packet_info;
     
     PH_LLCNFC_PRINT("Llc Init called\n");
     if ((NULL == ps_llc_ctxt) || (NULL == pLinkInfo))
@@ -239,8 +239,6 @@ phLlcNfc_Init (
     else
     {
         /* Initialisation */
-        ps_packet_info = &(ps_llc_ctxt->s_frameinfo.s_llcpacket);
-    
         ps_llc_ctxt->phwinfo = pLinkInfo;
         /* Call the internal frame initialise */
         phLlcNfc_H_Frame_Init(ps_llc_ctxt);
@@ -258,17 +256,17 @@ phLlcNfc_Init (
             phLlcNfc_CreateTimers();               
 
             /* Create a U frame */
-            result = phLlcNfc_H_CreateUFramePayload(ps_llc_ctxt, 
-                                    ps_packet_info, 
-                                    &(ps_packet_info->llcbuf_len), 
+            result = phLlcNfc_H_CreateUFramePayload(ps_llc_ctxt,
+                                    &s_packet_info,
+                                    &(s_packet_info.llcbuf_len),
                                     phLlcNfc_e_rset);
         }
         if (NFCSTATUS_SUCCESS == result)
         {
             /* Call DAL write */
             result = phLlcNfc_Interface_Write(ps_llc_ctxt, 
-                                (uint8_t*)&(ps_packet_info->s_llcbuf), 
-                                (uint32_t)ps_packet_info->llcbuf_len);
+                                (uint8_t*)&(s_packet_info.s_llcbuf),
+                                (uint32_t)s_packet_info.llcbuf_len);
         }
         if (NFCSTATUS_PENDING == result)
         {
@@ -364,8 +362,7 @@ phLlcNfc_Send (
     NFCSTATUS               result = NFCSTATUS_SUCCESS;
     phLlcNfc_Context_t      *ps_llc_ctxt = (phLlcNfc_Context_t*)pContext;
     phLlcNfc_Frame_t        *ps_frame_info = NULL;
-    phLlcNfc_LlcPacket_t    *ps_packet_info = NULL, 
-                            s_packet_info;
+    phLlcNfc_LlcPacket_t    s_packet_info;
     phLlcNfc_StoreIFrame_t  *ps_store_frame = NULL;
 #if 0
     uint8_t                 count = 1;
@@ -404,7 +401,6 @@ phLlcNfc_Send (
                                 &s_packet_info, 
                                 pLlcBuf, (uint8_t)llcBufLength);
 
-        ps_packet_info = &(ps_frame_info->s_llcpacket);
 
         /* Store the I frame in the send list */
         (void)phLlcNfc_H_StoreIFrame (ps_store_frame, s_packet_info);
@@ -423,13 +419,11 @@ phLlcNfc_Send (
 
 #endif /* #ifdef CTRL_WIN_SIZE_COUNT */
         {
-            (void)memcpy ((void *)ps_packet_info, (void *)&s_packet_info, 
-                        sizeof(phLlcNfc_LlcPacket_t));
             /* Call write to the below layer, only if previous write 
                 is completed */
             result = phLlcNfc_Interface_Write (ps_llc_ctxt, 
-                                (uint8_t *)&(ps_packet_info->s_llcbuf), 
-                                (uint32_t)ps_packet_info->llcbuf_len);
+                                (uint8_t *)&(s_packet_info.s_llcbuf),
+                                (uint32_t)s_packet_info.llcbuf_len);
 
             if ((NFCSTATUS_PENDING == result) || 
                 (NFCSTATUS_BUSY == PHNFCSTATUS (result)))

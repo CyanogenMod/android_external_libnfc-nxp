@@ -264,6 +264,7 @@ phLlcNfc_H_CreateUFramePayload (
 *
 * \param[in/out]    psFrameInfo Information related to LLC frames are stored 
 *                           in this structure
+* \param[in/out]    psLlcPacket         Llc packet sent by the upper layer
 * \param[in]        pLlcBuf     User given buffer or the buffer which needs LLC framing
 * \param[in]        llcBufLength    Length of the parameter "pLlcBuf" 
 *
@@ -423,6 +424,28 @@ phLlcNfc_H_SendRejectedIFrame (
     phLlcNfc_StoreIFrame_t  *psListInfo, 
     uint8_t                 ns_rejected
     );
+
+/**
+* \ingroup grp_hal_nfc_llc_helper
+*
+* \brief LLC component <b>Create S frame</b> function
+*
+* \copydoc page_reg This is a helper function which, creates the S frame
+*
+* \param[in/out] psFrameInfo    Generic frame information
+* \param[in/out] psLlcPacket         Llc packet sent by the upper layer
+* \param[in/out] cmdType        Command type of S frame
+*
+* \retval NFCSTATUS_SUCCESS                Operation successful.
+* \retval NFCSTATUS_INVALID_PARAMETER      At least one parameter of the function is invalid.
+*
+*/
+NFCSTATUS
+phLlcNfc_H_CreateSFramePayload (
+    phLlcNfc_Frame_t        *psFrameInfo,
+    phLlcNfc_LlcPacket_t    *psLlcPacket,
+    phLlcNfc_LlcCmd_t       cmdType
+);
 
 /**
 * \ingroup grp_hal_nfc_llc_helper

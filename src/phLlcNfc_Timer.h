@@ -56,6 +56,12 @@
 /**< 0x05 Timer for guard time out value */
 #define PH_LLCNFC_GUARD_TO_VALUE            LINK_GUARD_TIMEOUT
 
+#ifdef PIGGY_BACK
+
+#define PH_LLCNFC_ACK_TO_VALUE              LINK_ACK_TIMEOUT
+
+#endif /* #ifdef PIGGY_BACK */
+
 #ifdef LLC_RESET_DELAY
     #define LLC_URSET_DELAY_TIME_OUT        LLC_RESET_DELAY
 #else
@@ -201,8 +207,10 @@ phLlcNfc_DeleteTimer (void);
 
 void 
 phLlcNfc_URSET_Delay_Notify (
-    uint32_t            delay_id,
-    void                *pContext);
+
+    uint32_t            delay_id);
+
+
 
 #endif /* #ifdef LLC_URSET_NO_DELAY */
 
