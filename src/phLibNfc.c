@@ -826,10 +826,14 @@ NFCSTATUS phLibNfc_Mgt_GetstackCapabilities(
             gpphLibContext->psHwReference->device_info.model_id;        
         (void)memcpy(phLibNfc_StackCapabilities->psDevCapabilities.full_version,
             gpphLibContext->psHwReference->device_info.full_version,NXP_FULL_VERSION_LEN);
-        
         /* Check the firmware version */
-        phLibNfc_StackCapabilities->psDevCapabilities.firmware_update_info = memcmp(phLibNfc_StackCapabilities->psDevCapabilities.full_version, nxp_nfc_full_version,
-                   NXP_FULL_VERSION_LEN);
+        if (nxp_nfc_full_version == NULL) {
+            // Couldn't load firmware, just pretend we're up to date.
+            phLibNfc_StackCapabilities->psDevCapabilities.firmware_update_info = 0;
+        } else {
+            phLibNfc_StackCapabilities->psDevCapabilities.firmware_update_info = memcmp(phLibNfc_StackCapabilities->psDevCapabilities.full_version, nxp_nfc_full_version,
+                       NXP_FULL_VERSION_LEN);
+        }
 
         if(NFCSTATUS_SUCCESS != RetVal)
         {       
