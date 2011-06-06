@@ -130,6 +130,12 @@ NFCSTATUS phLibNfc_SetHciTimeout(uint32_t timeout_in_ms) {
     return NFCSTATUS_SUCCESS;
 }
 
+extern uint32_t nxp_nfc_felica_timeout;
+NFCSTATUS phLibNfc_SetFelicaTimeout(uint8_t timeout_in_ms) {
+    nxp_nfc_felica_timeout = timeout_in_ms;
+    return NFCSTATUS_SUCCESS;
+}
+
 /**
 *    Initialize the phLibNfc interface.
 */
