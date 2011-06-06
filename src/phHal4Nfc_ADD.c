@@ -489,17 +489,13 @@ void phHal4Nfc_TargetDiscoveryComplete(
                         psRemoteDevInfo->RemoteDevInfo.Iso14443A_Info.UidLength))
                         {
                             aRemoteDevTypes[Count] = phHal_eMifare_PICC;
-                            
+                            Count++;
                         }
-                        else/*TYPE 3A*/
-                        {
-                            aRemoteDevTypes[Count] = phHal_eISO14443_3A_PICC;
-                        }
-                        Count++;
                     }
-                    else if ( !(Sak & ISO_14443_BITMASK) &&
-                          !(Sak & NFCIP_BITMASK) && (0 == Count))
+                    if ( !(Sak & NFCIP_BITMASK) )
                     {
+                        // Always add a separate 3A target on a separate
+                        // handle, so the upper layers can connect to it.
                         aRemoteDevTypes[Count] = phHal_eISO14443_3A_PICC;
                         Count++;
                     }
