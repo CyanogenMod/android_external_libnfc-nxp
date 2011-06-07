@@ -33,6 +33,8 @@
 #include <stdlib.h>
 #ifdef ANDROID
 #include <linux/ipc.h>
+#include <cutils/log.h>
+#include <cutils/properties.h> // for property_get
 #else
 #include <sys/msg.h>
 #endif
@@ -98,6 +100,7 @@ static phDal4Nfc_SContext_t           gDalContext;
 static pphDal4Nfc_SContext_t          pgDalContext;
 static phHal_sHwReference_t   *       pgDalHwContext;
 static sem_t                          nfc_read_sem;
+static int                            low_level_traces;
 #ifdef USE_MQ_MESSAGE_QUEUE
 static phDal4Nfc_DeferredCall_Msg_t   nDeferedMessage;
 static mqd_t                          nDeferedCallMessageQueueId;
@@ -116,6 +119,21 @@ static void      phDal4Nfc_FillMsg        (phDal4Nfc_Message_t *pDalMsg, phOsalN
 /*-----------------------------------------------------------------------------------
                                 DAL API IMPLEMENTATION
 ------------------------------------------------------------------------------------*/
+
+static void refresh_low_level_traces() {
+#ifdef ANDROID
+    char value[1];
+    property_get("debug.nfc.LOW_LEVEL_TRACES", value, "");
+    if (value[0]) {
+        low_level_traces = atoi(value);
+        DAL_DEBUG("debug.nfc.LOW_LEVEL_TRACES = %X", mode);
+    }
+#endif
+
+#ifdef LOW_LEVEL_TRACES
+    low_level_traces = 1;
+#endif
+}
 
 /*-----------------------------------------------------------------------------
 
@@ -215,6 +233,8 @@ PURPOSE:  DAL Init function.
 NFCSTATUS phDal4Nfc_Init(void *pContext, void *pHwRef )
 {
     NFCSTATUS        result = NFCSTATUS_SUCCESS;
+
+    refresh_low_level_traces();
 
     if ((NULL != pContext) && (NULL != pHwRef))
     {
@@ -707,9 +727,11 @@ retry:
     else
     {
         i2c_error_count = 0;
-#ifdef LOW_LEVEL_TRACES
-        phOsalNfc_PrintData("Received buffer", (uint16_t)gReadWriteContext.nNbOfBytesRead, gReadWriteContext.pReadBuffer);
-#endif
+
+        if (low_level_traces)
+        {
+             phOsalNfc_PrintData("Received buffer", (uint16_t)gReadWriteContext.nNbOfBytesRead, gReadWriteContext.pReadBuffer);
+        }
         DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
         DAL_PRINT("ReadBuff[]={ ");
@@ -851,9 +873,10 @@ void phDal4Nfc_DeferredCb (void  *params)
         case PHDAL4NFC_WRITE_MESSAGE:
             DAL_PRINT(" Dal deferred write called \n");
 
-#ifdef LOW_LEVEL_TRACES
-            phOsalNfc_PrintData("Send buffer", (uint16_t)gReadWriteContext.nNbOfBytesToWrite, gReadWriteContext.pWriteBuffer);
-#endif
+            if(low_level_traces)
+            {
+                phOsalNfc_PrintData("Send buffer", (uint16_t)gReadWriteContext.nNbOfBytesToWrite, gReadWriteContext.pWriteBuffer);
+            }
 
             /* DAL_DEBUG("dalMsg->transactInfo.length : %d\n", dalMsg->transactInfo.length); */
             /* Make a Physical WRITE */
