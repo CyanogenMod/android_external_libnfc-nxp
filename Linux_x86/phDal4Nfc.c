@@ -858,6 +858,7 @@ void phDal4Nfc_DeferredCb (void  *params)
             /* DAL_DEBUG("dalMsg->transactInfo.length : %d\n", dalMsg->transactInfo.length); */
             /* Make a Physical WRITE */
             /* NOTE: need to usleep(3000) here if the write is for SWP */
+            usleep(500);  /* NXP advise 500us sleep required between I2C writes */
             gReadWriteContext.nNbOfBytesWritten = gLinkFunc.write(gReadWriteContext.pWriteBuffer, gReadWriteContext.nNbOfBytesToWrite);
             if (gReadWriteContext.nNbOfBytesWritten != gReadWriteContext.nNbOfBytesToWrite)
             {
