@@ -860,6 +860,16 @@ NFCSTATUS phLibNfc_SetHciTimeout(uint32_t timeout_in_ms);
 // [1..255] -> timeout in ms
 NFCSTATUS phLibNfc_SetFelicaTimeout(uint8_t timeout_in_ms);
 
+// MIFARE RAW timeout (ISO14443-3A / NfcA timeout)
+// timeout is 8 bits
+// bits [0..3] => timeout value, (256*16/13.56*10^6) * 2^value
+//                  [0] -> 0.0003s
+//                  ..
+//                  [14] -> 4.9s
+//                  [15] -> not allowed
+// bits [4..7] => 0
+NFCSTATUS phLibNfc_SetMifareRawTimeout(uint8_t timeout);
+
 /**
 * \ingroup grp_lib_nfc
 *

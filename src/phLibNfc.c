@@ -136,6 +136,12 @@ NFCSTATUS phLibNfc_SetFelicaTimeout(uint8_t timeout_in_ms) {
     return NFCSTATUS_SUCCESS;
 }
 
+extern uint8_t nxp_nfc_mifareraw_timeout;
+NFCSTATUS phLibNfc_SetMifareRawTimeout(uint8_t timeout) {
+    nxp_nfc_mifareraw_timeout = timeout;
+    return NFCSTATUS_SUCCESS;
+}
+
 /**
 *    Initialize the phLibNfc interface.
 */
