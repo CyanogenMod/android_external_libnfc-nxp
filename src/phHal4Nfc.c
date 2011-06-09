@@ -302,8 +302,8 @@ phHal4Nfc_Configure_Layers(
 #include <utils/Log.h>
 #include <dlfcn.h>
 
-const unsigned char *nxp_nfc_full_version;
-const unsigned char *nxp_nfc_fw;
+const unsigned char *nxp_nfc_full_version = NULL;
+const unsigned char *nxp_nfc_fw = NULL;
 
 int dlopen_firmware() {
     void *p;
