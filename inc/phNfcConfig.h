@@ -176,7 +176,7 @@
 #endif
 
 #ifndef NXP_MIFARE_XCHG_TIMEOUT
-#define NXP_MIFARE_XCHG_TIMEOUT         0x03U
+#define NXP_MIFARE_XCHG_TIMEOUT         0x0BU
 #endif
 
 #ifndef NXP_FELICA_XCHG_TIMEOUT

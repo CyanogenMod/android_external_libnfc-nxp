@@ -67,6 +67,7 @@
 
 #define RDR_A_MIFARE_RAW_LENGTH             0x03U
 
+uint8_t nxp_nfc_mifareraw_timeout = NXP_MIFARE_XCHG_TIMEOUT;
 /*
 *************************** Structure and Enumeration ***************************
 */
@@ -1037,7 +1038,7 @@ phHciNfc_Send_ReaderA_Command(
                         hcp_message = &(hcp_packet->msg.message);
 #ifdef ENABLE_MIFARE_RAW
                         /* Time out */
-                        hcp_message->payload[i++] = NXP_MIFARE_XCHG_TIMEOUT ;
+                        hcp_message->payload[i++] = nxp_nfc_mifareraw_timeout;
                         /* Status */
                         hcp_message->payload[i++] = RDR_A_MIFARE_STATUS;
 #else
