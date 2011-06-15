@@ -126,7 +126,7 @@ static void refresh_low_level_traces() {
     property_get("debug.nfc.LOW_LEVEL_TRACES", value, "");
     if (value[0]) {
         low_level_traces = atoi(value);
-        DAL_DEBUG("debug.nfc.LOW_LEVEL_TRACES = %X", mode);
+        DAL_DEBUG("debug.nfc.LOW_LEVEL_TRACES = %X", low_level_traces);
     }
 #endif
 

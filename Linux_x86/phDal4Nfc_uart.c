@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
 
@@ -161,28 +162,28 @@ NFCSTATUS phDal4Nfc_uart_open_and_configure(pphDal4Nfc_sConfig_t pConfig, void *
    switch(pConfig->nLinkType)
    {
      case ENUM_DAL_LINK_TYPE_COM1:
-      pComPort = "/dev/ttyS0";
+      pComPort = "/dev/ttyO0";
       break;
      case ENUM_DAL_LINK_TYPE_COM2:
-      pComPort = "/dev/ttyS1";
+      pComPort = "/dev/ttyO1";
       break;
      case ENUM_DAL_LINK_TYPE_COM3:
-      pComPort = "/dev/ttyS2";
+      pComPort = "/dev/ttyO2";
       break;
      case ENUM_DAL_LINK_TYPE_COM4:
-      pComPort = "/dev/ttyS3";
+      pComPort = "/dev/ttyO3";
       break;
      case ENUM_DAL_LINK_TYPE_COM5:
-      pComPort = "/dev/ttyS4";
+      pComPort = "/dev/ttyO4";
       break;
      case ENUM_DAL_LINK_TYPE_COM6:
-      pComPort = "/dev/ttyS5";
+      pComPort = "/dev/ttyO5";
       break;
      case ENUM_DAL_LINK_TYPE_COM7:
-      pComPort = "/dev/ttyS6";
+      pComPort = "/dev/ttyO6";
       break;
      case ENUM_DAL_LINK_TYPE_COM8:
-      pComPort = "/dev/ttyS7";
+      pComPort = "/dev/ttyO7";
       break;
      case ENUM_DAL_LINK_TYPE_USB:
       pComPort = "/dev/ttyUSB0";
@@ -263,31 +264,31 @@ PURPOSE:  Reads nNbBytesToRead bytes and writes them in pBuffer.
           Returns the number of bytes really read or -1 in case of error.
 
 -----------------------------------------------------------------------------*/
-
 int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead)
 {
-   fd_set rfds;
-   struct timeval tv;
    int ret;
+   int numRead = 0;
 
    DAL_ASSERT_STR(gComPortContext.nOpened == 1, "read called but not opened!");
+   DAL_DEBUG("_uart_read() called to read %d bytes", nNbBytesToRead);
 
-   FD_ZERO(&rfds);
-   FD_SET(gComPortContext.nHandle, &rfds);
-
-   /* select will block for 10 sec */
-   tv.tv_sec = 2;
-   tv.tv_usec = 0;
-
-   ret = select(gComPortContext.nHandle + 1, &rfds, NULL, NULL, &tv);
-
-   if (ret == -1)
-      return -1;
-
-   if (ret)
-      return read(gComPortContext.nHandle, pBuffer, nNbBytesToRead);
-
-   return 0;
+   while (numRead != nNbBytesToRead) {
+       ret = read(gComPortContext.nHandle, pBuffer + numRead, nNbBytesToRead - numRead);
+       if (ret > 0) {
+           DAL_DEBUG("read %d bytes", ret);
+           numRead += ret;
+       } else if (ret == 0) {
+           DAL_PRINT("_uart_read() EOF");
+           return 0;
+       } else {
+           DAL_DEBUG("_uart_read() errno=%d", errno);
+           if (errno == EINTR || errno == EAGAIN) {
+               continue;
+           }
+           return -1;
+       }
+   }
+   return numRead;
 }
 
 /*-----------------------------------------------------------------------------

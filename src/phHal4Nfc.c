@@ -367,7 +367,8 @@ NFCSTATUS phHal4Nfc_Open(
     else/*Do an initialization*/
     { 
 #ifdef ANDROID
-        dlopen_firmware();
+        //TODO: Re-enable FW update
+        //dlopen_firmware();
 #endif
 
         /*If hal4 ctxt in Hwreference is NULL create a new context*/
