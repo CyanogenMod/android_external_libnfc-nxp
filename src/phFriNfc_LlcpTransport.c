@@ -38,6 +38,39 @@
 #define IS_BETWEEN(x, a, b) (((x)>=(a)) && ((x)<(b)))
 
 
+static NFCSTATUS phFriNfc_LlcpTransport_AutoBind(phFriNfc_LlcpTransport_Socket_t *pSocket)
+{
+   uint8_t i;
+   uint8_t sap;
+   phFriNfc_LlcpTransport_Socket_t* pSocketTable = pSocket->psTransport->pSocketTable;
+
+   /* Try all possible SAPs */
+   for(sap=PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST ; sap<PHFRINFC_LLCP_SAP_NUMBER ; sap++)
+   {
+      /* Go through socket list to check if current SAP is in use */
+      for(i=0 ; i<PHFRINFC_LLCP_NB_SOCKET_MAX ; i++)
+      {
+         if((pSocketTable[i].eSocket_State >= phFriNfc_LlcpTransportSocket_eSocketBound) &&
+            (pSocketTable[i].socket_sSap == sap))
+         {
+            /* SAP is already in use */
+            break;
+         }
+      }
+
+      if (i >= PHFRINFC_LLCP_NB_SOCKET_MAX)
+      {
+         /* No socket is using current SAP, proceed with binding */
+         pSocket->socket_sSap = sap;
+         pSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
+         return NFCSTATUS_SUCCESS;
+      }
+   }
+
+   /* If we reach this point, it means that no SAP is free */
+   return NFCSTATUS_INSUFFICIENT_RESOURCES;
+}
+
 /* TODO: comment function Transport recv CB */
 static void phFriNfc_LlcpTransport__Recv_CB(void            *pContext,
                                             phNfc_sData_t   *psData,
@@ -854,19 +887,14 @@ NFCSTATUS phFriNfc_LlcpTransport_Connect( phFriNfc_LlcpTransport_Socket_t*      
    }
    else 
    {
+      /* Implicit bind if socket is not already bound */
       if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
       {
-         /* Bind with a sSap Free */
-         pLlcpSocket->socket_sSap = 32;
-
-         for(i=0;i<PHFRINFC_LLCP_NB_SOCKET_MAX;i++)
+         status = phFriNfc_LlcpTransport_AutoBind(pLlcpSocket);
+         if (status != NFCSTATUS_SUCCESS)
          {
-            if(pLlcpSocket->socket_sSap == pLlcpSocket->psTransport->pSocketTable[i].socket_sSap)
-            {
-               pLlcpSocket->socket_sSap++;
-            }
+            return status;
          }
-         pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
       }
 
       /* Test the SAP range for non SDP-advertised services */
@@ -942,19 +970,14 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectByUri(phFriNfc_LlcpTransport_Socket_t*  
    }
    else 
    {
+      /* Implicit bind if socket is not already bound */
       if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
       {
-         /* Bind with a sSap Free */
-         pLlcpSocket->socket_sSap = 32;
-
-         for(i=0;i<PHFRINFC_LLCP_NB_SOCKET_MAX;i++)
+         status = phFriNfc_LlcpTransport_AutoBind(pLlcpSocket);
+         if (status != NFCSTATUS_SUCCESS)
          {
-            if(pLlcpSocket->socket_sSap == pLlcpSocket->psTransport->pSocketTable[i].socket_sSap)
-            {
-               pLlcpSocket->socket_sSap++;
-            }
+            return status;
          }
-         pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
       }
 
       /* Test the SAP range for non SDP-advertised services */
