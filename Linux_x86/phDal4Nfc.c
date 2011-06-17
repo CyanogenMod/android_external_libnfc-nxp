@@ -121,17 +121,27 @@ static void      phDal4Nfc_FillMsg        (phDal4Nfc_Message_t *pDalMsg, phOsalN
 ------------------------------------------------------------------------------------*/
 
 static void refresh_low_level_traces() {
-#ifdef ANDROID
-    char value[1];
-    property_get("debug.nfc.LOW_LEVEL_TRACES", value, "");
-    if (value[0]) {
-        low_level_traces = atoi(value);
-        DAL_DEBUG("debug.nfc.LOW_LEVEL_TRACES = %X", low_level_traces);
-    }
-#endif
-
 #ifdef LOW_LEVEL_TRACES
     low_level_traces = 1;
+    return;
+#else
+
+#ifdef ANDROID
+    char value[PROPERTY_VALUE_MAX];
+
+    property_get("ro.debuggable", value, "");
+    if (!value[0] || !atoi(value)) {
+        low_level_traces = 0;  // user build, do not allow debug
+        return;
+    }
+
+    property_get("debug.nfc.LOW_LEVEL_TRACES", value, "");
+    if (value[0]) {
+        low_level_traces = atoi(value) ? 1 : 0;
+        return;
+    }
+#endif
+    low_level_traces = 0;
 #endif
 }
 
