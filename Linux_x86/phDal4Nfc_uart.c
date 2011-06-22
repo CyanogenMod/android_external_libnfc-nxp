@@ -26,12 +26,17 @@
  *
  */
 
+#define LOG_TAG "NFC_uart"
+#include <cutils/log.h>
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
+#include <stdio.h>
+#include <errno.h>
 
 #include <phDal4Nfc_debug.h>
 #include <phDal4Nfc_uart.h>
@@ -266,13 +271,13 @@ PURPOSE:  Reads nNbBytesToRead bytes and writes them in pBuffer.
 -----------------------------------------------------------------------------*/
 int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead)
 {
-   int ret;
-   int numRead = 0;
+    int ret;
+    int numRead = 0;
 
-   DAL_ASSERT_STR(gComPortContext.nOpened == 1, "read called but not opened!");
-   DAL_DEBUG("_uart_read() called to read %d bytes", nNbBytesToRead);
+    DAL_ASSERT_STR(gComPortContext.nOpened == 1, "read called but not opened!");
+    DAL_DEBUG("_uart_read() called to read %d bytes", nNbBytesToRead);
 
-   while (numRead != nNbBytesToRead) {
+    while (numRead < nNbBytesToRead) {
        ret = read(gComPortContext.nHandle, pBuffer + numRead, nNbBytesToRead - numRead);
        if (ret > 0) {
            DAL_DEBUG("read %d bytes", ret);
@@ -287,8 +292,8 @@ int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead)
            }
            return -1;
        }
-   }
-   return numRead;
+    }
+    return numRead;
 }
 
 /*-----------------------------------------------------------------------------
@@ -302,28 +307,30 @@ PURPOSE:  Writes nNbBytesToWrite bytes from pBuffer to the link
 
 int phDal4Nfc_uart_write(uint8_t * pBuffer, int nNbBytesToWrite)
 {
-   fd_set wfds;
-   struct timeval tv;
-   int ret;
+    int ret;
+    int numWrote = 0;
 
-   DAL_ASSERT_STR(gComPortContext.nOpened == 1, "write called but not opened!");
+    DAL_ASSERT_STR(gComPortContext.nOpened == 1, "write called but not opened!");
+    DAL_DEBUG("_uart_write() called to write %d bytes\n", nNbBytesToWrite);
 
-   FD_ZERO(&wfds);
-   FD_SET(gComPortContext.nHandle, &wfds);
+    while (numWrote < nNbBytesToWrite) {
+        ret = write(gComPortContext.nHandle, pBuffer + numWrote, nNbBytesToWrite - numWrote);
+        if (ret > 0) {
+            DAL_DEBUG("wrote %d bytes", ret);
+            numWrote += ret;
+        } else if (ret == 0) {
+            DAL_PRINT("_uart_write() EOF");
+            return -1;
+        } else {
+            DAL_DEBUG("_uart_write() errno=%d", errno);
+            if (errno == EINTR || errno == EAGAIN) {
+                continue;
+            }
+            return -1;
+        }
+    }
 
-   /* select will block for 10 sec */
-   tv.tv_sec = 2;
-   tv.tv_usec = 0;
-
-   ret = select(gComPortContext.nHandle + 1, NULL, &wfds, NULL, &tv);
-
-   if (ret == -1)
-      return -1;
-
-   if (ret)
-      return write(gComPortContext.nHandle, pBuffer, nNbBytesToWrite);
-
-   return 0;
+    return numWrote;
 }
 
 /*-----------------------------------------------------------------------------
@@ -333,24 +340,38 @@ FUNCTION: phDal4Nfc_uart_reset
 PURPOSE:  Reset the PN544, using the VEN pin
 
 -----------------------------------------------------------------------------*/
-int phDal4Nfc_uart_reset()
+int phDal4Nfc_uart_reset(long level)
 {
-   DAL_PRINT("phDal4Nfc_uart_reset");
+    static const char NFC_POWER_PATH[] = "/sys/devices/platform/nfc-power/nfc_power";
+    int sz;
+    int fd = -1;
+    int ret = NFCSTATUS_FAILED;
+    char buffer[2];
 
-   return NFCSTATUS_FEATURE_NOT_SUPPORTED;
+    DAL_DEBUG("phDal4Nfc_uart_reset, VEN level = %ld", level);
+
+    if (snprintf(buffer, sizeof(buffer), "%u", (unsigned int)level) != 1) {
+        LOGE("Bad nfc power level (%u)", (unsigned int)level);
+        goto out;
+    }
+
+    fd = open(NFC_POWER_PATH, O_WRONLY);
+    if (fd < 0) {
+        LOGE("open(%s) for write failed: %s (%d)", NFC_POWER_PATH,
+                strerror(errno), errno);
+        goto out;
+    }
+    sz = write(fd, &buffer, sizeof(buffer) - 1);
+    if (sz < 0) {
+        LOGE("write(%s) failed: %s (%d)", NFC_POWER_PATH, strerror(errno),
+             errno);
+        goto out;
+    }
+    ret = NFCSTATUS_SUCCESS;
+
+out:
+    if (fd >= 0) {
+        close(fd);
+    }
+    return ret;
 }
-
-/*-----------------------------------------------------------------------------
-
-FUNCTION: phDal4Nfc_uart_write
-
-PURPOSE:  Put the PN544 in download mode, using the GPIO4 pin
-
------------------------------------------------------------------------------*/
-int phDal4Nfc_uart_download()
-{
-   DAL_PRINT("phDal4Nfc_uart_download");
-
-   return NFCSTATUS_FEATURE_NOT_SUPPORTED;
-}
-

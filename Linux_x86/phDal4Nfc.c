@@ -556,7 +556,6 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
          gLinkFunc.open_and_configure = phDal4Nfc_uart_open_and_configure;
          gLinkFunc.read               = phDal4Nfc_uart_read;
          gLinkFunc.write              = phDal4Nfc_uart_write;
-         gLinkFunc.download           = phDal4Nfc_uart_download;
          gLinkFunc.reset              = phDal4Nfc_uart_reset;
       }
       break;

@@ -169,7 +169,7 @@ void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer)
         for (i = 0; i < length; i++) {
             snprintf(&print_buffer[i*5], 6, " 0x%02X", pBuffer[i]);
         }
-        LOGD("> NFC I2C %s: %s", pString,print_buffer);
+        LOGD("> NFC %s: %s", pString, print_buffer);
     }
 }
 

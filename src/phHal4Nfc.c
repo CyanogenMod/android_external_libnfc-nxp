@@ -308,7 +308,7 @@ const unsigned char *nxp_nfc_fw = NULL;
 int dlopen_firmware() {
     void *p;
 
-    void *handle = dlopen("/system/lib/libpn544_fw.so", RTLD_NOW);
+    void *handle = dlopen("/system/vendor/firmware/libpn544_fw.so", RTLD_NOW);
     if (handle == NULL) {
         LOGE("Could not open libpn544.so");
         return -1;
@@ -367,8 +367,7 @@ NFCSTATUS phHal4Nfc_Open(
     else/*Do an initialization*/
     { 
 #ifdef ANDROID
-        //TODO: Re-enable FW update
-        //dlopen_firmware();
+        dlopen_firmware();
 #endif
 
         /*If hal4 ctxt in Hwreference is NULL create a new context*/

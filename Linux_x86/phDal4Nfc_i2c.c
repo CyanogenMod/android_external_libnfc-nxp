@@ -23,7 +23,7 @@
  */
 
 #define LOG_TAG "NFC_i2c"
-#include <utils/Log.h>
+#include <cutils/log.h>
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,6 +31,7 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
+#include <errno.h>
 
 #include <phDal4Nfc_debug.h>
 #include <phDal4Nfc_i2c.h>
@@ -188,20 +189,29 @@ PURPOSE:  Reads nNbBytesToRead bytes and writes them in pBuffer.
 
 int phDal4Nfc_i2c_read(uint8_t * pBuffer, int nNbBytesToRead)
 {
-   int ret;
-   DAL_ASSERT_STR(gI2cPortContext.nOpened == 1, "read called but not opened!");
+    int ret;
+    int numRead = 0;
 
-   DAL_DEBUG("Reading %d bytes\n", nNbBytesToRead);
-   ret = read(gI2cPortContext.nHandle, pBuffer, nNbBytesToRead);
-   if (ret < 0)
-   {
-      DAL_DEBUG("Read failed: read() returned %d\n", ret);
-   }
-   else
-   {
-      DAL_DEBUG("Read succeed (%d bytes)\n", ret);
-   }
-   return ret;
+    DAL_ASSERT_STR(gI2cPortContext.nOpened == 1, "read called but not opened!");
+    DAL_DEBUG("_i2c_read() called to read %d bytes", nNbBytesToRead);
+
+    while (numRead < nNbBytesToRead) {
+        ret = read(gI2cPortContext.nHandle, pBuffer + numRead, nNbBytesToRead - numRead);
+        if (ret > 0) {
+            DAL_DEBUG("read %d bytes", ret);
+            numRead += ret;
+        } else if (ret == 0) {
+            DAL_PRINT("_i2c_read() EOF");
+            return -1;
+        } else {
+            DAL_DEBUG("_i2c_read() errno=%d", errno);
+            if (errno == EINTR || errno == EAGAIN) {
+                continue;
+            }
+            return -1;
+        }
+    }
+    return numRead;
 }
 
 /*-----------------------------------------------------------------------------
@@ -215,22 +225,31 @@ PURPOSE:  Writes nNbBytesToWrite bytes from pBuffer to the link
 
 int phDal4Nfc_i2c_write(uint8_t * pBuffer, int nNbBytesToWrite)
 {
-   int ret;
-   DAL_ASSERT_STR(gI2cPortContext.nOpened == 1, "write called but not opened!");
+    int ret;
+    int numWrote = 0;
 
-   DAL_DEBUG("Writing %d bytes\n", nNbBytesToWrite);
-   ret = write(gI2cPortContext.nHandle, pBuffer, nNbBytesToWrite);
-   if (ret < 0)
-   {
-      DAL_DEBUG("Write failed: write() returned %d \n", ret);
-   }
-   else
-   {
-      DAL_DEBUG("Write succeed (%d bytes)\n", ret);
-   }
-   return ret;
+    DAL_ASSERT_STR(gI2cPortContext.nOpened == 1, "write called but not opened!");
+    DAL_DEBUG("_i2c_write() called to write %d bytes\n", nNbBytesToWrite);
+
+    while (numWrote < nNbBytesToWrite) {
+        ret = write(gI2cPortContext.nHandle, pBuffer + numWrote, nNbBytesToWrite - numWrote);
+        if (ret > 0) {
+            DAL_DEBUG("wrote %d bytes", ret);
+            numWrote += ret;
+        } else if (ret == 0) {
+            DAL_PRINT("_i2c_write() EOF");
+            return -1;
+        } else {
+            DAL_DEBUG("_i2c_write() errno=%d", errno);
+            if (errno == EINTR || errno == EAGAIN) {
+                continue;
+            }
+            return -1;
+        }
+    }
+
+    return numWrote;
 }
-
 
 /*-----------------------------------------------------------------------------
 
@@ -241,26 +260,7 @@ PURPOSE:  Reset the PN544, using the VEN pin
 -----------------------------------------------------------------------------*/
 int phDal4Nfc_i2c_reset(long level)
 {
-   int ret = NFCSTATUS_SUCCESS;   
+    DAL_DEBUG("phDal4Nfc_i2c_reset, VEN level = %ld", level);
 
-   DAL_DEBUG("phDal4Nfc_i2c_reset, VEN level = %ld",level);
-
-   ret = ioctl(gI2cPortContext.nHandle, PN544_SET_PWR, level);
-
-   /* HACK to increase reset time
-    * TODO: move this to kernel
-    */
-   if (level == 0) {
-       LOGW("sleeping a little longer...");
-       usleep(50000);
-   } else {
-       usleep(10000);
-   }
-
-   return ret;
+    return ioctl(gI2cPortContext.nHandle, PN544_SET_PWR, level);
 }
-
-
-
-
-
