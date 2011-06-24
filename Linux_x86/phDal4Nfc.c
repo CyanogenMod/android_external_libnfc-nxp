@@ -739,7 +739,7 @@ retry:
 
         if (low_level_traces)
         {
-             phOsalNfc_PrintData("Received buffer", (uint16_t)gReadWriteContext.nNbOfBytesRead, gReadWriteContext.pReadBuffer);
+             phOsalNfc_PrintData("RECV", (uint16_t)gReadWriteContext.nNbOfBytesRead, gReadWriteContext.pReadBuffer);
         }
         DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
@@ -884,7 +884,7 @@ void phDal4Nfc_DeferredCb (void  *params)
 
             if(low_level_traces)
             {
-                phOsalNfc_PrintData("Send buffer", (uint16_t)gReadWriteContext.nNbOfBytesToWrite, gReadWriteContext.pWriteBuffer);
+                phOsalNfc_PrintData("SEND", (uint16_t)gReadWriteContext.nNbOfBytesToWrite, gReadWriteContext.pWriteBuffer);
             }
 
             /* DAL_DEBUG("dalMsg->transactInfo.length : %d\n", dalMsg->transactInfo.length); */
