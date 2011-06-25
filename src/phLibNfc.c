@@ -31,6 +31,8 @@
 ************************* Header Files ****************************************
 */
 
+#define LOG_TAG "NFC"
+
 #include <phLibNfc.h>
 #include <phDal4Nfc.h>
 #include <phHal4Nfc.h>
@@ -841,6 +843,7 @@ NFCSTATUS phLibNfc_Mgt_GetstackCapabilities(
         /* Check the firmware version */
         if (nxp_nfc_full_version == NULL) {
             // Couldn't load firmware, just pretend we're up to date.
+            LOGW("Firmware image not available: this device might be running old NFC firmware!");
             phLibNfc_StackCapabilities->psDevCapabilities.firmware_update_info = 0;
         } else {
             phLibNfc_StackCapabilities->psDevCapabilities.firmware_update_info = memcmp(phLibNfc_StackCapabilities->psDevCapabilities.full_version, nxp_nfc_full_version,
