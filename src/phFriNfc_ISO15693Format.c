@@ -112,7 +112,7 @@ CC BYTE 0 - Magic Number - 0xE1
 typedef enum phFriNfc_ISO15693_FormatSeq
 {
     ISO15693_GET_SYS_INFO, 
-    ISO15693_RD_MULTIPLE_BLKS_CHECK, 
+    ISO15693_RD_SINGLE_BLK_CHECK,
     ISO15693_WRITE_CC_FMT, 
     ISO15693_WRITE_NDEF_TLV
 }phFriNfc_ISO15693_FormatSeq_t;
@@ -351,27 +351,12 @@ phFriNfc_ISO15693_H_ProFormat (
                 (uint8_t)(*psNdefSmtCrdFmt->SendRecvLength - 
                 ISO15693_EXTRA_RESPONSE_FLAG)))
             {
-                /* Send the READ MULTIPLE BLOCKS COMMAND */
-                command_type = ISO15693_RD_MULTIPLE_BLKS_CMD;
-                e_format_seq = ISO15693_RD_MULTIPLE_BLKS_CHECK;
+                /* Send the READ SINGLE BLOCK COMMAND */
+                command_type = ISO15693_RD_SINGLE_BLK_CMD;
+                e_format_seq = ISO15693_RD_SINGLE_BLK_CHECK;
 
-                /* Prepare data for the command, 
-                First add the current block */
-                *a_send_byte = (uint8_t)ps_iso15693_info->current_block;
-                send_index = (uint8_t)(send_index + 1);
-
-                /* Second, add number of blocks to read, here 2 blocks means 
-                8 bytes. 1 is decremented because to read multiple block.
-                the first block is read by default, apart from the first block,  
-                next block shall be read, that means remaining block to read is 1
-                So, if for eg: 2 blocks needs to be read from block number 0, then 1 
-                is number of blocks to read. This will read both block 0 and 1
-                */
-                *(a_send_byte + send_index) = (uint8_t)
-                                    (ISO15693_RD_2_BLOCKS - 1);
-                send_index = (uint8_t)(send_index + 1);
-
-                send_length = send_index;
+                /* Block number 0 to read */
+                psNdefSmtCrdFmt->AddInfo.s_iso15693_info.current_block = 0x00;
             }
             else
             {
@@ -381,67 +366,76 @@ phFriNfc_ISO15693_H_ProFormat (
             break;
         }
 
-        case ISO15693_RD_MULTIPLE_BLKS_CHECK:
+        case ISO15693_RD_SINGLE_BLK_CHECK:
         {
-            /* RESPONSE received for READ MULTIPLE BLOCKS 
-            received, prepare data for writing CC bytes */            
-            
-            command_type = ISO15693_WR_SINGLE_BLK_CMD;
-            e_format_seq = ISO15693_WRITE_CC_FMT;
+            /* RESPONSE received for READ SINGLE BLOCK
+            received*/
 
-            /* CC magic number */
-            *a_send_byte = (uint8_t)ISO15693_CC_MAGIC_NUM;
-            send_index = (uint8_t)(send_index + 1);
+            /* Check if Card is really fresh
+               First 4 bytes must be 0 for fresh card */
 
-            /* CC Version and read/write access */
-            *(a_send_byte + send_index) = (uint8_t)
-                            ISO15693_CC_VER_RW;
-            send_index = (uint8_t)(send_index + 1);
-
-            /* CC MAX data size, calculated during GET system information */
-            *(a_send_byte + send_index) = (uint8_t)
-                            (ps_iso15693_info->max_data_size / 
-                            ISO15693_CC_MULTIPLE_FACTOR);
-            send_index = (uint8_t)(send_index + 1);
-
-            switch (ps_iso15693_info->max_data_size)
+            if ((psNdefSmtCrdFmt->AddInfo.s_iso15693_info.current_block == 0x00) &&
+                (psNdefSmtCrdFmt->SendRecvBuf[1] != 0x00 ||
+                 psNdefSmtCrdFmt->SendRecvBuf[2] != 0x00 ||
+                 psNdefSmtCrdFmt->SendRecvBuf[3] != 0x00 ||
+                 psNdefSmtCrdFmt->SendRecvBuf[4] != 0x00))
             {
-                case ISO15693_SLI_X_MAX_SIZE:
-                {
-                    /* For SLI tags : Inventory Page read not supported */
-                    *(a_send_byte + send_index) = (uint8_t)
-                                        ISO15693_RDMULBLKS_CMD_MASK;
-                    break;
-                }
-
-                case ISO15693_SLI_X_S_MAX_SIZE:
-                {
-                    /* For SLI - S tags : Read multiple blocks not supported */
-                    *(a_send_byte + send_index) = (uint8_t)
-                                        ISO15693_INVENTORY_CMD_MASK;
-                    break;
-                }
-
-                case ISO15693_SLI_X_L_MAX_SIZE:
-                {
-                    /* For SLI - L tags : Read multiple blocks not supported */
-                    *(a_send_byte + send_index) = (uint8_t)
-                                        ISO15693_INVENTORY_CMD_MASK;
-                    break;
-                }
-
-                default:
-                {
-                    result = PHNFCSTVAL (CID_FRI_NFC_NDEF_SMTCRDFMT, 
-                                        NFCSTATUS_INVALID_DEVICE_REQUEST);
-                    break;
-                }
+                result = PHNFCSTVAL (CID_FRI_NFC_NDEF_SMTCRDFMT, NFCSTATUS_INVALID_FORMAT);
             }
-            
-            send_index = (uint8_t)(send_index + 1);
+            else
+            {
+                /* prepare data for writing CC bytes */
 
-            send_length = sizeof (a_send_byte);
-            
+                command_type = ISO15693_WR_SINGLE_BLK_CMD;
+                e_format_seq = ISO15693_WRITE_CC_FMT;
+
+                /* CC magic number */
+                *a_send_byte = (uint8_t)ISO15693_CC_MAGIC_NUM;
+                send_index = (uint8_t)(send_index + 1);
+
+                /* CC Version and read/write access */
+                *(a_send_byte + send_index) = (uint8_t) ISO15693_CC_VER_RW;
+                send_index = (uint8_t)(send_index + 1);
+
+                /* CC MAX data size, calculated during GET system information */
+                *(a_send_byte + send_index) = (uint8_t) (ps_iso15693_info->max_data_size / ISO15693_CC_MULTIPLE_FACTOR);
+                send_index = (uint8_t)(send_index + 1);
+
+                switch (ps_iso15693_info->max_data_size)
+                {
+                    case ISO15693_SLI_X_MAX_SIZE:
+                    {
+                        /* For SLI tags : Inventory Page read not supported */
+                        *(a_send_byte + send_index) = (uint8_t) ISO15693_RDMULBLKS_CMD_MASK;
+                        break;
+                    }
+
+                    case ISO15693_SLI_X_S_MAX_SIZE:
+                    {
+                        /* For SLI - S tags : Read multiple blocks not supported */
+                        *(a_send_byte + send_index) = (uint8_t) ISO15693_INVENTORY_CMD_MASK;
+                        break;
+                    }
+
+                    case ISO15693_SLI_X_L_MAX_SIZE:
+                    {
+                        /* For SLI - L tags : Read multiple blocks not supported */
+                        *(a_send_byte + send_index) = (uint8_t) ISO15693_INVENTORY_CMD_MASK;
+                        break;
+                    }
+
+                    default:
+                    {
+                        result = PHNFCSTVAL (CID_FRI_NFC_NDEF_SMTCRDFMT, NFCSTATUS_INVALID_DEVICE_REQUEST);
+                        break;
+                    }
+                }
+
+                send_index = (uint8_t)(send_index + 1);
+
+                send_length = sizeof (a_send_byte);
+            }
+
             break;
         }
 
@@ -568,16 +562,8 @@ phFriNfc_ISO15693_FmtProcess (
     }
     else
     {   
-        if (ISO15693_RD_MULTIPLE_BLKS_CHECK == 
-            (phFriNfc_ISO15693_FormatSeq_t)ps_iso15693_info->format_seq)
-        {
-            /* If READ MULTIPLE BLOCKS is not working then 
-                do further formatting, disable the READ MULTIPLE BLOCK 
-                flag in the CC 4th byte, this says that COMMAND is not 
-                supported and dont use this command
-                */
-            Status = phFriNfc_ISO15693_H_ProFormat (psNdefSmtCrdFmt);            
-        }
+        Status = PHNFCSTVAL (CID_FRI_NFC_NDEF_SMTCRDFMT,
+                            NFCSTATUS_FORMAT_ERROR);
     }
 
     /* Handle the all the error cases */
