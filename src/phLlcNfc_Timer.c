@@ -606,7 +606,7 @@ phLlcNfc_GuardTimeoutCb (
     uint8_t                     index = 0;
     uint8_t                     zero_to_index = 0;
 #if defined (GUARD_TO_ERROR)
-    phNfc_sCompletionInfo_t     notifyinfo = {0};
+    phNfc_sCompletionInfo_t     notifyinfo = {0,0,0};
 #endif /* #if defined (GUARD_TO_ERROR) */
     PHNFC_UNUSED_VARIABLE(pContext);
 
@@ -800,7 +800,7 @@ phLlcNfc_ConnectionTimeoutCb (
 )
 {
     NFCSTATUS                   result = NFCSTATUS_SUCCESS;
-    phNfc_sCompletionInfo_t     notifyinfo = {0};
+    phNfc_sCompletionInfo_t     notifyinfo = {0,0,0};
     pphNfcIF_Notification_CB_t  notifyul = NULL;
     void                        *p_upperctxt = NULL;
     phLlcNfc_Frame_t            *ps_frame_info = NULL;
@@ -927,7 +927,7 @@ phLlcNfc_URSET_Delay_Notify (
     void                *pContext)
 {
     phLlcNfc_Frame_t            *ps_frame_info = NULL;
-    phNfc_sCompletionInfo_t     notifyinfo = {0};
+    phNfc_sCompletionInfo_t     notifyinfo = {0,0,0};
     
     if (NULL != gpphLlcNfc_Ctxt)
     {

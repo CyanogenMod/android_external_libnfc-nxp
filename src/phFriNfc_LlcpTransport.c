@@ -227,6 +227,7 @@ NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t *pLlcpTransp
          case phFriNfc_LlcpTransportSocket_eSocketRejected:
             phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
             break;
+         default: break;
          }
       }
       else
@@ -234,7 +235,6 @@ NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t *pLlcpTransp
          phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
       }
    }
-
    return status;
 }
 

@@ -55,11 +55,11 @@
 ***************************** Header File Inclusion ****************************
 ################################################################################
 */
-
+#define LOG_TAG "NFC-HCI"
+#include <cutils/log.h>
 #include <phNfcIoctlCode.h>
 #include<phNfcInterface.h>
 #include <phHciNfc.h>
-
 /*
 ################################################################################
 ****************************** Macro Definitions *******************************
@@ -80,14 +80,14 @@ extern char phOsalNfc_DbgTraceBuffer[];
 #define MAX_TRACE_BUFFER    150
 /* #define HCI_PRINT( str )  phOsalNfc_DbgTrace(str) */
 #define HCI_PRINT( str )  phOsalNfc_DbgString(str)
-#define HCI_DEBUG(str, arg) \
-    {                                               \
-        snprintf(Trace_buffer,MAX_TRACE_BUFFER,str,arg);    \
-        phOsalNfc_DbgString(Trace_buffer);              \
-    }
+#define HCI_DEBUG(...) LOGD(__VA_ARGS__)
+
+
+
+
 #define HCI_PRINT_BUFFER(msg,buf,len)               \
     {                                               \
-        snprintf(Trace_buffer,MAX_TRACE_BUFFER,"\n\t %s:",msg); \
+        snprintf(Trace_buffer,MAX_TRACE_BUFFER,"\t %s:",msg); \
         phOsalNfc_DbgString(Trace_buffer);              \
         phOsalNfc_DbgTrace(buf,len);                \
         phOsalNfc_DbgString("\r");                  \
@@ -101,7 +101,7 @@ extern char phOsalNfc_DbgTraceBuffer[];
 #define HCI_PRINT_BUFFER(msg,buf,len)   
 #else
 #define HCI_PRINT( str ) 
-#define HCI_DEBUG(str, arg) 
+#define HCI_DEBUG(...)
 #define HCI_PRINT_BUFFER(msg,buf,len)   
 #endif  /* #if defined(PHDBG_TRACES) */
 /* #if defined(PHDBG_INFO) && defined (PHDBG_CRITICAL_ERROR) */

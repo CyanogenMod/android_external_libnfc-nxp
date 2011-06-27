@@ -423,7 +423,7 @@ static NFCSTATUS phFriNfc_Llcp_ParseLinkParams( phNfc_sData_t                   
                break;
             }
             /* Get MIU */
-            sParams.miu = PHFRINFC_LLCP_MIU_DEFAULT + ((sValueBuffer.buffer[0] << 8) | sValueBuffer.buffer[1]) & PHFRINFC_LLCP_TLV_MIUX_MASK;
+            sParams.miu = (PHFRINFC_LLCP_MIU_DEFAULT + ((sValueBuffer.buffer[0] << 8) | sValueBuffer.buffer[1])) & PHFRINFC_LLCP_TLV_MIUX_MASK;
             break;
          }
          case PHFRINFC_LLCP_TLV_TYPE_WKS:
@@ -675,7 +675,7 @@ static void phFriNfc_Llcp_ChkLlcp_CB( void       *pContext,
 static void phFriNfc_Llcp_LinkStatus_CB( void                              *pContext,
                                          phFriNfc_LlcpMac_eLinkStatus_t    eLinkStatus,
                                          phNfc_sData_t                     *psParamsTLV,
-                                         phFriNfc_LlcpMac_eType_t          PeerRemoteDevType)
+                                         phFriNfc_LlcpMac_ePeerType_t      PeerRemoteDevType)
 {
    NFCSTATUS status;
 

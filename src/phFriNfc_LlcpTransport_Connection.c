@@ -133,8 +133,8 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
                psTransport->pSocketTable[psTransport->socketIndex].pfSocketSend_Cb = NULL;
             }
          }break;
+      default: break;
       }
-
 
       /* Update Index value with the next socket */
       index = psTransport->socketIndex+1;

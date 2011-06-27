@@ -289,7 +289,7 @@ typedef struct phFriNfc_Llcp
    phFriNfc_LlcpMac_t               MAC;
 
    /**< Local LLC role*/
-   phFriNfc_LlcpMac_eType_t         eRole;
+   phFriNfc_LlcpMac_ePeerType_t         eRole;
 
    /**< Local link parameters*/
    phFriNfc_Llcp_sLinkParameters_t  sLocalParams;

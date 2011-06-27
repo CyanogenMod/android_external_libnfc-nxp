@@ -1010,7 +1010,7 @@ phFriNfc_Tpz_H_UpdateAndWriteLockBits (
                 lock_byte_index = (uint8_t)(lock_byte_index + 1);
                 byte_index = (uint8_t)(byte_index + 1);
             }
-        } /* else of /* if (mod_value) */
+        } /* else of if (mod_value) */
         ps_tpz_info->lock_bytes_written = remaining_lock_bits;
     }
     else /* if (no_of_bits_left_in_block >= remaining_lock_bits) */
@@ -3848,7 +3848,7 @@ phFriNfc_Tpz_H_CopySendWrData (
 #endif /* #ifdef TOPAZ_RAW_SUPPORT */
         psNdefMap->State = (uint8_t)PH_FRINFC_TOPAZ_STATE_WRITE;
 
-        if ((write_len - psNdefMap->ApduBuffIndex) >= TOPAZ_WRITE_8_DATA_LENGTH)
+        if ((write_len - psNdefMap->ApduBuffIndex) >= (uint16_t)TOPAZ_WRITE_8_DATA_LENGTH)
         {
             copy_length = (uint8_t)TOPAZ_WRITE_8_DATA_LENGTH;
             (void)memcpy ((void *)write_buf, 

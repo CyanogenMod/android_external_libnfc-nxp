@@ -254,7 +254,7 @@
 
 
 #ifndef NXP_NFC_HCI_TIMER
-#define NXP_NFC_HCI_TIMER       0
+#define NXP_NFC_HCI_TIMER       1
 #define NXP_NFC_HCI_TIMEOUT     6000
 #endif
 

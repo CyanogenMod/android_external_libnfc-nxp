@@ -90,7 +90,7 @@ static phHciNfc_sContext_t        *gpsHciContext= NULL;
 static
 void
 phHciNfc_Response_Timeout (
-                uint32_t resp_timer_id
+                uint32_t resp_timer_id, void *pContext
                 );
 
 #endif /* (NXP_NFC_HCI_TIMER == 1) */
@@ -269,10 +269,10 @@ phHciNfc_Receive_HCP (
 static
 void
 phHciNfc_Response_Timeout (
-                    uint32_t resp_timer_id
+                    uint32_t resp_timer_id, void *pContext
                 )
 {
-    phNfc_sCompletionInfo_t  comp_info = {0};
+    phNfc_sCompletionInfo_t  comp_info = {0,0,0};
 
     if ( ( NULL != gpsHciContext)
             && (resp_timer_id == hci_resp_timer_id ))
@@ -1147,11 +1147,11 @@ static
 #ifndef EVENT_NOTIFY
             ( NFCSTATUS_SUCCESS == status  )
             || ( NFCSTATUS_RF_TIMEOUT == status  )
-            || ( NFCSTATUS_MORE_INFORMATION == status  )
+            || (( NFCSTATUS_MORE_INFORMATION == status  )
 #else
-            (FALSE == psHciContext->event_pending )
+            ((FALSE == psHciContext->event_pending )
 #endif
-            && ( pipe_id <= PHHCINFC_MAX_PIPE )
+            && ( pipe_id <= PHHCINFC_MAX_PIPE ))
             )
         {
             /* phHciNfc_Reset_Pipe_MsgInfo(psHciContext->p_pipe_list[pipe_id]); */
@@ -1562,11 +1562,11 @@ phHciNfc_Send_Complete (
                 psHciContext->tx_total = HCP_ZERO_LEN ;
                 psHciContext->tx_remain = HCP_ZERO_LEN ;
                 psHciContext->tx_hcp_frgmnt_index = HCP_ZERO_LEN ;
-                HCI_DEBUG("HCI: In Function: %s \n", __FUNCTION__);
-                HCI_DEBUG("HCI: Response Pending status --> %s \n",
-                    (psHciContext->response_pending)?"TRUE":"FALSE");
-                HCI_DEBUG("HCI: Event Pending status --> %s \n",
-                    (psHciContext->event_pending)?"TRUE":"FALSE");
+                HCI_DEBUG("HCI: %s: response_pending=%s, event_pending=%s",
+                        __FUNCTION__,
+                        (psHciContext->response_pending)?"TRUE":"FALSE",
+                        (psHciContext->event_pending)?"TRUE":"FALSE"
+                         );
                 if ((TRUE == psHciContext->response_pending)
                     || (TRUE == psHciContext->event_pending))
                 {
@@ -2015,7 +2015,7 @@ phHciNfc_Notify_Event(
 
                 if ( NXP_INVALID_TIMER_ID != hci_resp_timer_id )
                 {
-                    HCI_DEBUG(" HCI : Response Timer Stop, Status:%02X : %X\n",
+                    HCI_DEBUG(" HCI : Response Timer Stop, Status:%02X",
                                                           psCompInfo->status);
                     /* Stop and Un-Intialise the Response Timer */
                     phOsalNfc_Timer_Stop( hci_resp_timer_id );
@@ -2041,7 +2041,7 @@ phHciNfc_Notify_Event(
                 if (( NFCSTATUS_BOARD_COMMUNICATION_ERROR == PHNFCSTATUS(psCompInfo->status))
                         && ( NXP_INVALID_TIMER_ID != hci_resp_timer_id ))                
                 {
-                    HCI_DEBUG(" HCI : Response Timer Stop, Status:%02X : %X\n",
+                    HCI_DEBUG(" HCI : Response Timer Stop, Status:%02X",
                                                           psCompInfo->status);
                     /* Stop the HCI Response Timer */
                     phOsalNfc_Timer_Stop( hci_resp_timer_id );

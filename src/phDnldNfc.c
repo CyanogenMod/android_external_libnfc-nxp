@@ -1690,7 +1690,7 @@ phDnldNfc_Resume(
     NFCSTATUS             status = NFCSTATUS_SUCCESS;
     phDnldNfc_eState_t    dnld_next_state = (phDnldNfc_eState_t)
                                     psDnldContext->cur_dnld_state;
-    phNfc_sCompletionInfo_t comp_info = {0};
+    phNfc_sCompletionInfo_t comp_info = {0,0,0};
 
     switch( dnld_next_state )
     {
@@ -1960,7 +1960,7 @@ phDnldNfc_Receive_Complete (
     void                    *pdata = NULL ;
     phDnldNfc_sData_Hdr_t   *resp_data = NULL;
     uint16_t                length = 0 ;
-    phNfc_sCompletionInfo_t comp_info = {0};
+    phNfc_sCompletionInfo_t comp_info = {0,0,0};
 
     DNLD_PRINT("\n FW_DNLD: Receive Response .... ");
     if ( (NULL != psContext)
@@ -2653,7 +2653,7 @@ phDnldNfc_Abort (
                 )
 {
 
-    phNfc_sCompletionInfo_t  comp_info = {0};
+    phNfc_sCompletionInfo_t  comp_info = {0,0,0};
 
     if ( ( NULL != gpphDnldContext)
             && (abort_id == gpphDnldContext->timer_id ))
@@ -2694,7 +2694,7 @@ phDnldNfc_Upgrade (
                  )
  {
     phDnldNfc_sContext_t    *psDnldContext = NULL;
-    phNfcIF_sReference_t    dnldReference = { NULL };
+    phNfcIF_sReference_t    dnldReference = { NULL, 0, 0 };
     phNfcIF_sCallBack_t     if_callback = { NULL, NULL, NULL, NULL };
     phNfc_sLowerIF_t        *plower_if = NULL;
     NFCSTATUS                status = NFCSTATUS_SUCCESS;

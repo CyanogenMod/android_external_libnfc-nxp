@@ -135,7 +135,7 @@ STATIC void phLibNfc_SeNotification(void  *context,
 {
     pphLibNfc_LibContext_t pLibContext=(pphLibNfc_LibContext_t)context;
     phHal_sEventInfo_t  *pEvtInfo = NULL;     
-    phLibNfc_uSeEvtInfo_t Se_Trans_Info={0};
+    phLibNfc_uSeEvtInfo_t Se_Trans_Info={{{0,0},{0,0}}};
     phLibNfc_SE_List_t  *pSeInfo=NULL;  
     
     if(pLibContext != gpphLibContext)

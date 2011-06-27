@@ -223,8 +223,8 @@ phLlcNfc_Interface_Write(
         (0 == llcBufferLength) || 
         (NULL == psLlcCtxt->lower_if.send))
     {
-        PH_LLCNFC_DEBUG ("psLlcCtxt : 0x%08X\n", psLlcCtxt);
-        PH_LLCNFC_DEBUG ("pLlcBuffer : 0x%08X\n", pLlcBuffer);
+        PH_LLCNFC_DEBUG ("psLlcCtxt : 0x%p\n", psLlcCtxt);
+        PH_LLCNFC_DEBUG ("pLlcBuffer : 0x%p\n", pLlcBuffer);
         PH_LLCNFC_DEBUG ("llcBufferLength : 0x%08X\n", llcBufferLength);
         result = PHNFCSTVAL(CID_NFC_LLC, NFCSTATUS_INVALID_PARAMETER);
     }

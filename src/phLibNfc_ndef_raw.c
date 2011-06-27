@@ -1049,7 +1049,7 @@ STATIC void phLibNfc_Ndef_ChkNdef_Pchk_Cb(void   *pContext,
                                 NFCSTATUS  status
                                 )
 {
-    phLibNfc_ChkNdef_Info_t    Ndef_Info = {0,0};
+    phLibNfc_ChkNdef_Info_t    Ndef_Info = {0,0,0};
     NFCSTATUS RetStatus = NFCSTATUS_SUCCESS;
     pphLibNfc_ChkNdefRspCb_t       pClientCb=NULL;
     phLibNfc_LibContext_t           *pLibNfc_Ctxt = 

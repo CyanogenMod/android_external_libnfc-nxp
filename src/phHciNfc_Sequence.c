@@ -527,16 +527,16 @@ phHciNfc_FSM_Rollback(
                     )
 {
 
-    HCI_DEBUG("HCI: In Function: %s \n", __FUNCTION__);
+    HCI_DEBUG("HCI: %s: transition=%02u, cur_state=%02u, next_state=%02u\n",
+            __func__,
+            psHciContext->hci_state.transition,
+            psHciContext->hci_state.cur_state,
+            psHciContext->hci_state.next_state);
 
-    HCI_DEBUG(" HCI: Transition Before FSM Rollback --> %02u \n", 
-                    psHciContext->hci_state.transition );
- 
-    HCI_DEBUG(" HCI: Current State Before FSM Rollback --> %02u \n", 
-                            psHciContext->hci_state.cur_state );
 
-    HCI_DEBUG(" HCI: Next State Before FSM Rollback  --> %02u \n", 
-                            psHciContext->hci_state.next_state );
+
+
+
 
     if( (NFC_FSM_IN_PROGRESS  == psHciContext->hci_state.transition)
       )
@@ -716,7 +716,7 @@ phHciNfc_Error_Sequence(
             case hciState_Select:
             {
                 /* Notify the Configure failure to the upper layer */
-                phNfc_sCompletionInfo_t     comp_info={FALSE};
+                phNfc_sCompletionInfo_t     comp_info={0,0,0};
 
                 /* Rollback the FSM as the Target Discovery Failed */
                 phHciNfc_FSM_Rollback(psHciContext);
@@ -776,7 +776,7 @@ phHciNfc_Error_Sequence(
             case hciState_Reactivate:
             {
                 /* Notify the General failure to the upper layer */
-                phNfc_sCompletionInfo_t     comp_info={FALSE};
+                phNfc_sCompletionInfo_t     comp_info={FALSE, 0, 0};
 
                 /* psHciContext->host_rf_type = phHal_eUnknown_DevType; 
                 status = phHciNfc_ReaderMgmt_Update_Sequence(
@@ -893,14 +893,14 @@ phHciNfc_Resume_Sequence(
                           )
 {
     NFCSTATUS           status = NFCSTATUS_SUCCESS;
-   
-    HCI_DEBUG("HCI: In Function: %s \n",
-        __FUNCTION__);
 
-    HCI_DEBUG(" HCI: Current HCI State --> %02u \n", 
-                            psHciContext->hci_state.cur_state );
-    HCI_DEBUG(" HCI: Next HCI State --> %02u \n", 
-                            psHciContext->hci_state.next_state );
+    HCI_DEBUG("HCI: %s: cur_state=%02u, next_state=%02u",
+        __FUNCTION__,
+        psHciContext->hci_state.cur_state,
+        psHciContext->hci_state.next_state);
+
+
+
 
     switch(psHciContext->hci_state.next_state)
     {

@@ -629,7 +629,7 @@ NFCSTATUS phDal4Nfc_Reset(long level)
 {
    NFCSTATUS	retstatus = NFCSTATUS_SUCCESS;
 
-   DAL_DEBUG("phDal4Nfc_Reset: VEN to %d",level);
+   DAL_DEBUG("phDal4Nfc_Reset: VEN to %ld",level);
 
    retstatus = gLinkFunc.reset(level);
 
@@ -725,7 +725,7 @@ retry:
     if(gReadWriteContext.nNbOfBytesToRead == 1 && gReadWriteContext.pReadBuffer[0] == 0x57)
     {
         i2c_error_count++;
-        DAL_DEBUG("Read 0x57 %d times\n", i2c_error_count);
+        LOGW("Read 0x57 %d times\n", i2c_error_count);
         if (i2c_error_count < 5) {
             usleep(2000);
             goto retry;
@@ -743,12 +743,12 @@ retry:
         }
         DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
-        DAL_PRINT("ReadBuff[]={ ");
+/*      DAL_PRINT("ReadBuff[]={ ");
         for (i = 0; i < gReadWriteContext.nNbOfBytesRead; i++)
         {
           DAL_DEBUG("0x%x ", gReadWriteContext.pReadBuffer[i]);
         }
-        DAL_PRINT("}\n");
+        DAL_PRINT("}\n"); */
 
         /* read completed immediately */
         sMsg.eMsgType= PHDAL4NFC_READ_MESSAGE;
@@ -910,12 +910,12 @@ void phDal4Nfc_DeferredCb (void  *params)
                 DAL_PRINT(" Physical Write Success \n"); 
 	        TransactionInfo.length=(uint16_t)gReadWriteContext.nNbOfBytesWritten;
 	        TransactionInfo.status=NFCSTATUS_SUCCESS;
-                DAL_PRINT("WriteBuff[]={ ");
+/*              DAL_PRINT("WriteBuff[]={ ");
                 for (i = 0; i < gReadWriteContext.nNbOfBytesWritten; i++)
                 {
                   DAL_DEBUG("0x%x ", gReadWriteContext.pWriteBuffer[i]);
                 }
-                DAL_PRINT("}\n");
+                DAL_PRINT("}\n"); */
 
 		// Free TempWriteBuffer 
 		if(gReadWriteContext.pTempWriteBuffer != NULL)

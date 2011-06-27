@@ -1052,7 +1052,7 @@ phLlcNfc_H_SendTimedOutIFrame (
                                                 ns_index);
         }        
 
-        PH_LLCNFC_DEBUG("SEND TIMEOUT CALL Packet : 0x%02X\n", ps_get_packet);
+        PH_LLCNFC_DEBUG("SEND TIMEOUT CALL Packet : 0x%p\n", ps_get_packet);
         if (NULL != ps_get_packet)
         {
             llc_header = ps_get_packet->s_llcbuf.sllcpayload.llcheader;
@@ -1206,7 +1206,7 @@ phLlcNfc_H_ProcessIFrame (
     phLlcNfc_eSentFrameType_t   eframe_type = invalid_frame;
     uint8_t                     dont_send_s_frame = FALSE;
     uint8_t                     no_of_del_frames = 0;
-    phNfc_sCompletionInfo_t     notifyinfo = {0};
+    phNfc_sCompletionInfo_t     notifyinfo = {0,0,0};
 
 #ifdef RECV_NR_CHECK_ENABLE
     uint8_t                     recvd_nr = 0;    
@@ -1374,8 +1374,8 @@ phLlcNfc_H_ProcessIFrame (
 #ifdef LLC_RR_INSTEAD_OF_REJ
 
             if (((ps_frame_info->n_r > 0) && (ns_index == (ps_frame_info->n_r - 1)))
-                || (0 == ps_frame_info->n_r) && 
-                (ns_index == (PH_LLCNFC_MOD_NS_NR - 1)))
+                || ((0 == ps_frame_info->n_r) &&
+                (ns_index == (PH_LLCNFC_MOD_NS_NR - 1))))
             {
                 cmdtype = phLlcNfc_e_rr;
                 eframe_type = rej_rr_s_frame;
@@ -1465,7 +1465,7 @@ phLlcNfc_H_ProcessUFrame (
     phLlcNfc_Frame_t            *ps_frame_info = NULL;
     phLlcNfc_LlcPacket_t        *ps_uframe_pkt = NULL;
 #ifdef LLC_URSET_NO_DELAY
-    phNfc_sCompletionInfo_t     notifyinfo = {0};
+    phNfc_sCompletionInfo_t     notifyinfo = {0,0,0};
 #else /* #ifdef LLC_URSET_NO_DELAY */
     uint32_t                    delay_timer_id = 
                                 PH_OSALNFC_INVALID_TIMER_ID;
@@ -1580,12 +1580,12 @@ phLlcNfc_H_ProcessSFrame (
 #if 0
                                 prev_win_count = 0;
 #endif /* #if 0 */
-    phNfc_sTransactionInfo_t    compinfo = {0};
+    phNfc_sTransactionInfo_t    compinfo = {0, 0, 0, 0, 0};
     phLlcNfc_Frame_t            *ps_frame_info = NULL;
     phLlcNfc_StoreIFrame_t      *ps_store_frame = NULL;
     phLlcNfc_LlcPacket_t        *ps_recv_pkt = NULL;
     uint8_t                     no_of_del_frames = 0;
-    phNfc_sCompletionInfo_t     notifyinfo = {0};
+    phNfc_sCompletionInfo_t     notifyinfo = {0,0,0};
     
     ps_frame_info = &(psLlcCtxt->s_frameinfo);
     ps_recv_pkt = &(ps_frame_info->s_recvpacket);

@@ -95,7 +95,7 @@ phHciNfc_Config_Emulation (
                      )
 {
     phHciNfc_sContext_t *psHciContext = NULL;
-    phNfcIF_sReference_t hciReference = { NULL };
+    phNfcIF_sReference_t hciReference = { NULL, 0, 0 };
     phNfcIF_sCallBack_t  if_callback = { NULL, NULL, NULL, NULL };
     phNfc_sLowerIF_t    *plower_if = NULL;
     NFCSTATUS            status = NFCSTATUS_SUCCESS;
