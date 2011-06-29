@@ -580,6 +580,7 @@ NFCSTATUS phLibNfc_Mgt_Reset(void  *pContext)
         }
         /* No device is connected */
         gpphLibContext->Connected_handle = 0x00;       
+        gpphLibContext->Prev_Connected_handle = 0x00;
         gpphLibContext->ReleaseType = NFC_INVALID_RELEASE_TYPE;        
         gpphLibContext->eLibNfcCfgMode = NFC_DISCOVERY_STOP;
         /*Lib Nfc Stack is initilized and in idle state*/
