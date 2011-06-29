@@ -204,6 +204,51 @@ STATIC void phLibNfc_SeNotification(void  *context,
                             status);
                         break;
                     }
+
+                    case NFC_EVT_APDU_RECEIVED:
+                    {
+                        if ((pEvtInfo->eventInfo.aid.length != 0) && ((pEvtInfo->eventInfo.aid.length <= 16)))
+                        {
+                            /* Copy received APDU to aid buffer. */
+                            Se_Trans_Info.UiccEvtInfo.aid.buffer = pEvtInfo->eventInfo.aid.buffer;
+                            Se_Trans_Info.UiccEvtInfo.aid.length = pEvtInfo->eventInfo.aid.length;
+                        }
+
+                        (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
+                            pLibContext->sSeContext.sSeCallabackInfo.pSeListenerCtxt,
+                            phLibNfc_eSE_EvtApduReceived,
+                            pSeInfo->hSecureElement,
+                            &Se_Trans_Info,
+                            status);
+                        break;
+                    }
+
+                    case NFC_EVT_MIFARE_ACCESS:
+                    {
+                        /* copy the Block MIFARE accessed */
+                        Se_Trans_Info.UiccEvtInfo.aid.buffer = pEvtInfo->eventInfo.aid.buffer;
+                        Se_Trans_Info.UiccEvtInfo.aid.length = pEvtInfo->eventInfo.aid.length;
+
+                        (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
+                            pLibContext->sSeContext.sSeCallabackInfo.pSeListenerCtxt,
+                            phLibNfc_eSE_EvtMifareAccess,
+                            pSeInfo->hSecureElement,
+                            &Se_Trans_Info,
+                            status);
+                        break;
+                    }
+
+                    case NFC_EVT_EMV_CARD_REMOVAL:
+                    {
+                        (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
+                            pLibContext->sSeContext.sSeCallabackInfo.pSeListenerCtxt,
+                            phLibNfc_eSE_EvtCardRemoval,
+                            pSeInfo->hSecureElement,
+                            &Se_Trans_Info,
+                            status);
+                        break;
+                    }
+
                     case NFC_EVT_END_OF_TRANSACTION:
                     {
                         (*pLibContext->sSeContext.sSeCallabackInfo.pSeListenerNtfCb)(
