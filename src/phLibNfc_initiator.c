@@ -548,6 +548,9 @@ phLibNfc_RemoteDev_ReConnect (
             gpphLibContext->CBInfo.pClientConCntx = pContext;
             gpphLibContext->status.GenCb_pending_status = TRUE;
 			gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;            
+
+            gpphLibContext->Prev_Connected_handle = gpphLibContext->Connected_handle;
+
 			gpphLibContext->Connected_handle = hRemoteDevice;
          }
          else if (NFCSTATUS_INVALID_REMOTE_DEVICE == PHNFCSTATUS(ret_val))
@@ -633,6 +636,7 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(
             gpphLibContext->CBInfo.pClientConCntx = pContext;
             gpphLibContext->status.GenCb_pending_status=TRUE;
 			gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;            
+            gpphLibContext->Prev_Connected_handle = gpphLibContext->Connected_handle;
 			gpphLibContext->Connected_handle = hRemoteDevice;
          }
          else if(PHNFCSTATUS(RetVal) == NFCSTATUS_INVALID_REMOTE_DEVICE)
@@ -757,6 +761,7 @@ STATIC void phLibNfc_RemoteDev_Connect_Cb(
             /* If remote device is invalid return as TARGET LOST to upper layer*/
             /* If error code is other than SUCCESS return NFCSTATUS_TARGET_LOST */
             Connect_status = NFCSTATUS_TARGET_LOST;
+            gpphLibContext->Connected_handle = gpphLibContext->Prev_Connected_handle ;
         }
         gpphLibContext->ndef_cntx.is_ndef = CHK_NDEF_NOT_DONE;
         /* Update the Current Sate*/
@@ -896,6 +901,9 @@ STATIC void phLibNfc_RemoteDev_Disconnect_cb(
         gpphLibContext->LastTrancvSuccess = FALSE;
         /*Reset Connected handle */
         gpphLibContext->Connected_handle=0x0000;
+        /*Reset previous Connected handle */
+        gpphLibContext->Prev_Connected_handle = 0x0000;
+
         if(gpphLibContext->sSeContext.eActivatedMode == phLibNfc_SE_ActModeWired)
         {
           gpphLibContext->sSeContext.eActivatedMode = phLibNfc_SE_ActModeDefault;
