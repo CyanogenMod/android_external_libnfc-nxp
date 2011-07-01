@@ -191,11 +191,31 @@ int phDal4Nfc_i2c_read(uint8_t * pBuffer, int nNbBytesToRead)
 {
     int ret;
     int numRead = 0;
+    struct timeval tv;
+    fd_set rfds;
 
     DAL_ASSERT_STR(gI2cPortContext.nOpened == 1, "read called but not opened!");
     DAL_DEBUG("_i2c_read() called to read %d bytes", nNbBytesToRead);
 
+    // Read with 2 second timeout, so that the read thread can be aborted
+    // when the pn544 does not respond and we need to switch to FW download
+    // mode. This should be done via a control socket instead.
     while (numRead < nNbBytesToRead) {
+        FD_ZERO(&rfds);
+        FD_SET(gI2cPortContext.nHandle, &rfds);
+        tv.tv_sec = 2;
+        tv.tv_usec = 0;
+        ret = select(gI2cPortContext.nHandle + 1, &rfds, NULL, NULL, &tv);
+        if (ret < 0) {
+            DAL_DEBUG("select() errno=%d", errno);
+            if (errno == EINTR || errno == EAGAIN) {
+                continue;
+            }
+            return -1;
+        } else if (ret == 0) {
+            DAL_PRINT("timeout!");
+            return -1;
+        }
         ret = read(gI2cPortContext.nHandle, pBuffer + numRead, nNbBytesToRead - numRead);
         if (ret > 0) {
             DAL_DEBUG("read %d bytes", ret);
