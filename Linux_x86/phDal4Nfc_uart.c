@@ -296,7 +296,7 @@ int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead)
            return -1;
        } else if (ret == 0) {
            DAL_PRINT("timeout!");
-           return -1;
+           break;  // return partial response
        }
        ret = read(gComPortContext.nHandle, pBuffer + numRead, nNbBytesToRead - numRead);
        if (ret > 0) {
