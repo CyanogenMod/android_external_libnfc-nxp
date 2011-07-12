@@ -51,6 +51,7 @@
 #define PH_HAL4NFC_SEL_SECTOR2_BYTE0                0x02
 #define PH_HAL4NFC_SEL_SECTOR2_BYTE_RESERVED        0x00
 
+phHal4Nfc_Hal4Ctxt_t *gpHal4Ctxt;
                                                               
 /* --------------------Structures and enumerations --------------------------*/
 
@@ -962,13 +963,24 @@ NFCSTATUS phHal4Nfc_PresenceCheck(
         /*allow only one Presence chk command at any point in time*/
         if (eHal4StatePresenceCheck != Hal4Ctxt->Hal4NextState)
         {
+            /* Check if remote device is felica */
+            if (Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemDevType ==
+                phHal_eFelica_PICC)
+            {
+                /* If felica PICC then copy existing IDm to compare later,
+                   If IDm will be same then same PICC is present after presence check
+                   else PICC is changed */
+                (void) memcpy(Hal4Ctxt->FelicaIDm,
+                              Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemoteDevInfo.Felica_Info.IDm,
+                              Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemoteDevInfo.Felica_Info.IDmLength);
+            }
             Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = context;
             Hal4Ctxt->sTgtConnectInfo.pPresenceChkCb = pPresenceChkCb;
             RetStatus = phHciNfc_Presence_Check(Hal4Ctxt->psHciHandle,
                                                 psHwReference
                                                 );
             Hal4Ctxt->Hal4NextState = (NFCSTATUS_PENDING == RetStatus?
-                eHal4StatePresenceCheck:Hal4Ctxt->Hal4NextState); 
+                eHal4StatePresenceCheck:Hal4Ctxt->Hal4NextState);
         }
         else/*Ongoing presence chk*/
         {
@@ -990,6 +1002,28 @@ void phHal4Nfc_PresenceChkComplete(
     {
         Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->SessionOpened
                      =(uint8_t)(NFCSTATUS_SUCCESS == RetStatus?TRUE:FALSE);
+        /* Check if remote device is felica */
+        if (Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemDevType ==
+            phHal_eFelica_PICC)
+        {
+            /* Check if IDm received is same as saved */
+            if (0 != phOsalNfc_MemCompare(Hal4Ctxt->FelicaIDm,
+                Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemoteDevInfo.Felica_Info.IDm,
+                Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemoteDevInfo.Felica_Info.IDmLength))
+            {
+                RetStatus = NFCSTATUS_FAILED;
+
+                /* Presence check failed so reset remote device information */
+                (void) memset(Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemoteDevInfo.Felica_Info.IDm,
+                              0, PHHAL_FEL_ID_LEN + 2);
+                (void) memset(Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemoteDevInfo.Felica_Info.PMm,
+                              0, PHHAL_FEL_PM_LEN);
+            }
+
+            /* Cleanup for stored IDm value for using it next time */
+            (void) memset(Hal4Ctxt->FelicaIDm, 0, PHHAL_FEL_ID_LEN + 2);
+        }
+
         (*Hal4Ctxt->sTgtConnectInfo.pPresenceChkCb)(
                         Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt,
                         RetStatus
@@ -1035,7 +1069,28 @@ void phHal4Nfc_ReactivationComplete(
     return;
 }
 
+void phHal4Nfc_Felica_RePoll(void     *context,
+                                        NFCSTATUS status)
+{
+     phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt = gpHal4Ctxt;
+     pphHal4Nfc_ConnectCallback_t pUpperConnectCb
+                                = Hal4Ctxt->sTgtConnectInfo.pUpperConnectCb;
 
+     Hal4Ctxt->sTgtConnectInfo.pUpperConnectCb = NULL;
+     PHDBG_INFO("Hal4:Calling Connect callback");
+
+    if (pUpperConnectCb != NULL)
+    {
+         /*Notify to the upper layer*/
+         (*pUpperConnectCb)(
+                    Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt,
+                    Hal4Ctxt->sTgtConnectInfo.psConnectedDevice,
+                    status
+                    );
+    }
+
+    return;
+}
 void phHal4Nfc_ConnectComplete(
                                phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,
                                void *pInfo
@@ -1046,18 +1101,25 @@ void phHal4Nfc_ConnectComplete(
                                 = Hal4Ctxt->sTgtConnectInfo.pUpperConnectCb;
     /*Flag to decide whether or not upper layer callback has to be called*/
     uint8_t CallConnectCb = TRUE;
+    uint8_t felicaRePoll = FALSE;
+
     /*Remote device Connect successful*/
     if((NFCSTATUS_SUCCESS == ConnectStatus)
 		||(eHal4StateTargetConnected == Hal4Ctxt->Hal4CurrentState))
     {
+        phHal_sRemoteDevInformation_t *psRmtTgtConnected =
+                            Hal4Ctxt->sTgtConnectInfo.psConnectedDevice;
         PHDBG_INFO("Hal4:Connect status Success");
         Hal4Ctxt->Hal4CurrentState = eHal4StateTargetConnected;
         Hal4Ctxt->Hal4NextState = eHal4StateInvalid;
         /* Open the Session */
-        Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->SessionOpened = 
+        psRmtTgtConnected->SessionOpened =
             (uint8_t)(NFCSTATUS_SUCCESS == ConnectStatus?TRUE:FALSE);
         Hal4Ctxt->sTgtConnectInfo.pUpperConnectCb = NULL;
-        
+        if (psRmtTgtConnected->RemDevType == phHal_eFelica_PICC)
+        {
+            felicaRePoll = TRUE;
+        }
     }
     else/*Remote device Connect failed*/
     {        
@@ -1094,13 +1156,37 @@ void phHal4Nfc_ConnectComplete(
     }
     if(TRUE == CallConnectCb)
     {
-        PHDBG_INFO("Hal4:Calling Connect callback");
-        /*Notify to the upper layer*/
-        (*pUpperConnectCb)(
+        if (felicaRePoll == TRUE)
+        {
+            /* Felica repoll through presence check */
+
+            /* If felica PICC then copy existing IDm to compare later,
+               If IDm will be same then same PICC is present after presence check
+               else PICC is changed */
+            (void) memcpy(Hal4Ctxt->FelicaIDm,
+                          Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemoteDevInfo.Felica_Info.IDm,
+                          Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemoteDevInfo.Felica_Info.IDmLength);
+
+            gpHal4Ctxt = Hal4Ctxt;
+            Hal4Ctxt->sTgtConnectInfo.pPresenceChkCb = phHal4Nfc_Felica_RePoll;
+            ConnectStatus = phHciNfc_Presence_Check(Hal4Ctxt->psHciHandle,
+                                                    gpphHal4Nfc_Hwref
+                                                    );
+            Hal4Ctxt->Hal4NextState = (NFCSTATUS_PENDING == ConnectStatus?
+                    eHal4StatePresenceCheck:Hal4Ctxt->Hal4NextState);
+            felicaRePoll = FALSE;
+            Hal4Ctxt->sTgtConnectInfo.pUpperConnectCb = pUpperConnectCb;
+        }
+        else
+        {
+            PHDBG_INFO("Hal4:Calling Connect callback");
+            /*Notify to the upper layer*/
+            (*pUpperConnectCb)(
                     Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt,
                     Hal4Ctxt->sTgtConnectInfo.psConnectedDevice,
                     ConnectStatus
                     );
+	 }
     }
     else
     {

@@ -226,6 +226,7 @@ typedef struct phHal4Nfc_Hal4Ctxt{
     /*used to ignore multiple Protected events*/
     uint8_t                          Ignore_Event_Protected;
 #endif/*#ifdef IGNORE_EVT_PROTECTED*/
+    uint8_t                          FelicaIDm[(PHHAL_FEL_ID_LEN + 2)];
 }phHal4Nfc_Hal4Ctxt_t;
 
 

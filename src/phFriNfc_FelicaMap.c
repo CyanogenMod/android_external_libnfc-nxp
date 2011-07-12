@@ -57,13 +57,10 @@ static NFCSTATUS phFriNfc_Felica_HCalCheckSum(const uint8_t *TempBuffer,
                                               uint8_t EndIndex,
                                               uint16_t RecvChkSum);
 
-#ifndef PH_HAL4_ENABLE
 /* Helpers for Poll Related Operations*/
 static NFCSTATUS   phFriNfc_Felica_HPollCard( phFriNfc_NdefMap_t   *NdefMap,
                                               const uint8_t sysCode[],
                                               uint8_t state);
-#endif /* #ifndef PH_HAL4_ENABLE */
-
 
 static NFCSTATUS   phFriNfc_Felica_HUpdateManufIdDetails(const phFriNfc_NdefMap_t *NdefMap);
 
@@ -2118,39 +2115,65 @@ static NFCSTATUS phFriNfc_Felica_HWriteDataBlk(phFriNfc_NdefMap_t *NdefMap)
 NFCSTATUS phFriNfc_Felica_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
 {
     NFCSTATUS status = NFCSTATUS_PENDING;
-
-#ifndef PH_HAL4_ENABLE  
     uint8_t sysCode[2];
-#endif /* #ifndef PH_HAL4_ENABLE */
 
-#ifdef PH_HAL4_ENABLE
-
-    /* check the ndef compliency with the system code reecived in the RemoteDevInfo*/
-    status = phFriNfc_Felica_HUpdateManufIdDetails(NdefMap);
-
-    if (status == NFCSTATUS_SUCCESS)
-    {
-        
-        /* set the operation type to Check ndef type*/
-        NdefMap->Felica.OpFlag = PH_FRINFC_NDEFMAP_FELI_CHK_NDEF_OP;
-        status = phFriNfc_Felica_HRdAttrInfo(NdefMap);
-    }
-#else
-    
     /* set the system code for selecting the wild card*/
     sysCode[0] = 0x12;
     sysCode[1] = 0xFC;
 
     status = phFriNfc_Felica_HPollCard( NdefMap,sysCode,PH_NFCFRI_NDEFMAP_FELI_STATE_SELECT_NDEF_APP);
-#endif /* #ifdef PH_HAL4_ENABLE */
 
     return (status);
 
 }                                        
 /*!
  * \brief Check whether a particular Remote Device is NDEF compliant.
- * selects the wild card and then NFC Forum Reference Applications
+ * selects the sysCode and then NFC Forum Reference Applications
  */
+#ifdef PH_HAL4_ENABLE
+static NFCSTATUS   phFriNfc_Felica_HPollCard(  phFriNfc_NdefMap_t     *NdefMap,
+                                        const uint8_t sysCode[],
+                                        uint8_t state)
+{
+    NFCSTATUS status = NFCSTATUS_PENDING;
+
+    /*Format the Poll Packet for selecting the system code passed as parameter */
+    NdefMap->SendRecvBuf[0] = 0x06;
+    NdefMap->SendRecvBuf[1] = 0x00;
+    NdefMap->SendRecvBuf[2] = sysCode[0];
+    NdefMap->SendRecvBuf[3] = sysCode[1];
+    NdefMap->SendRecvBuf[4] = 0x01;
+    NdefMap->SendRecvBuf[5] = 0x03;
+
+    NdefMap->SendLength = 6;
+
+     /*set the completion routines for the felica card operations*/
+    NdefMap->MapCompletionInfo.CompletionRoutine = phFriNfc_Felica_Process;
+    NdefMap->MapCompletionInfo.Context = NdefMap;
+
+    /*Set Ndef State*/
+    NdefMap->State = state;
+
+    /* set the felica cmd */
+    NdefMap->Cmd.FelCmd = phHal_eFelica_Raw;
+
+    /*set the additional informations for the data exchange*/
+    NdefMap->psDepAdditionalInfo.DepFlags.MetaChaining = 0;
+    NdefMap->psDepAdditionalInfo.DepFlags.NADPresent = 0;
+
+    status = phFriNfc_OvrHal_Transceive(NdefMap->LowerDevice,
+                                        &NdefMap->MapCompletionInfo,
+                                        NdefMap->psRemoteDevInfo,
+                                        NdefMap->Cmd,
+                                        &NdefMap->psDepAdditionalInfo,
+                                        NdefMap->SendRecvBuf,
+                                        NdefMap->SendLength,
+                                        NdefMap->SendRecvBuf,
+                                        NdefMap->SendRecvLength);
+    return (status);
+}
+#endif
+
 
 #ifndef PH_HAL4_ENABLE
 static NFCSTATUS   phFriNfc_Felica_HPollCard(  phFriNfc_NdefMap_t     *NdefMap,
@@ -2210,48 +2233,43 @@ static NFCSTATUS   phFriNfc_Felica_HUpdateManufIdDetails(const phFriNfc_NdefMap_
 {
     NFCSTATUS status = NFCSTATUS_PENDING;
 
-#ifdef PH_HAL4_ENABLE
-    /* copy the IDm and PMm in Manufacture Details Structure*/
-    (void)memcpy( (uint8_t *)(NdefMap->FelicaManufDetails.ManufID),
-                (uint8_t *)NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.IDm,
-                8);
-    (void)memcpy( (uint8_t *)(NdefMap->FelicaManufDetails.ManufParameter),
-                (uint8_t *)NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.PMm,
-                8);
-		status = PHNFCSTVAL(CID_NFC_NONE, NFCSTATUS_SUCCESS);
-#else            
-
-    
-    /* Check the System Code for 0x12,0xFC*/
-    if( (NdefMap->FelicaPollDetails.psTempRemoteDevInfo.RemoteDevInfo.CardInfo212_424.Startup212_424.SystemCodeAvailable == 1)
-        &&   (NdefMap->FelicaPollDetails.psTempRemoteDevInfo.RemoteDevInfo.CardInfo212_424.Startup212_424.SystemCode[0] == 0x12)
-        &&   (NdefMap->FelicaPollDetails.psTempRemoteDevInfo.RemoteDevInfo.CardInfo212_424.Startup212_424.SystemCode[1] == 0xFC))
+    /* Get the details from Poll Response packet */
+    if (NdefMap->SendRecvLength >= 20)
     {
-        
-        /* copy the IDm and PMm in Manufacture Details Structure*/
-         (void)memcpy( (uint8_t *)(NdefMap->FelicaManufDetails.ManufID),
-            (uint8_t *)NdefMap->FelicaPollDetails.psTempRemoteDevInfo.RemoteDevInfo.CardInfo212_424.Startup212_424.NFCID2t,
-            8);
-         (void)memcpy( (uint8_t *)(NdefMap->FelicaManufDetails.ManufParameter),
-            (uint8_t *)NdefMap->FelicaPollDetails.psTempRemoteDevInfo.RemoteDevInfo.CardInfo212_424.Startup212_424.PMm,
-            8);
-        
+        (void)memcpy(  (uint8_t *)NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.IDm,
+                       (uint8_t *)&NdefMap->SendRecvBuf[2], 8);
+        (void)memcpy(  (uint8_t *)NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.PMm,
+                       (uint8_t *)&NdefMap->SendRecvBuf[10], 8);
+        NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.SystemCode[1] = NdefMap->SendRecvBuf[18];
+        NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.SystemCode[0] = NdefMap->SendRecvBuf[19];
+        NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.IDmLength = 8;
 
-         status = PHNFCSTVAL(CID_NFC_NONE,
-                                        NFCSTATUS_SUCCESS);
-              
+        /* copy the IDm and PMm in Manufacture Details Structure*/
+        (void)memcpy( (uint8_t *)(NdefMap->FelicaManufDetails.ManufID),
+                      (uint8_t *)NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.IDm,
+                      8);
+        (void)memcpy( (uint8_t *)(NdefMap->FelicaManufDetails.ManufParameter),
+                      (uint8_t *)NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.PMm,
+                      8);
+        if((NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.SystemCode[1] == 0x12)
+            && (NdefMap->psRemoteDevInfo->RemoteDevInfo.Felica_Info.SystemCode[0] == 0xFC))
+        {
+            status = PHNFCSTVAL(CID_NFC_NONE, NFCSTATUS_SUCCESS);
+        }
+        else
+        {
+            status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                NFCSTATUS_NO_NDEF_SUPPORT);
+        }
     }
     else
     {
-         status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
-                                        NFCSTATUS_NO_NDEF_SUPPORT);
+        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                            NFCSTATUS_NO_NDEF_SUPPORT);
     }
-#endif /* #ifdef PH_HAL4_ENABLE */
-    
+
     return (status);
-
 }
-
 
 
 /*!
