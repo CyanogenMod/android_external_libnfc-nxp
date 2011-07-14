@@ -287,7 +287,7 @@ int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead)
        FD_SET(gComPortContext.nHandle, &rfds);
        tv.tv_sec = 2;
        tv.tv_usec = 0;
-       ret = select(gComPortContext.nHandle + 1, &rfds, NULL, NULL, &tv);
+       ret = select(gComPortContext.nHandle + 1, &rfds, NULL, NULL, NULL);
        if (ret < 0) {
            DAL_DEBUG("select() errno=%d", errno);
            if (errno == EINTR || errno == EAGAIN) {
