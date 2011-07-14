@@ -39,6 +39,7 @@
 ################################################################################
 */
 #include <stdlib.h>
+#include <unistd.h>
 #include <phNfcConfig.h>
 #include <phNfcCompId.h>
 #include <phNfcIoctlCode.h>
@@ -2213,6 +2214,11 @@ phDnldNfc_Send_Complete (
             {
                 psDnldContext->resp_length = 0;
                 psDnldContext->dnld_retry = 0;
+                /* clock unstable after SW reset command, especially on UART
+                 * platform because of its sensitivity to clock. Experimentally
+                 * we found clock unstable for 750us. Delay for 5ms to be sure.
+                 */
+                usleep(5000);
                 status = phDnldNfc_Set_Seq(psDnldContext,
                                                 DNLD_SEQ_UPDATE);
             }
