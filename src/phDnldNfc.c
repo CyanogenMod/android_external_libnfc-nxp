@@ -96,8 +96,8 @@ extern char phOsalNfc_DbgTraceBuffer[];
 #define PHDNLD_ADDR_SIZE         0x03U
 #define PHDNLD_DATA_LEN_SIZE     0x02U
 #define PHDNLD_MIN_PACKET        0x03U    /* Minimum Packet Size is 3*/
-#define PHDNLD_MAX_PACKET        0x40U    /* Max Total Packet Size is 64 bytes */
-#define PHDNLD_DATA_SIZE         0x38U    /* Max Data Size is 56 bytes */
+#define PHDNLD_MAX_PACKET        0x0200U  /* Max Total Packet Size is 512 */
+#define PHDNLD_DATA_SIZE         0x01F8U  /* Max Data Size is 504 */
 
 #define FW_MAX_SECTION           0x15U    /* Max Number of Sections */
 
@@ -352,7 +352,7 @@ typedef struct phDnldNfc_sData
     union param
     {
         phDnldNfc_sParam_t data_param;
-        uint8_t            response_data[PHDNLD_MAX_PACKET<<1];
+        uint8_t            response_data[PHDNLD_MAX_PACKET];
         uint8_t            config_verify_param;
     }param_info;
 }phDnldNfc_sData_t;
