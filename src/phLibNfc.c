@@ -126,10 +126,18 @@ NFCSTATUS phLibNfc_SetIsoXchgTimeout(uint8_t timeout) {
     return NFCSTATUS_SUCCESS;
 }
 
+int phLibNfc_GetIsoXchgTimeout() {
+    return nxp_nfc_isoxchg_timeout;
+}
+
 extern uint32_t nxp_nfc_hci_response_timeout;
 NFCSTATUS phLibNfc_SetHciTimeout(uint32_t timeout_in_ms) {
     nxp_nfc_hci_response_timeout = timeout_in_ms;
     return NFCSTATUS_SUCCESS;
+}
+
+int phLibNfc_GetHciTimeout() {
+    return nxp_nfc_hci_response_timeout;
 }
 
 extern uint32_t nxp_nfc_felica_timeout;
@@ -138,10 +146,18 @@ NFCSTATUS phLibNfc_SetFelicaTimeout(uint8_t timeout_in_ms) {
     return NFCSTATUS_SUCCESS;
 }
 
+int phLibNfc_GetFelicaTimeout() {
+    return nxp_nfc_felica_timeout;
+}
+
 extern uint8_t nxp_nfc_mifareraw_timeout;
 NFCSTATUS phLibNfc_SetMifareRawTimeout(uint8_t timeout) {
     nxp_nfc_mifareraw_timeout = timeout;
     return NFCSTATUS_SUCCESS;
+}
+
+int phLibNfc_GetMifareRawTimeout() {
+    return nxp_nfc_mifareraw_timeout;
 }
 
 /**

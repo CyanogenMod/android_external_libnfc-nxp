@@ -860,11 +860,16 @@ NFCSTATUS phLibNfc_Download_Mode ();
 // bit [4]     => timeout enable
 // bit [5..7]  => unused
 NFCSTATUS phLibNfc_SetIsoXchgTimeout(uint8_t timeout);
+int phLibNfc_GetIsoXchgTimeout();
+
 NFCSTATUS phLibNfc_SetHciTimeout(uint32_t timeout_in_ms);
+int phLibNfc_GetHciTimeout();
+
 // Felica timeout
 // [0]      -> timeout disabled
 // [1..255] -> timeout in ms
 NFCSTATUS phLibNfc_SetFelicaTimeout(uint8_t timeout_in_ms);
+int phLibNfc_GetFelicaTimeout();
 
 // MIFARE RAW timeout (ISO14443-3A / NfcA timeout)
 // timeout is 8 bits
@@ -875,6 +880,7 @@ NFCSTATUS phLibNfc_SetFelicaTimeout(uint8_t timeout_in_ms);
 //                  [15] -> not allowed
 // bits [4..7] => 0
 NFCSTATUS phLibNfc_SetMifareRawTimeout(uint8_t timeout);
+int phLibNfc_GetMifareRawTimeout();
 
 /**
 * \ingroup grp_lib_nfc
