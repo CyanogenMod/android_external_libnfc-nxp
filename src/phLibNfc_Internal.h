@@ -221,6 +221,9 @@ typedef struct phLibNfc_LibContext
     uint32_t                     Connected_handle,
                                  Discov_handle[MAX_REMOTE_DEVICES];
 
+    /* To store the previous connected handle in case of Multiple protocol tags */
+    uint32_t Prev_Connected_handle;
+
     /*Call back function pointers */
 
     phLibNfc_eDiscoveryConfigMode_t        eLibNfcCfgMode;
