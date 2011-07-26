@@ -835,7 +835,12 @@ typedef enum phHal_Event {
     /* NXP Specific System Information Events */
     NFC_INFO_TXLDO_OVERCUR       = 0x71U,
     NFC_INFO_MEM_VIOLATION       = 0x73U,
-    NFC_INFO_TEMP_OVERHEAT       = 0x74U
+    NFC_INFO_TEMP_OVERHEAT       = 0x74U,
+
+    /* NXP EVENTS */
+    NFC_EVT_MIFARE_ACCESS          = 0x35,
+    NFC_EVT_APDU_RECEIVED          = 0x36,
+    NFC_EVT_EMV_CARD_REMOVAL       = 0x37
 
 }phHal_Event_t;
 

@@ -1240,7 +1240,10 @@ static void phHal4Nfc_HandleEvent(
         case NFC_EVT_START_OF_TRANSACTION:
         case NFC_EVT_END_OF_TRANSACTION:
         case NFC_EVT_CONNECTIVITY:   
-        case NFC_EVT_OPERATION_ENDED:        
+        case NFC_EVT_OPERATION_ENDED:
+        case NFC_EVT_MIFARE_ACCESS:
+        case NFC_EVT_APDU_RECEIVED:
+        case NFC_EVT_EMV_CARD_REMOVAL:
             sNotificationInfo.info = psEventInfo;
             sNotificationInfo.status = NFCSTATUS_SUCCESS;
             sNotificationInfo.type = NFC_EVENT_NOTIFICATION;
