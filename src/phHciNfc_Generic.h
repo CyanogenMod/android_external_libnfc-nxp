@@ -66,10 +66,6 @@
 ################################################################################
 */
 
-#if defined(DEBUG)  /*|| defined(_DEBUG) */
-#define HCI_TRACE
-#endif
-
 #define Trace_buffer    phOsalNfc_DbgTraceBuffer
 
 /* HCI TRACE Macros */

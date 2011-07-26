@@ -116,6 +116,12 @@ LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -fno-strict-aliasing
 # Uncomment for LLC traces
 # LOCAL_CFLAGS += -DDEBUG -DLLC_TRACE
 
+# Uncomment for LLCP traces
+# LOCAL_CFLAGS += -DDEBUG -DLLCP_TRACE
+
+# Uncomment for HCI traces
+# LOCAL_CFLAGS += -DDEBUG -DHCI_TRACE
+
 #includes
 LOCAL_CFLAGS += -I$(LOCAL_PATH)/inc
 LOCAL_CFLAGS += -I$(LOCAL_PATH)/Linux_x86

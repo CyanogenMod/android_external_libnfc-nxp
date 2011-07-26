@@ -759,6 +759,8 @@ static void phFriNfc_Llcp_ResetLTO( phFriNfc_Llcp_t *Llcp )
       nDuration = (Llcp->sLocalParams.lto * 10) / 2;
    }
 
+   LLCP_DEBUG("Starting LLCP timer with duration %d", nDuration);
+
    /* Restart timer */
    phOsalNfc_Timer_Start(
       Llcp->hSymmTimer,
