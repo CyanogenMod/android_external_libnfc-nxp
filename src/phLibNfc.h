@@ -173,6 +173,12 @@ typedef enum
                                            ETSI TS 102 622 V7.4.0 */
     phLibNfc_eSE_EvtFieldOn,  // consider using phLibNfc_eSE_EvtConnectivity
     phLibNfc_eSE_EvtFieldOff,
+
+    phLibNfc_eSE_EvtApduReceived, /* PAYPASS MagStripe or MCHIP_4 transaction */
+
+    phLibNfc_eSE_EvtCardRemoval, /* Indicates the beginning of an EMV Card Removal sequence */
+
+    phLibNfc_eSE_EvtMifareAccess /* Indicates when the SMX Emulation MIFARE is accessed */
 } phLibNfc_eSE_EvtType_t;
 
 /**

@@ -63,6 +63,9 @@
 
 /****************** Static Function Declaration **************************/
 
+static uint8_t paypass_removal[2]          = {0x50, 0x00};
+static uint8_t mifare_access               = 0x60;
+
 static 
 NFCSTATUS 
 phHciNfc_Recv_WI_Response(  
@@ -700,12 +703,33 @@ phHciNfc_Recv_WI_Event(
                 EventInfo.eventType = NFC_EVT_TRANSACTION;
                 EventInfo.eventInfo.aid.buffer = (uint8_t *)p_wi_info->aid;
                 /* check for AID data is at least 1 byte is their */
-                if(length > HCP_HEADER_LEN)
+                if (length > HCP_HEADER_LEN)
                 {
                     EventInfo.eventInfo.aid.length = length - HCP_HEADER_LEN;
-                    (void) memcpy((void *)p_wi_info->aid,message->payload,
-                                    EventInfo.eventInfo.aid.length );
+                    memcpy((void *)p_wi_info->aid, message->payload,
+                           EventInfo.eventInfo.aid.length );
                 }
+
+                /* Filter Transaction event */
+                if (EventInfo.eventInfo.aid.length == 4)
+                {
+                    EventInfo.eventType = NFC_EVT_APDU_RECEIVED;
+                }
+                else if (EventInfo.eventInfo.aid.length == 2)
+                {
+                    if (!memcmp(paypass_removal, EventInfo.eventInfo.aid.buffer, EventInfo.eventInfo.aid.length))
+                    {
+                        EventInfo.eventType = NFC_EVT_EMV_CARD_REMOVAL;
+                    }
+                    else if(mifare_access == EventInfo.eventInfo.aid.buffer[0])
+                    {
+                        EventInfo.eventType = NFC_EVT_MIFARE_ACCESS;
+                    }
+                }
+
+                EventInfo.eventInfo.aid.buffer = (uint8_t *)p_wi_info->aid;
+                (void) memcpy((void *)p_wi_info->aid,message->payload,
+                                EventInfo.eventInfo.aid.length );
                 break;
             }
             default:
