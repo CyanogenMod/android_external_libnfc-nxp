@@ -1441,6 +1441,10 @@ NFCSTATUS phFriNfc_Llcp_Send( phFriNfc_Llcp_t                  *Llcp,
       /* Incorrect state for sending ! */
       result = PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_STATE);;
    }
+
+   if (result != NFCSTATUS_PENDING) {
+       Llcp->pfSendCB = NULL;
+   }
    return result;
 }
 
