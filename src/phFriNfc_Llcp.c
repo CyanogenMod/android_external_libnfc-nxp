@@ -196,24 +196,11 @@ static NFCSTATUS phFriNfc_Llcp_InternalDeactivate( phFriNfc_Llcp_t *Llcp )
 static NFCSTATUS phFriNfc_Llcp_SendSymm( phFriNfc_Llcp_t *Llcp )
 {
    phFriNfc_Llcp_sPacketHeader_t sHeader;
-   bool_t                        bPendingFlag;
 
-   /* Check for pending messages to send */
-   bPendingFlag = phFriNfc_Llcp_HandlePendingSend(Llcp);
-
-   if (bPendingFlag == FALSE)
-   {
-      /* No send pending, send a SYMM instead */
-      sHeader.dsap  = PHFRINFC_LLCP_SAP_LINK;
-      sHeader.ssap  = PHFRINFC_LLCP_SAP_LINK;
-      sHeader.ptype = PHFRINFC_LLCP_PTYPE_SYMM;
-      return phFriNfc_Llcp_InternalSend(Llcp, &sHeader, NULL, NULL);
-   }
-   else
-   {
-      /* A pending send has been sent, there is no need to send SYMM */
-      return NFCSTATUS_SUCCESS;
-   }
+   sHeader.dsap  = PHFRINFC_LLCP_SAP_LINK;
+   sHeader.ssap  = PHFRINFC_LLCP_SAP_LINK;
+   sHeader.ptype = PHFRINFC_LLCP_PTYPE_SYMM;
+   return phFriNfc_Llcp_InternalSend(Llcp, &sHeader, NULL, NULL);
 }
 
 
@@ -914,6 +901,11 @@ static bool_t phFriNfc_Llcp_HandlePendingSend ( phFriNfc_Llcp_t *Llcp )
          /* Error: send failed, impossible to recover */
          phFriNfc_Llcp_InternalDeactivate(Llcp);
       }
+      return_value = TRUE;
+   } else if (Llcp->pfSendCB == NULL) {
+      // Nothing to send, send SYMM instead to allow peer to send something
+      // if it wants.
+      phFriNfc_Llcp_SendSymm(Llcp);
       return_value = TRUE;
    }
 
