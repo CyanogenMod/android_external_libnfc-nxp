@@ -129,7 +129,10 @@ typedef enum
                                         This can be applied to UICC as well as SmartMX*/
     phLibNfc_SE_ActModeVirtual=0x02,    /**< Enables Virtual Mode communication.
                                         This can be applied to UICC as well as SmartMX*/
-    phLibNfc_SE_ActModeOff  =0x03       /**< Inactivate SE.This means,put SE in in-active state */
+    phLibNfc_SE_ActModeOff  =0x03,      /**< Inactivate SE.This means,put SE in in-active state
+                                        This can be applied to UICC as well as SmartMX*/
+    phLibNfc_SE_ActModeVirtualVolatile = 0x04 /**< Enabled virtual mode communication for SE through an event
+                                             This can be applied to UICC as well as SmartMX*/
 
 }phLibNfc_eSE_ActivationMode;
 
