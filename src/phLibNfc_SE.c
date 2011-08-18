@@ -473,6 +473,7 @@ NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle,
         switch(eActivation_mode)
         {
             case phLibNfc_SE_ActModeVirtual: 
+            case phLibNfc_SE_ActModeDefault:
             {
                 if(hSE_Handle == sSecuredElementInfo[LIBNFC_SE_UICC_INDEX].hSecureElement)
                 {
@@ -506,69 +507,6 @@ NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle,
                 }
             }
             break;
-            case phLibNfc_SE_ActModeVirtualVolatile:
-            {
-                if(hSE_Handle == sSecuredElementInfo[LIBNFC_SE_SMARTMX_INDEX].hSecureElement)
-                {
-                    eEmulationType = NFC_SMARTMX_EMULATION;
-                    /*Enable the SMX -External reader can see it*/
-                    pLibContext->sCardEmulCfg.config.smartMxCfg.enableEmulation = TRUE;
-                    pLibContext->sSeContext.eActivatedMode = phLibNfc_SE_ActModeVirtualVolatile;
-
-                    Status = phHal4Nfc_Switch_SMX_Mode(
-                                        pLibContext->psHwReference,
-                                        eSmartMx_Virtual,
-                                        phLibNfc_SE_SetMode_cb,
-                                        pLibContext
-                                        );
-                }
-                else if(hSE_Handle == sSecuredElementInfo[LIBNFC_SE_UICC_INDEX].hSecureElement)
-                {
-                    eEmulationType = NFC_UICC_EMULATION;
-                    /*Enable the UICC -External reader can see it*/
-                    pLibContext->sCardEmulCfg.config.uiccEmuCfg.enableUicc = TRUE;
-                    pLibContext->sSeContext.eActivatedMode = phLibNfc_SE_ActModeVirtualVolatile;
-
-                    Status = phHal4Nfc_Switch_Swp_Mode(
-                                        pLibContext->psHwReference,
-                                        eSWP_Switch_On,
-                                        phLibNfc_SE_SetMode_cb,
-                                        pLibContext
-                                        );
-                }
-                else
-                {
-                    Status = NFCSTATUS_INVALID_HANDLE;
-                }
-            }
-            break;
-            case phLibNfc_SE_ActModeDefault:
-            {
-                if(hSE_Handle == sSecuredElementInfo[LIBNFC_SE_SMARTMX_INDEX].hSecureElement)
-                {
-                    Status = phHal4Nfc_Switch_SMX_Mode(
-                                        pLibContext->psHwReference,
-                                        eSmartMx_Default,
-                                        phLibNfc_SE_SetMode_cb,
-                                        pLibContext
-                                        );
-                }
-                else if(hSE_Handle == sSecuredElementInfo[LIBNFC_SE_UICC_INDEX].hSecureElement)
-                {
-                    Status = phHal4Nfc_Switch_Swp_Mode(
-                                        pLibContext->psHwReference,
-                                        eSWP_Switch_Default,
-                                        phLibNfc_SE_SetMode_cb,
-                                        pLibContext
-                                        );
-                }
-                else
-                {
-                    Status = NFCSTATUS_INVALID_HANDLE;
-                }
-            }
-            break;
-
             case phLibNfc_SE_ActModeWired:
             {
                 if(hSE_Handle == sSecuredElementInfo[LIBNFC_SE_SMARTMX_INDEX].hSecureElement)
