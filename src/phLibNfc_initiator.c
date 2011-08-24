@@ -133,6 +133,10 @@ void phLibNfc_NotificationRegister_Resp_Cb (
     {
         Status = NFCSTATUS_FAILED;
     }
+    else if (PHNFCSTATUS(status) == NFCSTATUS_DESELECTED)
+    {
+        return;
+    }
 	else
 	{
 		DeviceIndx=0;DeviceIndx1=0;
