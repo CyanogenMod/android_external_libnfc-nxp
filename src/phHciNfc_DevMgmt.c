@@ -118,6 +118,7 @@ typedef enum phHciNfc_DevMgmt_Seq{
     DEV_MGMT_LLC_GRD_TO_L,
     DEV_MGMT_LLC_ACK_TO_H,
     DEV_MGMT_LLC_ACK_TO_L,
+    DEV_MGMT_FELICA_RC,
     DEV_MGMT_EVT_AUTONOMOUS,
     DEV_MGMT_PIPE_CLOSE
 } phHciNfc_DevMgmt_Seq_t;
@@ -517,17 +518,8 @@ phHciNfc_DevMgmt_Initialise(
                                                     pHwRef, p_pipe_info );
                     if(status == NFCSTATUS_SUCCESS)
                     {
-                        
-                        if (HCI_SELF_TEST == psHciContext->init_mode )
-                        {
-                            p_device_mgmt_info->next_seq =
-                                                DEV_MGMT_GPIO_PDIR;
-                        }
-                        else
-                        {
-                            p_device_mgmt_info->next_seq =
-                                                DEV_MGMT_GET_EEPROM_INFO;
-                        }
+                        p_device_mgmt_info->next_seq =
+                                    DEV_MGMT_FELICA_RC;
                         status = NFCSTATUS_PENDING;
                     }
                     break;
@@ -576,6 +568,26 @@ phHciNfc_DevMgmt_Initialise(
                         p_device_mgmt_info->next_seq =
                                                 DEV_MGMT_TX_LDO;
 #endif /* #if  ( NXP_NFC_IFC_TIMEOUT & 0x01 ) */
+                    }
+                    break;
+                }
+                case DEV_MGMT_FELICA_RC:
+                {
+                    config = 0x00;
+                    status = phHciNfc_DevMgmt_Configure( psHciContext, pHwRef,
+                                 NFC_FELICA_RC_ADDR , config );
+                    if(NFCSTATUS_PENDING == status )
+                    {
+                        if (HCI_SELF_TEST == psHciContext->init_mode )
+                        {
+                            p_device_mgmt_info->next_seq =
+                                   DEV_MGMT_GPIO_PDIR;
+                        }
+                        else
+                        {
+                            p_device_mgmt_info->next_seq =
+                                   DEV_MGMT_GET_EEPROM_INFO;
+                        }
                     }
                     break;
                 }

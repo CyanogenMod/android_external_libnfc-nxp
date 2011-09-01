@@ -51,6 +51,7 @@
 #define NXP_WRA_CONTINUE_ACTIVATION         0x12U
 
 #define NXP_FEL_SYS_CODE                    0x01U
+#define NXP_FEL_POLREQ_SYS_CODE             0x02U
 #define NXP_FEL_CURRENTIDM                  0x04U
 #define NXP_FEL_CURRENTPMM                  0x05U
 
@@ -63,6 +64,7 @@ uint8_t nxp_nfc_felica_timeout = NXP_FELICA_XCHG_TIMEOUT;
 
 /* Presence check command for felica tag */
 #define FELICA_REQ_MODE                     0x04U
+
 /*
 *************************** Structure and Enumeration ***************************
 */
@@ -418,10 +420,9 @@ phHciNfc_Felica_InfoUpdate(
         {
             if (NXP_FEL_SYS_CODE_LEN == reg_length)
             {
-                HCI_PRINT_BUFFER("\tFelica system code data", reg_value, reg_length);
-                /* Update current system code values */
-                (void)memcpy(p_fel_tag_info->SystemCode, reg_value, 
-                            reg_length);
+                /* System code from registry is invalid in this case */
+		p_fel_tag_info->SystemCode[0] = 0;
+                p_fel_tag_info->SystemCode[1] = 0;
             } 
             else
             {
@@ -501,6 +502,39 @@ phHciNfc_Recv_Felica_Packet(
             index = (index + 1);
             psHciContext->rx_index = (HCP_HEADER_LEN + 1);
             HCI_PRINT_BUFFER("Felica Bytes received", &pResponse[index], (length - index));
+            /* If Poll response received then update IDm and PMm parameters, when presence check going on */
+            if (pResponse[index + 1] == 0x01)
+            {
+                if (length >= 19)
+                {
+                    /* IDm */
+                    (void) memcpy(psHciContext->p_target_info->RemoteDevInfo.Felica_Info.IDm,
+                                  &pResponse[index + 2], 8);
+                    /* PMm */
+                    (void) memcpy(psHciContext->p_target_info->RemoteDevInfo.Felica_Info.PMm,
+                                  &pResponse[index + 2 + 8], 8);
+                    index = index + 2 + 8 + 8;
+
+                    /* SC */
+                    if (length >= 21)
+                    {
+                        /* Copy SC if available */
+                        psHciContext->p_target_info->RemoteDevInfo.Felica_Info.SystemCode[0] = pResponse[index];
+                        psHciContext->p_target_info->RemoteDevInfo.Felica_Info.SystemCode[1] = pResponse[index + 1];
+                    }
+                    else
+                    {
+                        /* If SC is not available in packet then set to zero */
+                        psHciContext->p_target_info->RemoteDevInfo.Felica_Info.SystemCode[0] = 0;
+                        psHciContext->p_target_info->RemoteDevInfo.Felica_Info.SystemCode[1] = 0;
+                    }
+                }
+                else
+                {
+                    status = PHNFCSTVAL(CID_NFC_HCI,
+                                        NFCSTATUS_INVALID_HCI_RESPONSE);
+                }
+            }
         }
         else
         {
@@ -828,7 +862,7 @@ phHciNfc_Felica_Request_Mode(
             pres_chk_data[1] = 0x00; // Felica poll
             pres_chk_data[2] = 0xFF;
             pres_chk_data[3] = 0xFF;
-            pres_chk_data[4] = 0x00;
+            pres_chk_data[4] = 0x01;
             pres_chk_data[5] = 0x00;
 
             ps_pipe_info->param_info = pres_chk_data;
@@ -842,7 +876,6 @@ phHciNfc_Felica_Request_Mode(
 
     return status;
 }
-
 
 NFCSTATUS
 phHciNfc_Send_Felica_Command(

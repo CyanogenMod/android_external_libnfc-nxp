@@ -119,6 +119,7 @@
 #define NFC_ADDRESS_PMOS_MOD            0x997AU
 #endif
 
+#define NFC_FELICA_RC_ADDR              0x9F9AU
 
 /* The Address Definition for the Enabling the EVT_HOT_PLUG */
 #define NFC_ADDRESS_HOTPLUG_EVT         0x9FF0U
