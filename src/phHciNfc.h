@@ -78,8 +78,9 @@
 typedef enum phHciNfc_Init
 {
   HCI_SESSION = 0x00,
-  HCI_SELF_TEST,
-  HCI_CUSTOM_INIT
+  HCI_NFC_DEVICE_TEST,
+  HCI_CUSTOM_INIT,
+  HCI_SELF_TEST
 }phHciNfc_Init_t;
 
 /** \ingroup  grp_hal_hci
@@ -263,7 +264,7 @@ phHciNfc_Config_Discovery (
  *                                      of the HCI Layer.
  *  \param[in]  pHwRef                  pHwRef is the Information of
  *                                      the Device Interface Link .
- *  \param[in]  re_poll                 If True: Start re-polling of the target
+ *  \param[in]  discovery_type                 If True: Start re-polling of the target
  *                                      after the Target Device is de-activated
  *                                      or else - continue discovery with next
  *                                      technology.
@@ -279,7 +280,7 @@ phHciNfc_Config_Discovery (
  phHciNfc_Restart_Discovery (
                         void                            *psHciHandle,
                         void                            *pHwRef,
-                        uint8_t                         repoll
+                        uint8_t                         discovery_type
                      );
 
 
@@ -495,10 +496,11 @@ phHciNfc_Config_Discovery (
  *                                      of the HCI Layer.
  *  \param[in]  pHwRef                  pHwRef is the Information of
  *                                      the Device Interface Link .
- *  \param[in]  re_poll                 If True: Start re-polling of the target
- *                                      after the Target Device is de-activated
- *                                      or else - continue discovery with next
- *                                      technology.
+ *  \param[in]  discovery_type          If NFC_RF_DISCOVERY_REPOLL: Start re-polling of
+ *                                      the target after the Target Device is
+ *                                      de-activatedor if NFC_RF_DISCOVERY_CONTINUE -
+ *                                      continue discovery with next technology or
+ *                                      stop the discovery wheel.
  *
  *  \retval NFCSTATUS_PENDING           To De-select the remote target pending.
  *  \retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters
@@ -512,7 +514,7 @@ phHciNfc_Config_Discovery (
  phHciNfc_Disconnect (
                     void                            *psHciHandle,
                     void                            *pHwRef,
-                    uint8_t                         re_poll
+                    uint8_t                         discovery_type
                  );
 
 

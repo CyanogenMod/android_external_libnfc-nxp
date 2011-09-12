@@ -65,6 +65,10 @@
 ################################################################################
 */
 
+/* Address Definitions for HAL Configuration */
+#define NFC_ADDRESS_HAL_CONF            0x9FD0U
+
+
 /*
 ################################################################################
 ********************** Structure/Enumeration Definitions ***********************
@@ -243,8 +247,10 @@ phHciNfc_FSM_Validate(
                         /* Initialise to Perform Test on 
                            the Antenna/SWP Link */
                         case hciState_Test:
+                        {
                             status = NFCSTATUS_SUCCESS;
                             break;
+                        }
                         default:
                             break;
                     }
@@ -266,8 +272,10 @@ phHciNfc_FSM_Validate(
                         case hciState_Listen:
                         /* Specifies the Starting of the Release Sequence */
                         case hciState_Release:
+                        {
                             status = NFCSTATUS_SUCCESS;
                             break;
+                        }
                         default:
                             break;
                     }
@@ -306,8 +314,10 @@ phHciNfc_FSM_Validate(
                         case hciState_Connect:
                         /* Specifies the Starting of the Release Sequence */
                         case hciState_Release:
+                        {
                             status = NFCSTATUS_SUCCESS;
                             break;
+                        }
                         default:
                             break;
                     }
@@ -338,8 +348,10 @@ phHciNfc_FSM_Validate(
                         case hciState_Disconnect:
                         /* Specifies the Starting of the Release Sequence */
                         case hciState_Release:
+                        {
                             status = NFCSTATUS_SUCCESS;
                             break;
+                        }
                         default:
                             break;
                     }
@@ -363,8 +375,10 @@ phHciNfc_FSM_Validate(
                         case hciState_Transact:
                         /* Specifies the Starting of the Release Sequence */
                         case hciState_Release:
+                        {
                             status = NFCSTATUS_SUCCESS;
                             break;
+                        }
                         default:
                             break;
                     }
@@ -386,8 +400,10 @@ phHciNfc_FSM_Validate(
                         case hciState_Config:
                         /* Specifies the Starting of the Release Sequence */
                         case hciState_Release:
+                        {
                             status = NFCSTATUS_SUCCESS;
                             break;
+                        }
                         default:
                             break;
                     }
@@ -412,10 +428,14 @@ phHciNfc_FSM_Validate(
                         case hciState_Listen:
                         /* Specifies the Starting of the Release Sequence */
                         case hciState_Release:
+                        {
                             status = NFCSTATUS_SUCCESS;
                             break;
+                        }
                         default:
+                        {
                             break;
+                        }
                     }
                     break;
                 }
@@ -640,7 +660,7 @@ phHciNfc_Error_Sequence(
             {
                 if (hciState_Reset == psHciContext->hci_state.cur_state)
                 {
-                    phNfc_sCompletionInfo_t     comp_info;
+                    phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                     phHciNfc_Release_Lower( psHciContext, pHwRef );
                     /* Release all the resources and 
@@ -654,7 +674,7 @@ phHciNfc_Error_Sequence(
                 {
                     /* Notify the Poll/Emulation Configure failure to the upper layer */
 
-                    phNfc_sCompletionInfo_t     comp_info;
+                    phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                     comp_info.status = error_status ;
 
@@ -671,7 +691,8 @@ phHciNfc_Error_Sequence(
                 {
 
                     /* Notify the Poll Configure failure to the upper layer */
-                    phNfc_sCompletionInfo_t     comp_info;
+                    phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
+
 
                     psHciContext->error_status = error_status;
                     status = phHciNfc_Pending_Sequence(psHciContext, pHwRef );
@@ -700,7 +721,7 @@ phHciNfc_Error_Sequence(
             case hciState_Config:
             {
                 /* Notify the Configure failure to the upper layer */
-                phNfc_sCompletionInfo_t     comp_info;
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 psHciContext->error_status = error_status;
                 status = phHciNfc_Pending_Sequence(psHciContext, pHwRef );
@@ -716,7 +737,7 @@ phHciNfc_Error_Sequence(
             case hciState_Select:
             {
                 /* Notify the Configure failure to the upper layer */
-                phNfc_sCompletionInfo_t     comp_info={FALSE};
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 /* Rollback the FSM as the Target Discovery Failed */
                 phHciNfc_FSM_Rollback(psHciContext);
@@ -742,7 +763,7 @@ phHciNfc_Error_Sequence(
             case hciState_Transact:
                 /* Notify the Transceive failure to the upper layer */
             {
-                phNfc_sTransactionInfo_t        transact_info; 
+                phNfc_sTransactionInfo_t        transact_info={FALSE,0,NULL,NULL,0};
 
                 /* Rollback the FSM as the Transceive Failed */
                 phHciNfc_FSM_Rollback(psHciContext);
@@ -759,7 +780,7 @@ phHciNfc_Error_Sequence(
             case hciState_Connect:
             {
                 /* Notify the General failure to the upper layer */
-                phNfc_sCompletionInfo_t     comp_info;
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 /* psHciContext->host_rf_type = phHal_eUnknown_DevType; */
                 status = phHciNfc_ReaderMgmt_Update_Sequence(
@@ -776,7 +797,7 @@ phHciNfc_Error_Sequence(
             case hciState_Reactivate:
             {
                 /* Notify the General failure to the upper layer */
-                phNfc_sCompletionInfo_t     comp_info={FALSE};
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 /* psHciContext->host_rf_type = phHal_eUnknown_DevType; 
                 status = phHciNfc_ReaderMgmt_Update_Sequence(
@@ -792,7 +813,7 @@ phHciNfc_Error_Sequence(
             }
             case hciState_Presence:
             {
-                phNfc_sCompletionInfo_t     comp_info;
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 /* Roll Back to Connect State as Presence Check is Complete */
                 phHciNfc_FSM_Rollback(psHciContext);
@@ -809,7 +830,7 @@ phHciNfc_Error_Sequence(
             case hciState_Disconnect:
             {
                 /* Notify the General failure to the upper layer */
-                phNfc_sCompletionInfo_t     comp_info;
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 phHciNfc_FSM_Rollback(psHciContext);
                 comp_info.status = error_status ;
@@ -823,7 +844,7 @@ phHciNfc_Error_Sequence(
 #ifdef NXP_HCI_SHUTDOWN_OVERRIDE
                 status = phHciNfc_Release_Sequence(psHciContext ,pHwRef);
 #else
-                phNfc_sCompletionInfo_t     comp_info;
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 phHciNfc_Release_Lower( psHciContext, pHwRef );
                 /* Release all the resources and 
@@ -838,7 +859,7 @@ phHciNfc_Error_Sequence(
             default:
             {
                 /* Notify the General failure to the upper layer */
-                phNfc_sCompletionInfo_t     comp_info;
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 phHciNfc_FSM_Rollback(psHciContext);
                 comp_info.status = error_status ;
@@ -859,8 +880,7 @@ phHciNfc_Error_Sequence(
     else
     {
         /* Notify the General failure to the upper layer */
-        phNfc_sCompletionInfo_t     comp_info;
-
+        phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
         phHciNfc_FSM_Rollback(psHciContext);
         comp_info.status = error_status ;
         /* Disable the Notification to the Upper Layer */
@@ -926,7 +946,7 @@ phHciNfc_Resume_Sequence(
                 case hciState_Select:
                 case hciState_Connect:
                 {
-                    phNfc_sCompletionInfo_t     comp_info;
+                    phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                     /* Update to the Intialise state as the discovery wheel is 
                      * restarted.
@@ -983,7 +1003,7 @@ phHciNfc_Resume_Sequence(
         }
         case hciState_Presence:
         {
-            phNfc_sCompletionInfo_t     comp_info;
+            phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
             /* Roll Back to Connect State as Presence Check is Complete */
             phHciNfc_FSM_Rollback(psHciContext);
@@ -1102,7 +1122,7 @@ phHciNfc_Initialise_Sequence(
                 }
                 else
                 {
-#ifdef ESTABLISH_SESSION
+#if defined( ESTABLISH_SESSION )
                     NFCSTATUS info_status = NFCSTATUS_SUCCESS;
                     PHNFC_UNUSED_VARIABLE(info_status);
                     info_status = phHciNfc_IDMgmt_Update_Sequence( 
@@ -1110,7 +1130,11 @@ phHciNfc_Initialise_Sequence(
 
                     if(NFCSTATUS_SUCCESS == info_status)
                     {
+#if ( NXP_HAL_MEM_INFO_SIZE > 0x00U )
+                        psHciContext->hci_seq = DEV_HAL_INFO_SEQ;
+#else
                         psHciContext->hci_seq = IDENTITY_INFO_SEQ;
+#endif /* #if ( NXP_HAL_MEM_INFO_SIZE > 0x00U ) */
                     }
                     else
                     {
@@ -1118,10 +1142,11 @@ phHciNfc_Initialise_Sequence(
                         status = PHNFCSTVAL(CID_NFC_HCI,
                                     NFCSTATUS_INVALID_HCI_SEQUENCE);
                     }
+#elif ( NXP_HAL_MEM_INFO_SIZE > 0x00U )
+                    psHciContext->hci_seq = DEV_HAL_INFO_SEQ;
 #else
                     psHciContext->hci_seq = HCI_END_SEQ;
-
-#endif
+#endif /* #ifdef ESTABLISH_SESSION */
                 }
 
             }
@@ -1158,8 +1183,10 @@ phHciNfc_Initialise_Sequence(
             status = phHciNfc_EmuMgmt_Initialise( psHciContext,pHwRef );
             if(NFCSTATUS_SUCCESS == status)
             {
-#ifdef ESTABLISH_SESSION
+#if defined( ESTABLISH_SESSION )
                 psHciContext->hci_seq = ADMIN_SESSION_SEQ;
+#elif ( NXP_HAL_MEM_INFO_SIZE > 0x00U )
+                psHciContext->hci_seq = DEV_HAL_INFO_SEQ;
 #else
                 psHciContext->hci_seq = HCI_END_SEQ;
 #endif
@@ -1172,7 +1199,11 @@ phHciNfc_Initialise_Sequence(
             status = phHciNfc_Admin_Initialise( psHciContext,pHwRef );
             if(NFCSTATUS_SUCCESS == status)
             {
+#if ( NXP_HAL_MEM_INFO_SIZE > 0x00U )
+                psHciContext->hci_seq = DEV_HAL_INFO_SEQ;
+#else
                 psHciContext->hci_seq = IDENTITY_INFO_SEQ;
+#endif /* #if ( NXP_HAL_MEM_INFO_SIZE > 0x00U ) */
             }
             break;
         }
@@ -1182,11 +1213,13 @@ phHciNfc_Initialise_Sequence(
                                                 psHciContext, pHwRef );
             if(NFCSTATUS_SUCCESS == status)
             {
-#ifdef SW_AUTO_ACTIVATION
+#if defined( SW_AUTO_ACTIVATION )
                 psHciContext->hci_seq = READER_SW_AUTO_SEQ;
+#elif ( NXP_HAL_MEM_INFO_SIZE > 0x00U )
+                psHciContext->hci_seq = DEV_HAL_INFO_SEQ;
 #else
                 psHciContext->hci_seq = IDENTITY_INFO_SEQ;
-#endif
+#endif /* #if ( NXP_HAL_MEM_INFO_SIZE > 0x00U ) */
             }
             break;
         }
@@ -1219,7 +1252,8 @@ phHciNfc_Initialise_Sequence(
             {
                 if ((HCI_SELF_TEST != psHciContext->init_mode)
                     /* && ( TRUE == ((phHal_sHwReference_t *)pHwRef)->se_detect ) */
-                    && (HCI_CUSTOM_INIT != psHciContext->init_mode))
+                    && (HCI_CUSTOM_INIT != psHciContext->init_mode)
+                    && (HCI_NFC_DEVICE_TEST != psHciContext->init_mode))
                 {
                     NFCSTATUS info_status = NFCSTATUS_SUCCESS;
                     PHNFC_UNUSED_VARIABLE(info_status);
@@ -1247,10 +1281,42 @@ phHciNfc_Initialise_Sequence(
             }
             break;
         }
-#endif
+#endif /* #ifdef ESTABLISH_SESSION */
+
+#if ( NXP_HAL_MEM_INFO_SIZE > 0x00U )
+        case DEV_HAL_INFO_SEQ:
+        {
+            static uint8_t      mem_index = 0;
+            status = phHciNfc_DevMgmt_Get_Info(psHciContext, pHwRef,
+                        (NFC_ADDRESS_HAL_CONF + mem_index),
+                            (psHciContext->hal_mem_info + mem_index));
+            if(NFCSTATUS_PENDING == status)
+            {
+                mem_index++;
+                if (NXP_HAL_MEM_INFO_SIZE <= mem_index )
+                {
+                    NFCSTATUS info_status = NFCSTATUS_SUCCESS;
+                    PHNFC_UNUSED_VARIABLE(info_status);
+                    info_status = phHciNfc_IDMgmt_Update_Sequence(
+                                                psHciContext, INFO_SEQ );
+                    mem_index = 0;
+                    psHciContext->hci_seq = IDENTITY_INFO_SEQ;
+                    /* psHciContext->hci_seq =
+                            (HCI_SELF_TEST != psHciContext->init_mode)?
+                                    IDENTITY_INFO_SEQ : HCI_END_SEQ; */
+                }
+            }
+            break;
+        }
+#endif /* #if ( NXP_HAL_MEM_INFO_SIZE > 0x00U ) */
         case HCI_END_SEQ:
         {
-            if (HCI_SELF_TEST == psHciContext->init_mode )
+            phHal_sMemInfo_t    *p_mem_info =
+                    (phHal_sMemInfo_t *) ( psHciContext->hal_mem_info );
+            if (
+                (HCI_SELF_TEST == psHciContext->init_mode )
+                || (HCI_NFC_DEVICE_TEST == psHciContext->init_mode )
+                )
             {
                 psHciContext->hci_state.next_state
                     = (uint8_t) hciState_Test;
@@ -1260,10 +1326,17 @@ phHciNfc_Initialise_Sequence(
             phHciNfc_Uicc_Connectivity( psHciContext, pHwRef );
 #endif /* #ifdef UICC_CONNECTIVITY_PATCH */
 
+#if ( NXP_HAL_MEM_INFO_SIZE > 0x00U )
+            if(NXP_FW_UPLOAD_SUCCESS != p_mem_info->fw_magic )
+            {
+                status = PHNFCSTVAL( CID_NFC_HCI, NFCSTATUS_FAILED );
+            }
+#endif /* #if ( NXP_HAL_MEM_INFO_SIZE > 0x00U ) */
+
             /* Initialisation Complete Notification to the Upper Layer */
             if(NFCSTATUS_SUCCESS == status)
             {
-                phNfc_sCompletionInfo_t     comp_info;
+                phNfc_sCompletionInfo_t     comp_info={FALSE,0, NULL};
 
                 comp_info.status = status;
                 phHciNfc_Notify(psHciContext->p_upper_notify,
@@ -1333,6 +1406,10 @@ phHciNfc_Release_Sequence(
         }
         case DEV_REL_SEQ:
         {
+            NFCSTATUS info_status = NFCSTATUS_SUCCESS;
+            PHNFC_UNUSED_VARIABLE(info_status);
+            info_status = phHciNfc_DevMgmt_Update_Sequence(
+                                            psHciContext, REL_SEQ );
             status = phHciNfc_DevMgmt_Release( psHciContext, pHwRef );
             if(NFCSTATUS_SUCCESS == status)
             {
@@ -1434,7 +1511,7 @@ phHciNfc_Config_Sequence(
                         )
 {
     NFCSTATUS                   status = NFCSTATUS_SUCCESS;
-    phNfc_sCompletionInfo_t     comp_info;
+    phNfc_sCompletionInfo_t     comp_info = {FALSE,0,NULL};
 
     switch(psHciContext->config_type)
     {
@@ -1760,7 +1837,7 @@ phHciNfc_EmulationCfg_Sequence(
                          )
 {
     NFCSTATUS               status = NFCSTATUS_SUCCESS;
-    static phNfc_sCompletionInfo_t      comp_info;
+    static phNfc_sCompletionInfo_t      comp_info = {FALSE,0,NULL};
 #if defined(HOST_EMULATION)
     phHciNfc_GateID_t       ce_gate = phHciNfc_UnknownGate;
 #endif  /* #ifdef HOST_EMULATION */
@@ -1907,8 +1984,7 @@ phHciNfc_SmartMx_Mode_Sequence(
     NFCSTATUS           status = NFCSTATUS_SUCCESS;
     phHal_sADD_Cfg_t    *p_poll_config = (phHal_sADD_Cfg_t * )
         psHciContext->p_config_params;
-    phNfc_sCompletionInfo_t     comp_info;
-
+    phNfc_sCompletionInfo_t     comp_info = {FALSE,0,NULL};
     if (NULL != p_poll_config)
     {
         switch(psHciContext->hci_seq)
@@ -2014,7 +2090,7 @@ phHciNfc_Connect_Sequence(
                          )
 {
     NFCSTATUS           status = NFCSTATUS_SUCCESS;
-    static phNfc_sCompletionInfo_t      comp_info;
+    static phNfc_sCompletionInfo_t      comp_info = {FALSE,0,NULL};
     phHal_eRemDevType_t         target_type = phHal_eUnknown_DevType;
 
     if( NULL != psHciContext->p_target_info )
@@ -2126,7 +2202,7 @@ phHciNfc_Disconnect_Sequence(
                          )
 {
     NFCSTATUS           status = NFCSTATUS_SUCCESS;
-    static phNfc_sCompletionInfo_t      comp_info;
+    static phNfc_sCompletionInfo_t      comp_info = {FALSE, 0 , NULL};
     phHal_eRemDevType_t         target_type = phHal_eUnknown_DevType;
     uint8_t             re_poll = 0;
 
@@ -2210,7 +2286,7 @@ phHciNfc_Transact_Sequence(
                             void                    *pHwRef
                          )
 {
-    static phNfc_sTransactionInfo_t transact_info;
+    static phNfc_sTransactionInfo_t transact_info = {FALSE,0,NULL,NULL,0};
 
     pphNfcIF_Notification_CB_t  p_upper_notify = psHciContext->p_upper_notify;
     void                        *pcontext = psHciContext->p_upper_context;
@@ -2357,8 +2433,8 @@ phHciNfc_Test_Sequence(
                          )
 {
     NFCSTATUS           status = NFCSTATUS_SUCCESS;
-    static phNfc_sCompletionInfo_t      comp_info;
-    static phNfc_sData_t test_result;
+    static phNfc_sCompletionInfo_t      comp_info = {0};
+    static phNfc_sData_t test_result= {NULL,0};
 
     /* Complete the Test Sequence and notify the HAL */
     status = phHciNfc_FSM_Complete ( psHciContext );
@@ -2380,7 +2456,7 @@ phHciNfc_Test_Sequence(
         phHciNfc_Notify(psHciContext->p_upper_notify,
                         psHciContext->p_upper_context, pHwRef,
                         NFC_NOTIFY_RESULT , &comp_info);
-        HCI_PRINT(" HCI System Test Completed. \n");
+        HCI_DEBUG(" HCI System Test Completed : Status = %u\n", test_status);
     }
     else
     {
@@ -2406,7 +2482,7 @@ phHciNfc_IO_Sequence(
                          )
 {
     NFCSTATUS           status = NFCSTATUS_SUCCESS;
-    static phNfc_sCompletionInfo_t      comp_info;
+    static phNfc_sCompletionInfo_t      comp_info = {0};
 
     /* To remove "warning (VS 4100) : unreferenced formal parameter" */
     PHNFC_UNUSED_VARIABLE(pdata);

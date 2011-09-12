@@ -458,6 +458,7 @@ typedef enum phHciNfc_eSeq{
 
     /* HCI Device Management Sequence */
     DEV_INIT_SEQ,
+    DEV_HAL_INFO_SEQ,
     DEV_CONFIG_SEQ,
     DEV_REL_SEQ,
 
@@ -611,8 +612,8 @@ typedef struct phHciNfc_sContext{
     /** \internal Mode of HCI Initialisation */
     phHciNfc_Init_t             init_mode;
 
-    /** \internal Mode of HCI Initialisation */
-    void                        *p_io_params;
+    /** \internal Memory Information for HCI Initialisation */
+    uint8_t                     hal_mem_info[NXP_HAL_MEM_INFO_SIZE];
 
     /** \internal HCI Configuration Type */
     phHciNfc_eConfigType_t      config_type;

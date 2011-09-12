@@ -106,11 +106,11 @@ LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_i2c.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_messageQueueLib.c
 
 # Really verbose:
-#LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DDEBUG -DDAL_TRACE -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -fpic
+#LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DDEBUG -DNFC_TIMER_CONTEXT -DDAL_TRACE -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -fpic
 # Just show I2C traffic:
-#LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DINCLUDE_DALINIT_DEINIT -DLOW_LEVEL_TRACES -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -fpic
+#LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DNFC_TIMER_CONTEXT -DINCLUDE_DALINIT_DEINIT -DLOW_LEVEL_TRACES -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -fpic
 # Quiet:
-LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -fpic
+LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DNFC_TIMER_CONTEXT -DINCLUDE_DALINIT_DEINIT -pipe -fomit-frame-pointer -Wall -Wno-trigraphs -Werror-implicit-function-declaration  -fno-strict-aliasing -fpic
 
 ifeq ($(TARGET_ARCH),arm)
 LOCAL_CFLAGS += -mapcs -mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork -msoft-float -Uarm -fno-common
