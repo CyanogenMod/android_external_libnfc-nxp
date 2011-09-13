@@ -854,6 +854,8 @@ NFCSTATUS phLibNfc_HW_Reset ();
 
 NFCSTATUS phLibNfc_Download_Mode ();
 
+int phLibNfc_Load_Firmware_Image ();
+
 // timeout is 8 bits
 // bits [0..3] => timeout value, (256*16/13.56*10^6) * 2^value
 //                  [0] -> 0.0003s

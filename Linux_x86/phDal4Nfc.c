@@ -312,7 +312,7 @@ NFCSTATUS phDal4Nfc_Shutdown( void *pContext, void *pHwRef)
    return result;
 }
 
-NFCSTATUS phDal4Nfc_ConfigRelease( void *pHwRef)
+NFCSTATUS phDal4Nfc_ConfigRelease(void *pHwRef)
 {
 
    NFCSTATUS result = NFCSTATUS_SUCCESS;
@@ -322,19 +322,23 @@ NFCSTATUS phDal4Nfc_ConfigRelease( void *pHwRef)
 
    if (gDalContext.hw_valid == TRUE)
    {
-      DAL_PRINT("Release Read Semaphore");
-      sem_post(&nfc_read_sem);
+       /* Signal the read and write threads to exit.  NOTE: there
+          actually is no write thread!  :)  */
+       DAL_PRINT("Stop Reader Thread");
+       gReadWriteContext.nReadThreadAlive = 0;
+       gReadWriteContext.nWriteThreadAlive = 0;
 
-       /* Kill the read and write threads */
-      DAL_PRINT("Stop Reader Thread");
-      gReadWriteContext.nReadThreadAlive = 0;
-      gReadWriteContext.nWriteThreadAlive = 0;
+       /* Wake up the read thread so it can exit */
+       DAL_PRINT("Release Read Semaphore");
+       sem_post(&nfc_read_sem);
 
-      if (pthread_join(gReadWriteContext.nReadThread,  &pThreadReturn) != 0)
-      {
-         result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_FAILED);
-         DAL_PRINT("phDal4Nfc_ConfigRelease  KO");
-      }
+       DAL_DEBUG("phDal4Nfc_ConfigRelease - doing pthread_join(%d)",
+                 gReadWriteContext.nReadThread);
+       if (pthread_join(gReadWriteContext.nReadThread,  &pThreadReturn) != 0)
+       {
+           result = PHNFCSTVAL(CID_NFC_DAL, NFCSTATUS_FAILED);
+           DAL_PRINT("phDal4Nfc_ConfigRelease  KO");
+       }
 
       /* Close the message queue */
 #ifdef USE_MQ_MESSAGE_QUEUE
@@ -612,6 +616,7 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
 
    gDalContext.hw_valid = TRUE;
 
+   phDal4Nfc_Reset(1);
    phDal4Nfc_Reset(0);
    phDal4Nfc_Reset(1);
 
@@ -706,12 +711,20 @@ int phDal4Nfc_ReaderThread(void * pArg)
 	DAL_PRINT("RX Thread Sem Lock\n");
         sem_wait(&nfc_read_sem);
         DAL_PRINT("RX Thread Sem UnLock\n");
+
+        if (!gReadWriteContext.nReadThreadAlive)
+        {
+            /* got the signal that we should exit.  NOTE: we don't
+               attempt to read below, since the read may block */
+            break;
+        }
+
         /* Issue read operation.*/
 
     i2c_error_count = 0;
 retry:
 	gReadWriteContext.nNbOfBytesRead=0;
-	DAL_DEBUG("\n*New *** *****Request Length = %d",gReadWriteContext.nNbOfBytesToRead);
+	DAL_DEBUG("RX Thread *New *** *****Request Length = %d",gReadWriteContext.nNbOfBytesToRead);
 	memsetRet=memset(gReadWriteContext.pReadBuffer,0,gReadWriteContext.nNbOfBytesToRead);
 
 	/* Wait for IRQ !!!  */
@@ -725,12 +738,12 @@ retry:
     if(gReadWriteContext.nNbOfBytesToRead == 1 && gReadWriteContext.pReadBuffer[0] == 0x57)
     {
         i2c_error_count++;
-        LOGW("Read 0x57 %d times\n", i2c_error_count);
+        DAL_DEBUG("RX Thread Read 0x57 %d times\n", i2c_error_count);
         if (i2c_error_count < 5) {
             usleep(2000);
             goto retry;
         }
-        DAL_PRINT("NOTHING TO READ, RECOVER");
+        DAL_PRINT("RX Thread NOTHING TO READ, RECOVER");
         phOsalNfc_RaiseException(phOsalNfc_e_UnrecovFirmwareErr,1);
     }
     else
@@ -741,14 +754,14 @@ retry:
         {
              phOsalNfc_PrintData("RECV", (uint16_t)gReadWriteContext.nNbOfBytesRead, gReadWriteContext.pReadBuffer);
         }
-        DAL_DEBUG("Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
-        DAL_DEBUG("NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
-/*      DAL_PRINT("ReadBuff[]={ ");
+        DAL_DEBUG("RX Thread Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
+        DAL_DEBUG("RX Thread NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
+/*      DAL_PRINT("RX Thread ReadBuff[]={ ");
         for (i = 0; i < gReadWriteContext.nNbOfBytesRead; i++)
         {
-          DAL_DEBUG("0x%x ", gReadWriteContext.pReadBuffer[i]);
+          DAL_DEBUG("RX Thread 0x%x ", gReadWriteContext.pReadBuffer[i]);
         }
-        DAL_PRINT("}\n"); */
+        DAL_PRINT("RX Thread }\n"); */
 
         /* read completed immediately */
         sMsg.eMsgType= PHDAL4NFC_READ_MESSAGE;
@@ -760,6 +773,9 @@ retry:
     }
 
     } /* End of thread Loop*/
+
+    DAL_PRINT("RX Thread  exiting");
+
     return TRUE;
 }
 
@@ -984,4 +1000,3 @@ void phDal4Nfc_DeferredCall(pphDal4Nfc_DeferFuncPointer_t func, void *param)
 }
 
 #undef _DAL_4_NFC_C
-

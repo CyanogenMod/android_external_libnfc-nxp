@@ -47,6 +47,8 @@
 *************************** Macro's  ******************************************
 */
 
+extern int dlopen_firmware();
+
 #ifndef STATIC_DISABLE
 #define STATIC static
 #else
@@ -108,6 +110,7 @@ NFCSTATUS phLibNfc_HW_Reset ()
 {
     NFCSTATUS Status = NFCSTATUS_SUCCESS;
 
+    Status = phDal4Nfc_Reset(1);
     Status = phDal4Nfc_Reset(0);
     Status = phDal4Nfc_Reset(1);
 
@@ -117,6 +120,13 @@ NFCSTATUS phLibNfc_HW_Reset ()
 NFCSTATUS phLibNfc_Download_Mode ()
 {
    return phDal4Nfc_Download();
+}
+
+int phLibNfc_Load_Firmware_Image ()
+{
+    int status;
+    status = dlopen_firmware();
+    return status;
 }
 
 
