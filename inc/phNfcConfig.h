@@ -375,11 +375,15 @@
 /**< Macro to Enable the Card Emulation Feature */
 /* #define HOST_EMULATION */
 
+#define NXP_HAL_VERIFY_EEPROM_CRC  0x01U
+
 /**< Macro to Enable the Download Mode Feature */
 #define FW_DOWNLOAD
 
 /**< Macro to Enable the Firmware Download Timer */
-#define FW_DOWNLOAD_TIMER
+/* 0x01U to use overall timeout */
+/* 0x02U to use per frame timeout */
+#define FW_DOWNLOAD_TIMER   0x02U
 
 /**< Macro to Verify the Firmware Download */
 /* #define FW_DOWNLOAD_VERIFY */
@@ -387,6 +391,9 @@
 #ifndef FW_DOWNLOAD_VERIFY
 #define NXP_FW_INTEGRITY_CHK    1
 #endif
+
+/* To specify the Maximum TX/RX Len */
+#define NXP_FW_MAX_TX_RX_LEN   0x200
 
 #define UICC_CONNECTIVITY_PATCH
 

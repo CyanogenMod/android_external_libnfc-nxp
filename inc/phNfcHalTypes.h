@@ -47,6 +47,26 @@
 #include <phNfcCompId.h>
 #include <phNfcConfig.h>
 
+#ifndef NXP_HAL_MEM_INFO_SIZE
+#define NXP_HAL_MEM_INFO_SIZE           0x01U
+#endif
+
+#if (NXP_HAL_MEM_INFO_SIZE > 0x01)
+#define NXP_FW_UPLOAD_PROGRESS          0x965AU
+#define NXP_FW_UPLOAD_SUCCESS           0x0000U
+#else
+#define NXP_FW_UPLOAD_PROGRESS          0x5AU
+#define NXP_FW_UPLOAD_SUCCESS           0x00U
+#endif
+
+
+typedef struct phHal_sMemInfo
+{
+    uint16_t            fw_magic;
+    uint16_t            fw_rfu;
+    uint32_t            hal_version;
+}phHal_sMemInfo_t;
+
 
 /** \ingroup  grp_hal_common
  *
@@ -836,6 +856,7 @@ typedef enum phHal_Event {
     NFC_INFO_TXLDO_OVERCUR       = 0x71U,
     NFC_INFO_MEM_VIOLATION       = 0x73U,
     NFC_INFO_TEMP_OVERHEAT       = 0x74U,
+    NFC_INFO_LLC_ERROR           = 0x75U,
 
     /* NXP EVENTS */
     NFC_EVT_MIFARE_ACCESS          = 0x35,
