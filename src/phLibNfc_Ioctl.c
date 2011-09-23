@@ -238,8 +238,11 @@ STATIC  void phLibNfc_Ioctl_Mgmt_CB(void          *context,
                               NFCSTATUS      status )
 {
     phLibNfc_Ioctl_Cntx_t *pIoctlCntx=NULL;
-
-    if(PHNFCSTATUS(status)!=NFCSTATUS_SUCCESS)
+    if(PHNFCSTATUS(status) == NFCSTATUS_FEATURE_NOT_SUPPORTED)
+    {
+        status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
+    }
+    else if(PHNFCSTATUS(status)!=NFCSTATUS_SUCCESS)
     {
         status = NFCSTATUS_FAILED;
     }

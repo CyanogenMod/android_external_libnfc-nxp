@@ -104,7 +104,7 @@ LOCAL_SRC_FILES += Linux_x86/phDal4Nfc.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_i2c.c
 LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_messageQueueLib.c
 
-LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -fno-strict-aliasing
+LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DNFC_TIMER_CONTEXT -fno-strict-aliasing
 
 # Uncomment for Chipset command/responses
 # Or use "setprop debug.nfc.LOW_LEVEL_TRACES" at run-time
