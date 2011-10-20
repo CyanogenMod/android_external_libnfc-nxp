@@ -158,10 +158,11 @@ void phOsalNfc_RaiseException(phOsalNfc_ExceptionType_t eExceptionType, uint16_t
  * \param[in] pBuffer pointer to data bytes to be displayed.
  *
  */
-void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer)
+void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer,
+        int verbosity)
 {
     char print_buffer[length * 3 + 1];
-    int i;
+    unsigned int i;
 
     if (pString == NULL) {
         pString = "";
@@ -170,5 +171,42 @@ void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer)
     for (i = 0; i < length; i++) {
         snprintf(&print_buffer[i*3], 4, " %02X", pBuffer[i]);
     }
-    LOGD("> %s:%s", pString, print_buffer);
+
+    char llc[40] = "";
+
+    if (verbosity >= 2) {
+        uint8_t llc_header = 0;
+        if (!strcmp(pString, "SEND") && length >= 2) {
+            llc_header = pBuffer[1];
+        } else if (!strcmp(pString, "RECV") && length >= 2) {
+            llc_header = pBuffer[0];
+        }
+
+        if ((llc_header & 0xC0) == 0x80) {
+            // I
+            uint8_t ns = (llc_header & 0x38) >> 3;
+            uint8_t nr = llc_header & 0x07;
+            snprintf(&llc[0], sizeof(llc), "I %d (%d)", ns, nr);
+        } else if ((llc_header & 0xE0) == 0xC0) {
+            // S
+            uint8_t t = (llc_header & 0x18) >> 3;
+            uint8_t nr = llc_header & 0x07;
+            char *type;
+            switch (t) {
+            case 0x00: type = "RR "; break;
+            case 0x01: type = "REJ"; break;
+            case 0x02: type = "RNR"; break;
+            case 0x03: type = "SREJ"; break;
+            default: type = "???"; break;
+            }
+            snprintf(&llc[0], sizeof(llc), "S %s (%d)", type, nr);
+        } else if ((llc_header & 0xE0) == 0xE0) {
+            // U
+            snprintf(&llc[0], sizeof(llc), "U");
+        } else if (length > 1) {
+            snprintf(&llc[0], sizeof(llc), "???");
+        }
+    }
+
+    LOGD("> %s:%s\t%s", pString, print_buffer, llc);
 }

@@ -166,7 +166,8 @@ void phOsalNfc_DbgString(const char *pString);
  *
  * \retval None
  */
-void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer);
+void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer,
+        int verbosity);
 
 /*!
  * \ingroup grp_osal_nfc

@@ -132,7 +132,7 @@ DEFINED : then if the received NS = (expected NR - 1) then instead of REJ
         RR frame is sent
 COMMENTED : then REJ frame is sent
 */
-#define LLC_RR_INSTEAD_OF_REJ
+// #define LLC_RR_INSTEAD_OF_REJ
 
 #define SEND_UFRAME
 
@@ -205,7 +205,7 @@ COMMENTED : then exception is raised
 #define PH_LLCNFC_READPEND_REMAIN_BYTE              (0x02U)
 /** Read pending not done */
 #define PH_LLCNFC_READPEND_FLAG_OFF                 FALSE
-#define PH_LLCNFC_MAX_REJ_RETRY_COUNT               (10)
+#define PH_LLCNFC_MAX_REJ_RETRY_COUNT               (200)
 
 
 /**** Macros for state machine ****/

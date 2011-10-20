@@ -135,9 +135,9 @@ static void refresh_low_level_traces() {
         return;
     }
 
-    property_get("debug.nfc.LOW_LEVEL_TRACES", value, "");
+    property_get("debug.nfc.LOW_LEVEL_TRACES", value, "0");
     if (value[0]) {
-        low_level_traces = atoi(value) ? 1 : 0;
+        low_level_traces = atoi(value);
         return;
     }
 #endif
@@ -752,7 +752,8 @@ retry:
 
         if (low_level_traces)
         {
-             phOsalNfc_PrintData("RECV", (uint16_t)gReadWriteContext.nNbOfBytesRead, gReadWriteContext.pReadBuffer);
+             phOsalNfc_PrintData("RECV", (uint16_t)gReadWriteContext.nNbOfBytesRead,
+                    gReadWriteContext.pReadBuffer, low_level_traces);
         }
         DAL_DEBUG("RX Thread Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("RX Thread NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
@@ -882,7 +883,11 @@ void phDal4Nfc_DeferredCb (void  *params)
             DAL_PRINT(" Dal deferred read called \n");
             TransactionInfo.buffer=gReadWriteContext.pReadBuffer;
             TransactionInfo.length=(uint16_t)gReadWriteContext.nNbOfBytesRead;
-            TransactionInfo.status=NFCSTATUS_SUCCESS;
+            if (gReadWriteContext.nNbOfBytesRead == gReadWriteContext.nNbOfBytesToRead) {
+                TransactionInfo.status=NFCSTATUS_SUCCESS;
+            } else {
+                TransactionInfo.status=NFCSTATUS_READ_FAILED;
+            }
             gReadWriteContext.nReadBusy = FALSE;
 
 
@@ -900,7 +905,8 @@ void phDal4Nfc_DeferredCb (void  *params)
 
             if(low_level_traces)
             {
-                phOsalNfc_PrintData("SEND", (uint16_t)gReadWriteContext.nNbOfBytesToWrite, gReadWriteContext.pWriteBuffer);
+                phOsalNfc_PrintData("SEND", (uint16_t)gReadWriteContext.nNbOfBytesToWrite,
+                        gReadWriteContext.pWriteBuffer, low_level_traces);
             }
 
             /* DAL_DEBUG("dalMsg->transactInfo.length : %d\n", dalMsg->transactInfo.length); */

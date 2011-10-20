@@ -43,6 +43,9 @@
 #ifdef PH_LLCNFC_DALINT
 #include <phDal4Nfc.h>
 #endif
+#define LOG_TAG "NFC-LLC"
+
+#include <utils/Log.h>
 /*********************** End of includes ****************************/
 
 /***************************** Macros *******************************/
@@ -70,6 +73,7 @@ phLlcNfc_RdResp_Cb(
 /******************** End of Local functions ************************/
 
 /********************** Global variables ****************************/
+int libnfc_llc_error_count = 0;
 
 /******************** End of Global Variables ***********************/
 
@@ -666,7 +670,7 @@ phLlcNfc_RdResp_Cb(
     PH_LLCNFC_PRINT("\n\nLLC : READ RESP CB CALLED\n\n");
     
     if ((NULL != ps_llc_ctxt) && (NULL != pCompInfo) && (NULL != pHwInfo)
-       && (pCompInfo->length != 0) && (NULL != pCompInfo->buffer))
+       && (NULL != pCompInfo->buffer))
     {
         ps_frame_info = &(ps_llc_ctxt->s_frameinfo);
         ps_recv_pkt = &(ps_frame_info->s_recvpacket);
@@ -782,19 +786,19 @@ phLlcNfc_RdResp_Cb(
                 else if (ps_frame_info->recv_error_count < 
                     PH_LLCNFC_MAX_REJ_RETRY_COUNT)
                 {
+                    LOGW("LLC bad crc");
                     PH_LLCNFC_PRINT("CRC ERROR RECVD \n");
                     PH_LLCNFC_DEBUG("RECV ERROR COUNT : 0x%02X\n", ps_frame_info->recv_error_count);
 
                     ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
+                    libnfc_llc_error_count++;
 
                     result = phLlcNfc_Interface_Read(ps_llc_ctxt, 
                         PH_LLCNFC_READWAIT_OFF, 
                         (uint8_t *)&(ps_recv_pkt->s_llcbuf.llc_length_byte), 
                         PH_LLCNFC_BYTES_INIT_READ);
-
 #ifdef CRC_ERROR_REJ
-
                     /* Send REJ (S frame), as the CRC received has error  */
                     result = phLlcNfc_H_SendRejectFrame (ps_llc_ctxt);
 
@@ -803,6 +807,7 @@ phLlcNfc_RdResp_Cb(
                 }
                 else
                 {
+                    LOGE("max LLC retries exceeded, stack restart");
                     result = phLlcNfc_Interface_Read (ps_llc_ctxt, 
                                 PH_LLCNFC_READWAIT_OFF, 
                                 (uint8_t *)&(ps_recv_pkt->s_llcbuf.llc_length_byte), 
@@ -827,6 +832,7 @@ phLlcNfc_RdResp_Cb(
             else if (ps_frame_info->recv_error_count >= 
                     PH_LLCNFC_MAX_REJ_RETRY_COUNT)
             {
+                LOGE("max LLC retries exceeded, stack restart");
                 result = phLlcNfc_Interface_Read (ps_llc_ctxt, 
                         PH_LLCNFC_READWAIT_OFF, 
                         (uint8_t *)&(ps_recv_pkt->s_llcbuf.llc_length_byte), 
@@ -849,8 +855,10 @@ phLlcNfc_RdResp_Cb(
                 (PH_LLCNFC_MAX_BUFLEN_RECV_SEND > pCompInfo->length) && 
                 (pCompInfo->length != ps_recv_pkt->s_llcbuf.llc_length_byte))
             {
+                LOGE("bad LLC length1 %d", pCompInfo->length);
                 ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
+                libnfc_llc_error_count++;
 
                 result = phLlcNfc_Interface_Read(ps_llc_ctxt, 
                         PH_LLCNFC_READWAIT_OFF, 
@@ -875,8 +883,10 @@ phLlcNfc_RdResp_Cb(
                     value is greater than (0x21 - 1), then pend a read to 
                     get 1 byte again
                 */
+                LOGW("bad LLC length byte %x\n", *(pCompInfo->buffer));
                 ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
+                libnfc_llc_error_count++;
 
                 result = phLlcNfc_Interface_Read(ps_llc_ctxt, 
                         PH_LLCNFC_READWAIT_OFF, 
@@ -885,8 +895,10 @@ phLlcNfc_RdResp_Cb(
             }
             else
             {
+                LOGW("unknown LLC error1");
                 ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
+                libnfc_llc_error_count++;
 
                 phLlcNfc_StopTimers(PH_LLCNFC_GUARDTIMER, 
                                     ps_llc_ctxt->s_timerinfo.guard_to_count);
@@ -905,11 +917,24 @@ phLlcNfc_RdResp_Cb(
                                         pHwInfo, pCompInfo);
                 }
             }
+        } else if (NFCSTATUS_READ_FAILED == pCompInfo->status) {
+            // partial read - try reading the length byte again
+            LOGW("LLC length mis-match\n");
+            ps_frame_info->recv_error_count = (uint8_t)
+                                (ps_frame_info->recv_error_count + 1);
+            libnfc_llc_error_count++;
+
+            result = phLlcNfc_Interface_Read(ps_llc_ctxt,
+                    PH_LLCNFC_READWAIT_OFF,
+                    (uint8_t *)&(ps_recv_pkt->s_llcbuf.llc_length_byte),
+                    PH_LLCNFC_BYTES_INIT_READ);
         }
         else
         {
+            LOGW("unknown LLC error2");
             ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
+            libnfc_llc_error_count++;
 
             phLlcNfc_StopTimers(PH_LLCNFC_GUARDTIMER, 
                                 ps_llc_ctxt->s_timerinfo.guard_to_count);
