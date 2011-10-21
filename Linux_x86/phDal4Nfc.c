@@ -720,35 +720,12 @@ int phDal4Nfc_ReaderThread(void * pArg)
         }
 
         /* Issue read operation.*/
+        gReadWriteContext.nNbOfBytesRead=0;
+        DAL_DEBUG("RX Thread *New *** *****Request Length = %d",gReadWriteContext.nNbOfBytesToRead);
+        memsetRet=memset(gReadWriteContext.pReadBuffer,0,gReadWriteContext.nNbOfBytesToRead);
 
-    i2c_error_count = 0;
-retry:
-	gReadWriteContext.nNbOfBytesRead=0;
-	DAL_DEBUG("RX Thread *New *** *****Request Length = %d",gReadWriteContext.nNbOfBytesToRead);
-	memsetRet=memset(gReadWriteContext.pReadBuffer,0,gReadWriteContext.nNbOfBytesToRead);
-
-	/* Wait for IRQ !!!  */
-    gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
-
-    /* TODO: Remove this hack
-     * Reading the value 0x57 indicates a HW I2C error at I2C address 0x57
-     * (pn544). There should not be false positives because a read of length 1
-     * must be a HCI length read, and a length of 0x57 is impossible (max is 33).
-     */
-    if(gReadWriteContext.nNbOfBytesToRead == 1 && gReadWriteContext.pReadBuffer[0] == 0x57)
-    {
-        i2c_error_count++;
-        DAL_DEBUG("RX Thread Read 0x57 %d times\n", i2c_error_count);
-        if (i2c_error_count < 5) {
-            usleep(2000);
-            goto retry;
-        }
-        DAL_PRINT("RX Thread NOTHING TO READ, RECOVER");
-        phOsalNfc_RaiseException(phOsalNfc_e_UnrecovFirmwareErr,1);
-    }
-    else
-    {
-        i2c_error_count = 0;
+        /* Wait for IRQ !!!  */
+        gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
 
         if (low_level_traces)
         {
@@ -756,12 +733,6 @@ retry:
         }
         DAL_DEBUG("RX Thread Read ok. nbToRead=%d\n", gReadWriteContext.nNbOfBytesToRead);
         DAL_DEBUG("RX Thread NbReallyRead=%d\n", gReadWriteContext.nNbOfBytesRead);
-/*      DAL_PRINT("RX Thread ReadBuff[]={ ");
-        for (i = 0; i < gReadWriteContext.nNbOfBytesRead; i++)
-        {
-          DAL_DEBUG("RX Thread 0x%x ", gReadWriteContext.pReadBuffer[i]);
-        }
-        DAL_PRINT("RX Thread }\n"); */
 
         /* read completed immediately */
         sMsg.eMsgType= PHDAL4NFC_READ_MESSAGE;
@@ -770,7 +741,6 @@ retry:
         phDal4Nfc_DeferredCall((pphDal4Nfc_DeferFuncPointer_t)phDal4Nfc_DeferredCb,(void *)pmsgType);
         memsetRet=memset(&sMsg,0,sizeof(phDal4Nfc_Message_t));
         memsetRet=memset(&OsalMsg,0,sizeof(phOsalNfc_Message_t));
-    }
 
     } /* End of thread Loop*/
 
