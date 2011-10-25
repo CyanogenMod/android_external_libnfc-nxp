@@ -342,7 +342,7 @@ int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead)
     read_property();
 
     // Read timeout:
-    // FW mode: no timeout
+    // FW mode: 10s timeout
     // 1 byte read: steady-state LLC length read, allowed to block forever
     // >1 byte read: LLC payload, 100ms timeout (before pn544 re-transmit)
     if (nNbBytesToRead > 1 && !libnfc_firmware_mode) {
@@ -352,6 +352,10 @@ int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead)
             timeout.tv_sec++;
             timeout.tv_nsec -= 1000000000;
         }
+        ptv = &tv;
+    } else if (libnfc_firmware_mode) {
+        clock_gettime(CLOCK_MONOTONIC, &timeout);
+        timeout.tv_sec += 10;
         ptv = &tv;
     } else {
         ptv = NULL;
