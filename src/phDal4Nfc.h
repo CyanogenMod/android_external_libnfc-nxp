@@ -49,6 +49,7 @@
  *
  *
  */
+#include <hardware/nfc.h>
 /**< Basic type definitions */
 #include <phNfcTypes.h>
 /**< Generic Interface Layer Function Definitions */
@@ -75,6 +76,7 @@ typedef struct phDal4Nfc_SContext
 	phNfcIF_sCallBack_t		cb_if;		/**<Callback info registered by upper layer*/
 	volatile uint8_t		hw_valid;	/**<Flag - shows Hardware present or not */
 	void					*pHwRef;	/**<Hardware Reference*/
+	nfc_pn544_device_t		*pDev;		/**<Android HAL reference*/
 }phDal4Nfc_SContext_t,*pphDal4Nfc_SContext_t;
 
 /**
@@ -122,26 +124,6 @@ typedef struct phDal4Nfc_Message
 	/**<Reference to write callback ,registered by upper layer.This is of type \ref pphNfcIF_Transact_Completion_CB_t*/
     pphNfcIF_Transact_Completion_CB_t   writeCbPtr;
 } phDal4Nfc_Message_t,*pphDal4Nfc_Message_t;
-
-/**
- * \ingroup grp_nfc_dal
- *\brief Possible DAL Configuration exposed to upper layer.
- * Typically this should be port name (Ex:"COM1","COM2") to which PN544 is connected.
- */
-#define   ENUM_DAL_LINK_TYPE_COM1 ENUM_LINK_TYPE_COM1
-#define   ENUM_DAL_LINK_TYPE_COM2 ENUM_LINK_TYPE_COM2
-#define   ENUM_DAL_LINK_TYPE_COM3 ENUM_LINK_TYPE_COM3
-#define   ENUM_DAL_LINK_TYPE_COM4 ENUM_LINK_TYPE_COM4
-#define   ENUM_DAL_LINK_TYPE_COM5 ENUM_LINK_TYPE_COM5
-#define   ENUM_DAL_LINK_TYPE_COM6 ENUM_LINK_TYPE_COM6
-#define   ENUM_DAL_LINK_TYPE_COM7 ENUM_LINK_TYPE_COM7
-#define   ENUM_DAL_LINK_TYPE_COM8 ENUM_LINK_TYPE_COM8
-#define   ENUM_DAL_LINK_TYPE_I2C ENUM_LINK_TYPE_I2C
-#define   ENUM_DAL_LINK_TYPE_USB ENUM_LINK_TYPE_USB
-#define   ENUM_DAL_LINK_TYPE_TCP ENUM_LINK_TYPE_TCP
-
-#define   ENUM_DAL_LINK_TYPE_NB ENUM_LINK_TYPE_NB
-typedef phLibNfc_eConfigLinkType phDal4Nfc_eConfigLinkType;
 
 typedef phLibNfc_sConfig_t phDal4Nfc_sConfig_t;
 typedef phLibNfc_sConfig_t *pphDal4Nfc_sConfig_t;
