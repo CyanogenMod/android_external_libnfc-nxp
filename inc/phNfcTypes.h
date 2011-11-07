@@ -222,28 +222,6 @@ typedef struct phNfc_sData_t
     uint32_t            length;
 } phNfc_sData_t;
 
-
-/**
- *\brief Possible Hardware Configuration exposed to upper layer.
- * Typically this should be port name (Ex:"COM1","COM2") to which PN544 is connected.
- */
-typedef enum
-{
-   ENUM_LINK_TYPE_COM1,
-   ENUM_LINK_TYPE_COM2,
-   ENUM_LINK_TYPE_COM3,
-   ENUM_LINK_TYPE_COM4,
-   ENUM_LINK_TYPE_COM5,
-   ENUM_LINK_TYPE_COM6,
-   ENUM_LINK_TYPE_COM7,
-   ENUM_LINK_TYPE_COM8,
-   ENUM_LINK_TYPE_I2C,
-   ENUM_LINK_TYPE_USB,
-   ENUM_LINK_TYPE_TCP,
-
-   ENUM_LINK_TYPE_NB,
-} phLibNfc_eConfigLinkType;
-
 /**
  * \brief Possible Hardware Configuration exposed to upper layer.
  * Typically this should be at least the communication link (Ex:"COM1","COM2")
@@ -251,8 +229,8 @@ typedef enum
  */   
 typedef struct phLibNfc_sConfig_t
 {
-   /** Hardware communication link to the controller */
-   phLibNfc_eConfigLinkType  nLinkType;
+   /** Device node of the controller */
+   const char*               deviceNode;
    /** The client ID (thread ID or message queue ID) */
    unsigned int              nClientId;
 } phLibNfc_sConfig_t, *pphLibNfc_sConfig_t;

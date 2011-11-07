@@ -28,7 +28,7 @@
 
 #define LOG_TAG "NFC_uart"
 #include <cutils/log.h>
-
+#include <hardware/nfc.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -159,7 +159,6 @@ PURPOSE:  Closes the link
 
 NFCSTATUS phDal4Nfc_uart_open_and_configure(pphDal4Nfc_sConfig_t pConfig, void ** pLinkHandle)
 {
-   char *       pComPort;
    int          nComStatus;
    NFCSTATUS    nfcret = NFCSTATUS_SUCCESS;
    int          ret;
@@ -168,41 +167,8 @@ NFCSTATUS phDal4Nfc_uart_open_and_configure(pphDal4Nfc_sConfig_t pConfig, void *
 
    srand(time(NULL));
 
-   switch(pConfig->nLinkType)
-   {
-     case ENUM_DAL_LINK_TYPE_COM1:
-      pComPort = "/dev/ttyO0";
-      break;
-     case ENUM_DAL_LINK_TYPE_COM2:
-      pComPort = "/dev/ttyO1";
-      break;
-     case ENUM_DAL_LINK_TYPE_COM3:
-      pComPort = "/dev/ttyO2";
-      break;
-     case ENUM_DAL_LINK_TYPE_COM4:
-      pComPort = "/dev/ttyO3";
-      break;
-     case ENUM_DAL_LINK_TYPE_COM5:
-      pComPort = "/dev/ttyO4";
-      break;
-     case ENUM_DAL_LINK_TYPE_COM6:
-      pComPort = "/dev/ttyO5";
-      break;
-     case ENUM_DAL_LINK_TYPE_COM7:
-      pComPort = "/dev/ttyO6";
-      break;
-     case ENUM_DAL_LINK_TYPE_COM8:
-      pComPort = "/dev/ttyO7";
-      break;
-     case ENUM_DAL_LINK_TYPE_USB:
-      pComPort = "/dev/ttyUSB0";
-      break;
-     default:
-      return NFCSTATUS_INVALID_PARAMETER;
-   }
-
    /* open communication port handle */
-   gComPortContext.nHandle = open(pComPort, O_RDWR | O_NOCTTY);
+   gComPortContext.nHandle = open(pConfig->deviceNode, O_RDWR | O_NOCTTY);
    if (gComPortContext.nHandle < 0)
    {
       *pLinkHandle = NULL;
