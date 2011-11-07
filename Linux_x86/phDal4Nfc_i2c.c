@@ -24,7 +24,7 @@
 
 #define LOG_TAG "NFC_i2c"
 #include <cutils/log.h>
-
+#include <hardware/nfc.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -144,24 +144,12 @@ PURPOSE:  Closes the link
 
 NFCSTATUS phDal4Nfc_i2c_open_and_configure(pphDal4Nfc_sConfig_t pConfig, void ** pLinkHandle)
 {
-   char *       pComPort;
-
    DAL_ASSERT_STR(gI2cPortContext.nOpened==0, "Trying to open but already done!");
 
-   switch(pConfig->nLinkType)
-   {
-       case ENUM_DAL_LINK_TYPE_I2C:
-          pComPort = "/dev/pn544";
-          break;
-       default:
-          DAL_DEBUG("Open failed: unknown type %d\n", pConfig->nLinkType);
-          return NFCSTATUS_INVALID_PARAMETER;
-   }
-
-   DAL_DEBUG("Opening port=%s\n", pComPort);
+   DAL_DEBUG("Opening port=%s\n", pConfig->deviceNode);
 
    /* open port */
-   gI2cPortContext.nHandle = open(pComPort, O_RDWR | O_NOCTTY);
+   gI2cPortContext.nHandle = open(pConfig->deviceNode, O_RDWR | O_NOCTTY);
    if (gI2cPortContext.nHandle < 0)
    {
        DAL_DEBUG("Open failed: open() returned %d\n", gI2cPortContext.nHandle);

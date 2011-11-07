@@ -129,7 +129,7 @@ LOCAL_CFLAGS += -I$(LOCAL_PATH)/src
 
 LOCAL_MODULE:= libnfc
 LOCAL_MODULE_TAGS := optional
-LOCAL_SHARED_LIBRARIES := libcutils libnfc_ndef libdl
+LOCAL_SHARED_LIBRARIES := libcutils libnfc_ndef libdl libhardware
 
 include $(BUILD_SHARED_LIBRARY)
 

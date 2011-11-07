@@ -48,11 +48,9 @@
 #include <phDal4Nfc_i2c.h>
 #include <phDal4Nfc_link.h>
 #include <phDal4Nfc_messageQueueLib.h>
+#include <hardware/hardware.h>
+#include <hardware/nfc.h>
 
-/*-----------------------------------------------------------------------------------
-                                  MISC DEFINITIONS
-------------------------------------------------------------------------------------*/
-#define DEFAULT_LINK_TYPE             ENUM_DAL_LINK_TYPE_COM1
 
 /*-----------------------------------------------------------------------------------
                                        TYPES
@@ -269,7 +267,7 @@ NFCSTATUS phDal4Nfc_Init(void *pContext, void *pHwRef )
         else
         {
             static phDal4Nfc_sConfig_t hw_config;
-            hw_config.nLinkType = DEFAULT_LINK_TYPE;
+            hw_config.deviceNode = NULL;
             result = phDal4Nfc_Config(&hw_config, pHwRef );
         }
     }
@@ -351,6 +349,9 @@ NFCSTATUS phDal4Nfc_ConfigRelease(void *pHwRef)
       /* Close the link */
       gLinkFunc.close();
 
+      if (gDalContext.pDev != NULL) {
+          nfc_pn544_close(gDalContext.pDev);
+      }
       /* Reset the Read Writer context to NULL */
       memset((void *)&gReadWriteContext,0,sizeof(gReadWriteContext));
       /* Reset the DAL context values to NULL */
@@ -533,22 +534,40 @@ PURPOSE: Configure the serial port.
 NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
 {
    NFCSTATUS                       retstatus = NFCSTATUS_SUCCESS;
+   const hw_module_t* hw_module;
+   nfc_pn544_device_t* pn544_dev;
+   uint8_t num_eeprom_settings;
+   uint8_t* eeprom_settings;
+   int ret;
+
+   /* Retrieve the hw module from the Android NFC HAL */
+   ret = hw_get_module(NFC_HARDWARE_MODULE_ID, &hw_module);
+   if (ret) {
+       LOGE("hw_get_module() failed");
+       return NFCSTATUS_FAILED;
+   }
+   ret = nfc_pn544_open(hw_module, &pn544_dev);
+   if (ret) {
+       LOGE("Could not open pn544 hw_module");
+       return NFCSTATUS_FAILED;
+   }
+   config->deviceNode = pn544_dev->device_node;
+   if (config->deviceNode == NULL) {
+       LOGE("deviceNode NULL");
+       return NFCSTATUS_FAILED;
+   }
 
    DAL_PRINT("phDal4Nfc_Config");
 
-   if ((config == NULL) || (phwref == NULL) || (config->nClientId == -1))
+   if ((config == NULL) || (phwref == NULL))
       return NFCSTATUS_INVALID_PARAMETER;
 
    /* Register the link callbacks */
    memset(&gLinkFunc, 0, sizeof(phDal4Nfc_link_cbk_interface_t));
-   switch(config->nLinkType)
+   switch(pn544_dev->linktype)
    {
-      case ENUM_DAL_LINK_TYPE_COM1:
-      case ENUM_DAL_LINK_TYPE_COM2:
-      case ENUM_DAL_LINK_TYPE_COM3:
-      case ENUM_DAL_LINK_TYPE_COM4:
-      case ENUM_DAL_LINK_TYPE_COM5:
-      case ENUM_DAL_LINK_TYPE_USB:
+      case PN544_LINK_TYPE_UART:
+      case PN544_LINK_TYPE_USB:
       {
 	 DAL_PRINT("UART link Config");
          /* Uart link interface */
@@ -564,7 +583,7 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
       }
       break;
 
-      case ENUM_DAL_LINK_TYPE_I2C:
+      case PN544_LINK_TYPE_I2C:
       {
 	 DAL_PRINT("I2C link Config");
          /* i2c link interface */
@@ -608,6 +627,9 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
 #else
    nDeferedCallMessageQueueId = config->nClientId;
 #endif
+
+   gDalContext.pDev = pn544_dev;
+
    /* Start Read and Write Threads */
    if(NFCSTATUS_SUCCESS != phDal4Nfc_StartThreads())
    {
@@ -615,7 +637,6 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
    }
 
    gDalContext.hw_valid = TRUE;
-
    phDal4Nfc_Reset(1);
    phDal4Nfc_Reset(0);
    phDal4Nfc_Reset(1);
@@ -696,6 +717,13 @@ int phDal4Nfc_ReaderThread(void * pArg)
     phOsalNfc_Message_t      OsalMsg ;
     int i;
     int i2c_error_count;
+    int i2c_workaround;
+    if (gDalContext.pDev != NULL) {
+        i2c_workaround = gDalContext.pDev->enable_i2c_workaround;
+    } else {
+        LOGE("gDalContext.pDev is not set");
+        return NFCSTATUS_FAILED;
+    }
 
     pthread_setname_np(pthread_self(), "reader");
 
@@ -730,12 +758,12 @@ retry:
 	/* Wait for IRQ !!!  */
     gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
 
-    /* TODO: Remove this hack
-     * Reading the value 0x57 indicates a HW I2C error at I2C address 0x57
+    /* Reading the value 0x57 indicates a HW I2C error at I2C address 0x57
      * (pn544). There should not be false positives because a read of length 1
      * must be a HCI length read, and a length of 0x57 is impossible (max is 33).
      */
-    if(gReadWriteContext.nNbOfBytesToRead == 1 && gReadWriteContext.pReadBuffer[0] == 0x57)
+    if(i2c_workaround && gReadWriteContext.nNbOfBytesToRead == 1 &&
+            gReadWriteContext.pReadBuffer[0] == 0x57)
     {
         i2c_error_count++;
         DAL_DEBUG("RX Thread Read 0x57 %d times\n", i2c_error_count);
