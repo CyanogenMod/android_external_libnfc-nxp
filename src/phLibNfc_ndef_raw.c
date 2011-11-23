@@ -314,7 +314,8 @@ void phLibNfc_Ndef_Read_Cb(void* Context,NFCSTATUS status)
                 ps_rem_dev_info = (phHal_sRemoteDevInformation_t *)
                                     gpphLibContext->Connected_handle;
                 if ((phHal_eMifare_PICC == ps_rem_dev_info->RemDevType) && 
-                    (0x08 == (ps_rem_dev_info->RemoteDevInfo.Iso14443A_Info.Sak & 0x08)))
+                    (0x08 == (ps_rem_dev_info->RemoteDevInfo.Iso14443A_Info.Sak & 0x08)) ||
+                    (0x01 == ps_rem_dev_info->RemoteDevInfo.Iso14443A_Info.Sak))
                 {
 
                     /* card type is mifare 1k/4k, then reconnect */

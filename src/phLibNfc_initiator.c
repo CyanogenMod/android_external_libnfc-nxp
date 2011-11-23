@@ -163,7 +163,8 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 					}
                 
 					if((TRUE == gpphLibContext->RegNtfType.MifareStd)&& 
-						(((sak_byte & 0x18)==0x08)||((sak_byte & 0x18)==0x18)))
+						(((sak_byte & 0x18)==0x08)||((sak_byte & 0x18)==0x18) ||
+                                                (sak_byte == 0x01)))
 					{
 						/*Copy the tag related info*/
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=

@@ -468,6 +468,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
                     /*Check for Mifare Supported*/
                     switch( Sak )
                     {
+                      case 0x01: // 1K Classic
                       case 0x09: // Mini
                       case 0x08: // 1K
                       case 0x18: // 4K

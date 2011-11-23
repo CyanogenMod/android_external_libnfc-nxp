@@ -778,7 +778,8 @@ NFCSTATUS phFriNfc_NdefMap_ChkNdef( phFriNfc_NdefMap_t     *NdefMap)
 #endif  /* PH_FRINFC_MAP_MIFAREUL_DISABLED*/
                 }
                 else if ((0x08 == (sak & 0x18)) ||
-                        (0x18 == (sak & 0x18)))
+                        (0x18 == (sak & 0x18)) ||
+                        (0x01 == sak))
                 {
                     /*  The SAK/Sel_Res says the card is of the type
                     Mifare Standard */

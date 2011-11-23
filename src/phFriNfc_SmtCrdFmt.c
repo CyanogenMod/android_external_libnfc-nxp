@@ -306,7 +306,8 @@ NFCSTATUS phFriNfc_NdefSmtCrd_Format( phFriNfc_sNdefSmtCrdFmt_t *NdefSmtCrdFmt, 
 #endif /* #ifndef PH_FRINFC_FMT_MIFAREUL_DISABLED */
                 }
                 else if((0x08 == (sak & 0x18)) || 
-                        (0x18 == (sak & 0x18)))    
+                        (0x18 == (sak & 0x18)) ||
+                        (0x01 == sak))
                 {
 #ifndef PH_FRINFC_FMT_MIFARESTD_DISABLED
                     NdefSmtCrdFmt->CardType = (uint8_t)
