@@ -76,7 +76,7 @@ extern char phOsalNfc_DbgTraceBuffer[];
 #define MAX_TRACE_BUFFER    150
 /* #define HCI_PRINT( str )  phOsalNfc_DbgTrace(str) */
 #define HCI_PRINT( str )  phOsalNfc_DbgString(str)
-#define HCI_DEBUG(...) LOGD(__VA_ARGS__)
+#define HCI_DEBUG(...) ALOGD(__VA_ARGS__)
 
 
 

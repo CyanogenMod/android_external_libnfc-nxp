@@ -81,7 +81,7 @@ void phOsalNfc_DbgString(const char *pString)
 #ifndef ANDROID
       printf(pString);
 #else
-      LOGD("%s", pString);
+      ALOGD("%s", pString);
 #endif
 #endif
 }
@@ -111,15 +111,15 @@ void phOsalNfc_DbgTrace(uint8_t data[], uint32_t size)
    {
       if((i % 10) == 0)
       {
-         LOGD("%s", phOsalNfc_DbgTraceBuffer);
+         ALOGD("%s", phOsalNfc_DbgTraceBuffer);
          phOsalNfc_DbgTraceBuffer[0] = '\0';
       }
 
       snprintf(buf, 10, "%02X ", data[i]);
       strncat(phOsalNfc_DbgTraceBuffer, buf, 10);
    }
-   LOGD("%s", phOsalNfc_DbgTraceBuffer);
-   LOGD("Block size is: %d", size);
+   ALOGD("%s", phOsalNfc_DbgTraceBuffer);
+   ALOGD("Block size is: %d", size);
 #endif
 #endif
 }
@@ -140,7 +140,7 @@ void phOsalNfc_DbgTrace(uint8_t data[], uint32_t size)
  */
 void phOsalNfc_RaiseException(phOsalNfc_ExceptionType_t eExceptionType, uint16_t reason)
 {
-    LOGD("phOsalNfc_RaiseException() called");
+    ALOGD("phOsalNfc_RaiseException() called");
 
     if(eExceptionType == phOsalNfc_e_UnrecovFirmwareErr)
     {
@@ -208,5 +208,5 @@ void phOsalNfc_PrintData(const char *pString, uint32_t length, uint8_t *pBuffer,
         }
     }
 
-    LOGD("> %s:%s\t%s", pString, print_buffer, llc);
+    ALOGD("> %s:%s\t%s", pString, print_buffer, llc);
 }
