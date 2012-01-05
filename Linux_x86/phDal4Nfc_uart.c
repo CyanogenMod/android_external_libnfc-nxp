@@ -253,11 +253,11 @@ static int apply_errors(uint8_t *buffer, int length) {
                 // 50% chance of dropping byte
                 length--;
                 memcpy(&buffer[i], &buffer[i+1], length-i);
-                LOGW("dropped byte %d", i);
+                ALOGW("dropped byte %d", i);
             } else {
                 // 50% chance of corruption
                 buffer[i] = (uint8_t)rand();
-                LOGW("corrupted byte %d", i);
+                ALOGW("corrupted byte %d", i);
             }
         }
     }
@@ -344,7 +344,7 @@ int phDal4Nfc_uart_read(uint8_t * pBuffer, int nNbBytesToRead)
            }
            return -1;
        } else if (ret == 0) {
-           LOGW("timeout!");
+           ALOGW("timeout!");
            break;  // return partial response
        }
        ret = read(gComPortContext.nHandle, pBuffer + numRead, nNbBytesToRead - numRead);

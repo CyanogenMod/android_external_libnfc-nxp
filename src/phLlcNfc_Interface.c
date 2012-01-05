@@ -786,7 +786,7 @@ phLlcNfc_RdResp_Cb(
                 else if (ps_frame_info->recv_error_count < 
                     PH_LLCNFC_MAX_REJ_RETRY_COUNT)
                 {
-                    LOGW("LLC bad crc");
+                    ALOGW("LLC bad crc");
                     PH_LLCNFC_PRINT("CRC ERROR RECVD \n");
                     PH_LLCNFC_DEBUG("RECV ERROR COUNT : 0x%02X\n", ps_frame_info->recv_error_count);
 
@@ -883,7 +883,7 @@ phLlcNfc_RdResp_Cb(
                     value is greater than (0x21 - 1), then pend a read to 
                     get 1 byte again
                 */
-                LOGW("bad LLC length byte %x\n", *(pCompInfo->buffer));
+                ALOGW("bad LLC length byte %x\n", *(pCompInfo->buffer));
                 ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
                 libnfc_llc_error_count++;
@@ -895,7 +895,7 @@ phLlcNfc_RdResp_Cb(
             }
             else
             {
-                LOGW("unknown LLC error1");
+                ALOGW("unknown LLC error1");
                 ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
                 libnfc_llc_error_count++;
@@ -919,7 +919,7 @@ phLlcNfc_RdResp_Cb(
             }
         } else if (NFCSTATUS_READ_FAILED == pCompInfo->status) {
             // partial read - try reading the length byte again
-            LOGW("LLC length mis-match\n");
+            ALOGW("LLC length mis-match\n");
             ps_frame_info->recv_error_count = (uint8_t)
                                 (ps_frame_info->recv_error_count + 1);
             libnfc_llc_error_count++;
@@ -931,7 +931,7 @@ phLlcNfc_RdResp_Cb(
         }
         else
         {
-            LOGW("unknown LLC error2");
+            ALOGW("unknown LLC error2");
             ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
             libnfc_llc_error_count++;

@@ -1370,7 +1370,7 @@ phHciNfc_Recv_DevMgmt_Event(
             case NXP_EVT_INFO_MEM_VIOLATION:
             {
                 event_info.eventType = NFC_INFO_MEM_VIOLATION;
-                LOGW("Your NFC controller is kinda hosed, take it to npelly@ to fix");
+                ALOGW("Your NFC controller is kinda hosed, take it to npelly@ to fix");
                 break;
             }
             case NXP_EVT_INFO_TEMP_OVERHEAT:
