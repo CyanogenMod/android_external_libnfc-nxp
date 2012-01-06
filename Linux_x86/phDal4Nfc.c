@@ -543,17 +543,17 @@ NFCSTATUS phDal4Nfc_Config(pphDal4Nfc_sConfig_t config,void **phwref)
    /* Retrieve the hw module from the Android NFC HAL */
    ret = hw_get_module(NFC_HARDWARE_MODULE_ID, &hw_module);
    if (ret) {
-       LOGE("hw_get_module() failed");
+       ALOGE("hw_get_module() failed");
        return NFCSTATUS_FAILED;
    }
    ret = nfc_pn544_open(hw_module, &pn544_dev);
    if (ret) {
-       LOGE("Could not open pn544 hw_module");
+       ALOGE("Could not open pn544 hw_module");
        return NFCSTATUS_FAILED;
    }
    config->deviceNode = pn544_dev->device_node;
    if (config->deviceNode == NULL) {
-       LOGE("deviceNode NULL");
+       ALOGE("deviceNode NULL");
        return NFCSTATUS_FAILED;
    }
 
@@ -721,7 +721,7 @@ int phDal4Nfc_ReaderThread(void * pArg)
     if (gDalContext.pDev != NULL) {
         i2c_workaround = gDalContext.pDev->enable_i2c_workaround;
     } else {
-        LOGE("gDalContext.pDev is not set");
+        ALOGE("gDalContext.pDev is not set");
         return NFCSTATUS_FAILED;
     }
 

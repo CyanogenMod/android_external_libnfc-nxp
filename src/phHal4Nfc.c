@@ -316,20 +316,20 @@ int dlopen_firmware() {
 
     void *handle = dlopen(FW_PATH, RTLD_NOW);
     if (handle == NULL) {
-        LOGE("Could not open %s", FW_PATH);
+        ALOGE("Could not open %s", FW_PATH);
         return -1;
     }
 
     p = dlsym(handle, "nxp_nfc_full_version");
     if (p == NULL) {
-        LOGE("Could not link nxp_nfc_full_version");
+        ALOGE("Could not link nxp_nfc_full_version");
         return -1;
     }
     nxp_nfc_full_version = (unsigned char *)p;
 
     p = dlsym(handle, "nxp_nfc_fw");
     if (p == NULL) {
-        LOGE("Could not link nxp_nfc_fw");
+        ALOGE("Could not link nxp_nfc_fw");
         return -1;
     }
     nxp_nfc_fw = (unsigned char *)p;

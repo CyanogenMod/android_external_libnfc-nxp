@@ -423,19 +423,19 @@ int phDal4Nfc_uart_reset(long level)
     DAL_DEBUG("phDal4Nfc_uart_reset, VEN level = %ld", level);
 
     if (snprintf(buffer, sizeof(buffer), "%u", (unsigned int)level) != 1) {
-        LOGE("Bad nfc power level (%u)", (unsigned int)level);
+        ALOGE("Bad nfc power level (%u)", (unsigned int)level);
         goto out;
     }
 
     fd = open(NFC_POWER_PATH, O_WRONLY);
     if (fd < 0) {
-        LOGE("open(%s) for write failed: %s (%d)", NFC_POWER_PATH,
+        ALOGE("open(%s) for write failed: %s (%d)", NFC_POWER_PATH,
                 strerror(errno), errno);
         goto out;
     }
     sz = write(fd, &buffer, sizeof(buffer) - 1);
     if (sz < 0) {
-        LOGE("write(%s) failed: %s (%d)", NFC_POWER_PATH, strerror(errno),
+        ALOGE("write(%s) failed: %s (%d)", NFC_POWER_PATH, strerror(errno),
              errno);
         goto out;
     }

@@ -807,7 +807,7 @@ phLlcNfc_RdResp_Cb(
                 }
                 else
                 {
-                    LOGE("max LLC retries exceeded, stack restart");
+                    ALOGE("max LLC retries exceeded, stack restart");
                     result = phLlcNfc_Interface_Read (ps_llc_ctxt, 
                                 PH_LLCNFC_READWAIT_OFF, 
                                 (uint8_t *)&(ps_recv_pkt->s_llcbuf.llc_length_byte), 
@@ -832,7 +832,7 @@ phLlcNfc_RdResp_Cb(
             else if (ps_frame_info->recv_error_count >= 
                     PH_LLCNFC_MAX_REJ_RETRY_COUNT)
             {
-                LOGE("max LLC retries exceeded, stack restart");
+                ALOGE("max LLC retries exceeded, stack restart");
                 result = phLlcNfc_Interface_Read (ps_llc_ctxt, 
                         PH_LLCNFC_READWAIT_OFF, 
                         (uint8_t *)&(ps_recv_pkt->s_llcbuf.llc_length_byte), 
@@ -855,7 +855,7 @@ phLlcNfc_RdResp_Cb(
                 (PH_LLCNFC_MAX_BUFLEN_RECV_SEND > pCompInfo->length) && 
                 (pCompInfo->length != ps_recv_pkt->s_llcbuf.llc_length_byte))
             {
-                LOGE("bad LLC length1 %d", pCompInfo->length);
+                ALOGE("bad LLC length1 %d", pCompInfo->length);
                 ps_frame_info->recv_error_count = (uint8_t)
                                     (ps_frame_info->recv_error_count + 1);
                 libnfc_llc_error_count++;
