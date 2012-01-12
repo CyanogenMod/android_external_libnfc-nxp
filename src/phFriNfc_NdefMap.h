@@ -488,6 +488,15 @@ typedef struct phFriNfc_MifareStdCont
     /** Flag is to know that this is first time the write has been called. This
     is required when the card formatted with the 3rd configuration */
     uint8_t             FirstWriteFlag;
+    /** Indicates the sector trailor id  for which the convert
+        to read only is currently in progress*/
+    uint8_t             ReadOnlySectorIndex;
+    /** Indicates the total number of sectors on the card  */
+    uint8_t             TotalNoSectors;
+    /** Indicates the block number of the sector trailor on the card  */
+    uint8_t             SectorTrailerBlockNo;
+    /** Secret key B to given by the application */
+    uint8_t             UserScrtKeyB[6];
 }phFriNfc_MifareStdCont_t;
 /*@}*/
 #endif  /* PH_FRINFC_MAP_MIFARESTD_DISABLED */

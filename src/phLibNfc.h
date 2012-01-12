@@ -1991,6 +1991,8 @@ NFCSTATUS phLibNfc_RemoteDev_FormatNdef(phLibNfc_Handle         hRemoteDevice,
 *\param[in] hRemoteDevice           handle of the remote device.This handle to be
 *                                   same as as handle obtained for specific remote device
 *                                   during device discovery.
+*\param[in] pScrtKey                Key to be used for making Mifare read only. This parameter is
+*                                   unused in case of readonly for other cards.
 *\param[in] pNdefReadOnly_RspCb     Response callback defined by the caller.
 *\param[in] pContext                Client context which will be included in
 *                                   callback when the request is completed.
@@ -2037,9 +2039,10 @@ NFCSTATUS phLibNfc_RemoteDev_FormatNdef(phLibNfc_Handle         hRemoteDevice,
 *                  \param NFCSTATUS_FAILED              Request failed.
 */
 
-NFCSTATUS phLibNfc_ConvertToReadOnlyNdef (phLibNfc_Handle       hRemoteDevice,
-                                        pphLibNfc_RspCb_t       pNdefReadOnly_RspCb,
-                                        void*                   pContext
+NFCSTATUS phLibNfc_ConvertToReadOnlyNdef (phLibNfc_Handle         hRemoteDevice,
+                                          phNfc_sData_t*          pScrtKey,
+                                          pphLibNfc_RspCb_t       pNdefReadOnly_RspCb,
+                                          void*                   pContext
                                         );
 #endif /* #ifdef LIBNFC_READONLY_NDEF */
 

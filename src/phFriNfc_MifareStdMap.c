@@ -38,6 +38,8 @@
 
 #include <phFriNfc_MapTools.h>
 
+#include <phFriNfc_MifStdFormat.h>
+
 /*! \ingroup grp_file_attributes
  *  \name NDEF Mapping
  *
@@ -409,6 +411,11 @@ static void phFriNfc_MifStd1k_H_BlkChk(phFriNfc_NdefMap_t   *NdefMap,
                                     uint8_t              SectorID,
                                     uint8_t              *callbreak);
 
+static uint8_t phFriNfc_MifStd_H_GetSectorTrailerBlkNo(uint8_t SectorID );
+static NFCSTATUS phFriNfc_MifStd_H_ProSectorTrailorAcsBits(phFriNfc_NdefMap_t *NdefMap);
+static NFCSTATUS phFriNfc_MifStd_H_WrSectorTrailorBlock(phFriNfc_NdefMap_t *NdefMap);
+static NFCSTATUS phFriNfc_MifStd_H_ProWrSectorTrailor(phFriNfc_NdefMap_t *NdefMap);
+
 /*@}*/
 /**
  * \name Mifare Standard Mapping - Constants.        
@@ -534,6 +541,12 @@ NFCSTATUS phFriNfc_MifareStdMap_H_Reset(phFriNfc_NdefMap_t        *NdefMap)
         NdefMap->StdMifareContainer.WrLength = PH_FRINFC_MIFARESTD_VAL1;
 
         NdefMap->StdMifareContainer.ChkNdefCompleteFlag = PH_FRINFC_MIFARESTD_FLAG0;
+
+        NdefMap->StdMifareContainer.ReadOnlySectorIndex = PH_FRINFC_MIFARESTD_FLAG0;
+
+        NdefMap->StdMifareContainer.TotalNoSectors = PH_FRINFC_MIFARESTD_FLAG0;
+
+        NdefMap->StdMifareContainer.SectorTrailerBlockNo = PH_FRINFC_MIFARESTD_FLAG0;
     }
 
     return status;
@@ -894,7 +907,6 @@ void phFriNfc_MifareStdMap_Process( void       *Context,
 
     NdefMap = (phFriNfc_NdefMap_t *)Context;
 
-    
     if((Status & PHNFCSTBLOWER) == (NFCSTATUS_SUCCESS & PHNFCSTBLOWER))
     {
         switch(NdefMap->State)
@@ -1149,6 +1161,18 @@ void phFriNfc_MifareStdMap_Process( void       *Context,
                     NdefMap->StdMifareContainer.FirstReadFlag = PH_FRINFC_MIFARESTD_FLAG0;
                     Status = phFriNfc_MifStd_H_AuthSector(NdefMap);
                 }
+                else if((NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_1K_CARD ||
+                         NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD) &&
+                        (NdefMap->StdMifareContainer.ReadOnlySectorIndex &&
+                         NdefMap->StdMifareContainer.SectorTrailerBlockNo ==  NdefMap->StdMifareContainer.currentBlock))
+                {
+                    NdefMap->StdMifareContainer.ReadOnlySectorIndex =
+                        PH_FRINFC_MIFARESTD_FLAG0;
+                    NdefMap->StdMifareContainer.SectorTrailerBlockNo =
+                        PH_FRINFC_MIFARESTD_FLAG0;
+                    NdefMap->StdMifareContainer.currentBlock = PH_FRINFC_MIFARESTD_FLAG0;
+                        Status = NFCSTATUS_FAILED;
+                }
                 else
                 {
                     Status = ((((NdefMap->Offset == PH_FRINFC_NDEFMAP_SEEK_CUR) && 
@@ -1161,6 +1185,34 @@ void phFriNfc_MifareStdMap_Process( void       *Context,
                 CRFlag = (uint8_t)((Status != NFCSTATUS_PENDING)?
                                     PH_FRINFC_MIFARESTD_FLAG1:
                                     PH_FRINFC_MIFARESTD_FLAG0);
+                break;
+
+            case PH_FRINFC_NDEFMAP_STATE_RD_SEC_ACS_BIT:
+                Status = phFriNfc_MifStd_H_ProSectorTrailorAcsBits(NdefMap);
+                CRFlag = (uint8_t)((Status != NFCSTATUS_PENDING)?
+                                    PH_FRINFC_MIFARESTD_FLAG1:
+                                    PH_FRINFC_MIFARESTD_FLAG0);
+                break;
+
+            case PH_FRINFC_NDEFMAP_STATE_WRITE_SEC:
+                /* The first NDEF sector is already made read only,
+                   set card state to read only and proceed*/
+                if(NdefMap->CardState != PH_NDEFMAP_CARD_STATE_READ_ONLY)
+                {
+                    Status = phFriNfc_MapTool_SetCardState(NdefMap, NdefMap->TLVStruct.BytesRemainLinTLV);
+                    if(Status != NFCSTATUS_SUCCESS)
+                    {
+                        CRFlag = (uint8_t) PH_FRINFC_MIFARESTD_FLAG1;
+                    }
+                }
+
+                if (CRFlag != PH_FRINFC_MIFARESTD_FLAG1)
+                {
+                    Status = phFriNfc_MifStd_H_ProWrSectorTrailor(NdefMap);
+                    CRFlag = (uint8_t)((Status != NFCSTATUS_PENDING)?
+                                       PH_FRINFC_MIFARESTD_FLAG1:
+                                       PH_FRINFC_MIFARESTD_FLAG0);
+                }
                 break;
 
             default:
@@ -1532,7 +1584,24 @@ static NFCSTATUS phFriNfc_MifStd_H_AuthSector(phFriNfc_NdefMap_t *NdefMap)
         NdefMap->SendRecvBuf[5] = PH_FRINFC_NDEFMAP_MIFARESTD_AUTH_MADSECT5; /* 0xA4 */
         NdefMap->SendRecvBuf[6] = PH_FRINFC_NDEFMAP_MIFARESTD_AUTH_MADSECT6; /* 0xA5 */
     }
-    
+
+    if (NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_1K_CARD ||
+        NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD)
+    {
+        if (NdefMap->StdMifareContainer.ReadOnlySectorIndex &&
+            NdefMap->StdMifareContainer.SectorTrailerBlockNo ==  NdefMap->StdMifareContainer.currentBlock)
+        {
+            memcpy (&NdefMap->SendRecvBuf[1], &NdefMap->StdMifareContainer.UserScrtKeyB[0], PH_FRINFC_MIFARESTD_KEY_LEN);
+
+            /* Authenticate with KeyB*/
+#ifndef PH_HAL4_ENABLE
+            NdefMap->Cmd.MfCmd = phHal_eMifareCmdListMifareAuthentB;
+#else
+            NdefMap->Cmd.MfCmd = phHal_eMifareAuthentB;
+#endif
+        }
+    }
+
     NdefMap->SendLength = MIFARE_AUTHENTICATE_CMD_LENGTH;
     *NdefMap->SendRecvLength = NdefMap->TempReceiveLength;
     /* Call the Overlapped HAL Transceive function */ 
@@ -1651,20 +1720,17 @@ static void phFriNfc_MifStd_H_fillAIDarray(phFriNfc_NdefMap_t *NdefMap)
                                     PH_FRINFC_MIFARESTD_NON_NDEF_COMP;
         }
     }
-    else
-    {
-        /* for Mifare 4k there are 40 sectors, till this number all sectors 
-            are made NOT NDEF compliant */
-        if((NdefMap->StdMifareContainer.aidCompleteFlag == PH_FRINFC_MIFARESTD_FLAG1) && 
+    /* for Mifare 4k there are 40 sectors, till this number all sectors
+       are made NOT NDEF compliant */
+    else if((NdefMap->StdMifareContainer.aidCompleteFlag == PH_FRINFC_MIFARESTD_FLAG1) &&
             (NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD))
+    {
+        for(byteindex = NdefMap->StdMifareContainer.SectorIndex;
+            byteindex < PH_FRINFC_MIFARESTD4K_TOTAL_SECTOR;
+            byteindex++)
         {
-            for(byteindex = NdefMap->StdMifareContainer.SectorIndex; 
-                byteindex < PH_FRINFC_MIFARESTD4K_TOTAL_SECTOR;
-                byteindex++)
-            {
-                NdefMap->StdMifareContainer.aid[byteindex] = 
-                                        PH_FRINFC_MIFARESTD_NON_NDEF_COMP;
-            }
+            NdefMap->StdMifareContainer.aid[byteindex] =
+                PH_FRINFC_MIFARESTD_NON_NDEF_COMP;
         }
     }
 }
@@ -1788,6 +1854,12 @@ static NFCSTATUS phFriNfc_MifStd_H_RdAcsBit(phFriNfc_NdefMap_t *NdefMap)
 {
     NFCSTATUS Result = NFCSTATUS_SUCCESS;
     NdefMap->State = PH_FRINFC_NDEFMAP_STATE_RD_ACS_BIT;
+
+    if( NdefMap->StdMifareContainer.ReadOnlySectorIndex &&
+       NdefMap->StdMifareContainer.currentBlock == NdefMap->StdMifareContainer.SectorTrailerBlockNo)
+    {
+        NdefMap->State = PH_FRINFC_NDEFMAP_STATE_RD_SEC_ACS_BIT;
+    }
 
     if(NdefMap->StdMifareContainer.ReadAcsBitFlag == PH_FRINFC_MIFARESTD_FLAG1)
     {
@@ -5970,5 +6042,297 @@ static void phFriNfc_MifStd1k_H_BlkChk(phFriNfc_NdefMap_t   *NdefMap,
 #ifdef UNIT_TEST
 #include <phUnitTestNfc_MifareStd_static.c>
 #endif
+
+/*	Convert the Mifare card to ReadOnly.
+        check preconditions before converting to read only
+	1.shud b rd/write state
+	2.check NDEF  for the card shud b completed
+	3.if alrady read only return */
+NFCSTATUS
+phFriNfc_MifareStdMap_ConvertToReadOnly (
+               phFriNfc_NdefMap_t *NdefMap,
+               const uint8_t *ScrtKeyB)
+{
+    NFCSTATUS result = NFCSTATUS_SUCCESS;
+    uint8_t totalNoSectors = 0 , sectorTrailerBlockNo = 0;
+
+    if ( NdefMap == NULL)
+    {
+        result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_PARAMETER);
+    }
+    else if ( PH_NDEFMAP_CARD_STATE_INVALID == NdefMap->CardState )
+    {
+        result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_STATE);
+    }
+    else if (PH_NDEFMAP_CARD_STATE_INITIALIZED == NdefMap->CardState ||
+             PH_NDEFMAP_CARD_STATE_READ_ONLY == NdefMap->CardState )
+    {
+        result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_NOT_ALLOWED);
+    }
+    else
+    {
+        /* card state is PH_NDEFMAP_CARD_STATE_READ_WRITE now */
+        /* get AID  array and parse */
+        if( PH_FRINFC_NDEFMAP_MIFARE_STD_1K_CARD == NdefMap->CardType )
+        {
+            totalNoSectors  = PH_FRINFC_MIFARESTD1K_TOTAL_SECTOR;
+        }
+        else if ( PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD == NdefMap->CardType )
+        {
+             totalNoSectors  = PH_FRINFC_MIFARESTD4K_TOTAL_SECTOR;
+        }
+
+        /* Store Key B in the context */
+        if(ScrtKeyB == NULL)
+        {
+            memset (NdefMap->StdMifareContainer.UserScrtKeyB, PH_FRINFC_MFSTD_FMT_DEFAULT_KEY,
+                    PH_FRINFC_MIFARESTD_KEY_LEN);
+        }
+        else
+        {
+            memcpy (NdefMap->StdMifareContainer.UserScrtKeyB, ScrtKeyB, PH_FRINFC_MIFARESTD_KEY_LEN);
+        }
+
+        NdefMap->StdMifareContainer.TotalNoSectors = totalNoSectors;
+        if(totalNoSectors == 0)
+        {
+            result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_PARAMETER);
+        }
+        else
+        {
+            NdefMap->TLVStruct.NdefTLVFoundFlag = PH_FRINFC_MIFARESTD_FLAG0;
+            NdefMap->StdMifareContainer.RdBeforeWrFlag = PH_FRINFC_MIFARESTD_FLAG0;
+            NdefMap->StdMifareContainer.WrNdefFlag = PH_FRINFC_MIFARESTD_FLAG0;
+            NdefMap->StdMifareContainer.internalLength = PH_FRINFC_MIFARESTD_VAL0;
+            NdefMap->StdMifareContainer.RdAfterWrFlag = PH_FRINFC_MIFARESTD_FLAG0;
+            NdefMap->StdMifareContainer.AuthDone = PH_FRINFC_MIFARESTD_FLAG0;
+            NdefMap->StdMifareContainer.NFCforumSectFlag = PH_FRINFC_MIFARESTD_FLAG0;
+
+            /* Sector 0 is MAD sector .Start from Sector 1 */
+            for(NdefMap->StdMifareContainer.ReadOnlySectorIndex = PH_FRINFC_MIFARESTD_FLAG1;
+                NdefMap->StdMifareContainer.ReadOnlySectorIndex < totalNoSectors;
+                NdefMap->StdMifareContainer.ReadOnlySectorIndex++)
+            {
+                /* skip MAD sectors */
+                if( PH_FRINFC_MIFARESTD_SECTOR_NO16 == NdefMap->StdMifareContainer.ReadOnlySectorIndex  )
+                {
+                    continue;
+                }
+
+                /* if not NDEF compliant skip  */
+                if( PH_FRINFC_MIFARESTD_NON_NDEF_COMP ==
+                    NdefMap->StdMifareContainer.aid[NdefMap->StdMifareContainer.ReadOnlySectorIndex])
+                {
+                    continue;
+                }
+
+                if (PH_FRINFC_MIFARESTD_NDEF_COMP ==
+                     NdefMap->StdMifareContainer.aid[NdefMap->StdMifareContainer.ReadOnlySectorIndex])
+                {
+                    /*get the sector trailer block number */
+                    sectorTrailerBlockNo =
+                        phFriNfc_MifStd_H_GetSectorTrailerBlkNo(NdefMap->StdMifareContainer.ReadOnlySectorIndex);
+                    NdefMap->StdMifareContainer.currentBlock = sectorTrailerBlockNo;
+                    NdefMap->StdMifareContainer.SectorTrailerBlockNo = sectorTrailerBlockNo;
+
+                    /* Proceed to authenticate the sector with Key B
+                       and  modify the sector trailor bits to make it read only*/
+                    result = phFriNfc_MifStd_H_AuthSector(NdefMap);
+
+                    if (result == NFCSTATUS_PENDING )
+                    {
+                        break;
+                    }
+                }
+            } /* end for */
+
+            /* There are no NDEF sectors in this card , return */
+            if(NdefMap->StdMifareContainer.ReadOnlySectorIndex == totalNoSectors &&
+               NFCSTATUS_PENDING!= result )
+            {
+                result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_NO_NDEF_SUPPORT);
+            }
+        } /* end else */
+    }
+
+    return result;
+}
+
+/* Get the block number of the sector trailor for the given sector trailer Id */
+static uint8_t phFriNfc_MifStd_H_GetSectorTrailerBlkNo(uint8_t SectorID)
+{
+    uint8_t sectorTrailerblockNumber = 0;
+
+    /* every last block of a sector needs to be skipped */
+    if( SectorID < PH_FRINFC_MIFARESTD_SECTOR_NO32 )
+    {
+        sectorTrailerblockNumber = ( SectorID * PH_FRINFC_MIFARESTD_BLK4 ) + 3;
+    }
+    else
+    {
+        sectorTrailerblockNumber = ((PH_FRINFC_MIFARESTD_SECTOR_NO32 * PH_FRINFC_MIFARESTD_BLK4) +
+            ((SectorID - PH_FRINFC_MIFARESTD_SECTOR_NO32) * PH_FRINFC_MIFARESTD_SECTOR_BLOCKS)) + 15;
+    }
+
+    return sectorTrailerblockNumber;
+}
+
+/* Called during ConvertToReadonly process to Authenticate NDEF compliant Sector */
+static NFCSTATUS phFriNfc_MifStd_H_ProSectorTrailorAcsBits(phFriNfc_NdefMap_t *NdefMap)
+{
+    NFCSTATUS   Result = NFCSTATUS_SUCCESS;
+
+    if(*NdefMap->SendRecvLength == PH_FRINFC_MIFARESTD_BYTES_READ)
+    {
+        if(NdefMap->StdMifareContainer.ReadAcsBitFlag ==
+            PH_FRINFC_MIFARESTD_FLAG1)
+        {
+            /* check for the correct access bits */
+            Result = phFriNfc_MifStd_H_ChkAcsBit(NdefMap);
+            if(Result  == NFCSTATUS_SUCCESS)
+            {
+                if(NdefMap->CardState == PH_NDEFMAP_CARD_STATE_READ_ONLY)
+                {
+                    /* No permission to read */
+                    Result = PHNFCSTVAL( CID_FRI_NFC_NDEF_MAP, NFCSTATUS_NOT_ALLOWED);
+                }
+                else
+                {
+                    /* tranceive to write the data into SendRecvBuff */
+                    Result = phFriNfc_MifStd_H_WrSectorTrailorBlock(NdefMap);
+                }
+            }
+        }
+    }
+    else
+    {
+        Result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                     NFCSTATUS_INVALID_PARAMETER);
+    }
+
+    return Result;
+}
+
+/* Make current NDEF compliant Sector ReadOnly
+   modify the sector trailor bits and write it to the card*/
+static NFCSTATUS phFriNfc_MifStd_H_WrSectorTrailorBlock(phFriNfc_NdefMap_t *NdefMap)
+{
+    NFCSTATUS status = NFCSTATUS_PENDING;
+
+    /* set the data for additional data exchange*/
+    NdefMap->psDepAdditionalInfo.DepFlags.MetaChaining = 0;
+    NdefMap->psDepAdditionalInfo.DepFlags.NADPresent = 0;
+    NdefMap->psDepAdditionalInfo.NAD = 0;
+    NdefMap->MapCompletionInfo.CompletionRoutine = phFriNfc_MifareStdMap_Process;
+    NdefMap->MapCompletionInfo.Context = NdefMap;
+    NdefMap->PrevOperation = PH_FRINFC_NDEFMAP_WRITE_OPE;
+
+    /* next state (update sector index) */
+    NdefMap->State = PH_FRINFC_NDEFMAP_STATE_WRITE_SEC;
+
+    /* Buffer Check */
+    if(NdefMap->SendRecvBuf != NULL)
+    {
+        NdefMap->SendRecvBuf[10] = 0x00;
+        NdefMap->SendRecvBuf[10] = NdefMap->SendRecvBuf[9] | PH_FRINFC_MIFARESTD_MASK_GPB_WR; /* WR bits 11*/
+
+        /*The NdefMap->SendRecvBuf already has the sector trailor.
+        modify the bits to make Read Only */
+        NdefMap->SendRecvBuf[1] = PH_FRINFC_NDEFMAP_MIFARESTD_AUTH_NDEFSECT1; /* 0xD3 */
+        NdefMap->SendRecvBuf[2] = PH_FRINFC_NDEFMAP_MIFARESTD_AUTH_NDEFSECT2; /* 0xF7 */
+        NdefMap->SendRecvBuf[3] = PH_FRINFC_NDEFMAP_MIFARESTD_AUTH_NDEFSECT1; /* 0xD3 */
+        NdefMap->SendRecvBuf[4] = PH_FRINFC_NDEFMAP_MIFARESTD_AUTH_NDEFSECT2; /* 0xF7 */
+        NdefMap->SendRecvBuf[5] = PH_FRINFC_NDEFMAP_MIFARESTD_AUTH_NDEFSECT1; /* 0xD3 */
+        NdefMap->SendRecvBuf[6] = PH_FRINFC_NDEFMAP_MIFARESTD_AUTH_NDEFSECT2; /* 0xF7 */
+
+        NdefMap->SendRecvBuf[7] = PH_FRINFC_MIFARESTD_NFCSECT_RDACS_BYTE6;/* 0x07 */
+        NdefMap->SendRecvBuf[8] = PH_FRINFC_MIFARESTD_NFCSECT_RDACS_BYTE7;/* 0x8F */
+        NdefMap->SendRecvBuf[9] = PH_FRINFC_MIFARESTD_NFCSECT_RDACS_BYTE8;/* 0x0F */
+
+        NdefMap->SendRecvBuf[11] = NdefMap->StdMifareContainer.UserScrtKeyB[0];
+        NdefMap->SendRecvBuf[12] = NdefMap->StdMifareContainer.UserScrtKeyB[1];
+        NdefMap->SendRecvBuf[13] = NdefMap->StdMifareContainer.UserScrtKeyB[2];
+        NdefMap->SendRecvBuf[14] = NdefMap->StdMifareContainer.UserScrtKeyB[3];
+        NdefMap->SendRecvBuf[15] = NdefMap->StdMifareContainer.UserScrtKeyB[4];
+        NdefMap->SendRecvBuf[16] = NdefMap->StdMifareContainer.UserScrtKeyB[5];
+
+        /* Write to Ndef Sector Block */
+        NdefMap->SendRecvBuf[PH_FRINFC_MIFARESTD_VAL0] = NdefMap->StdMifareContainer.currentBlock;
+
+        /* Copy Ndef Sector Block into buffer */
+        (void)memcpy(NdefMap->StdMifareContainer.Buffer,
+                    &(NdefMap->SendRecvBuf[PH_FRINFC_MIFARESTD_VAL1]),
+                    PH_FRINFC_MIFARESTD_BLOCK_BYTES);
+
+        /* Write from here */
+        NdefMap->SendLength = MIFARE_MAX_SEND_BUF_TO_WRITE;
+#ifndef PH_HAL4_ENABLE
+        NdefMap->Cmd.MfCmd = phHal_eMifareCmdListMifareWrite16;
+#else
+        NdefMap->Cmd.MfCmd = phHal_eMifareWrite16;
+#endif
+        *NdefMap->SendRecvLength = NdefMap->TempReceiveLength;
+
+        /* Call the Overlapped HAL Transceive function */
+        status = phFriNfc_OvrHal_Transceive(NdefMap->LowerDevice,
+                                           &NdefMap->MapCompletionInfo,
+                                           NdefMap->psRemoteDevInfo,
+                                           NdefMap->Cmd,
+                                           &NdefMap->psDepAdditionalInfo,
+                                           NdefMap->SendRecvBuf,
+                                           NdefMap->SendLength,
+                                           NdefMap->SendRecvBuf,
+                                           NdefMap->SendRecvLength);
+    }
+    else
+    {
+        /* Error: The control should not ideally come here.
+           Return Error.*/
+#ifndef PH_HAL4_ENABLE
+        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_CMD_ABORTED);
+#else
+        status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_FAILED);
+#endif
+    }
+
+    return status;
+}
+
+/* Make next NDEF compliant Sector ReadOnly */
+static NFCSTATUS phFriNfc_MifStd_H_ProWrSectorTrailor(phFriNfc_NdefMap_t *NdefMap)
+{
+    NFCSTATUS status =  NFCSTATUS_FAILED;
+    uint8_t sectorTrailerBlockNo = 0;
+
+    /*Increment Sector Index */
+    NdefMap->StdMifareContainer.ReadOnlySectorIndex++;
+
+    /* skip if MAD2 */
+    if(PH_FRINFC_MIFARESTD_SECTOR_NO16 == NdefMap->StdMifareContainer.ReadOnlySectorIndex )
+    {
+        NdefMap->StdMifareContainer.ReadOnlySectorIndex++;
+    }
+
+    /* if current sector index exceeds total sector index then
+       all ndef sectors are made readonly then return success
+       If a NON def sector is encountered return success*/
+    if (NdefMap->StdMifareContainer.ReadOnlySectorIndex >= NdefMap->StdMifareContainer.TotalNoSectors ||
+        PH_FRINFC_MIFARESTD_NON_NDEF_COMP  ==
+        NdefMap->StdMifareContainer.aid[NdefMap->StdMifareContainer.ReadOnlySectorIndex])
+    {
+        status = NFCSTATUS_SUCCESS;
+    }
+    else if(PH_FRINFC_MIFARESTD_NDEF_COMP  == NdefMap->StdMifareContainer.aid[NdefMap->StdMifareContainer.ReadOnlySectorIndex])
+    {
+        /* Convert next NDEF sector to read only */
+        sectorTrailerBlockNo = phFriNfc_MifStd_H_GetSectorTrailerBlkNo(NdefMap->StdMifareContainer.ReadOnlySectorIndex);
+        NdefMap->StdMifareContainer.currentBlock = sectorTrailerBlockNo;
+        NdefMap->StdMifareContainer.SectorTrailerBlockNo = sectorTrailerBlockNo;
+
+        status = phFriNfc_MifStd_H_AuthSector(NdefMap);
+    }
+
+    return status;
+}
 
 #endif  /* PH_FRINFC_MAP_MIFARESTD_DISABLED */

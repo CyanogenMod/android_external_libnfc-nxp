@@ -88,6 +88,8 @@
 #define PH_FRINFC_NDEFMAP_STATE_DISCONNECT                  14   /*!< Disconnect in progress */
 #define PH_FRINFC_NDEFMAP_STATE_CONNECT                     15   /*!< Connect in progress */
 
+#define PH_FRINFC_NDEFMAP_STATE_RD_SEC_ACS_BIT				16    /*!< Convert to ReadOnly in progress */
+#define PH_FRINFC_NDEFMAP_STATE_WRITE_SEC					17    /*!< Convert to ReadOnly in progress */
 
 
 /*@}*/
@@ -188,6 +190,7 @@
 #define PH_FRINFC_MIFARESTD1K_TOTAL_SECTOR                16 /*!< Sector 40 */
 #define PH_FRINFC_MIFARESTD_BYTES_READ                    16 /*!< Bytes read */
 #define PH_FRINFC_MIFARESTD_BLOCK_BYTES                   16 /*!< Bytes per block */
+#define PH_FRINFC_MIFARESTD_SECTOR_BLOCKS                 16 /*!< Blocks per sector */
 #define PH_FRINFC_MIFARESTD_WR_A_BLK                      17 /*!< 17 bytes (including current block)
                                                                   are given to transfer */
 #define PH_FRINFC_MIFARESTD4K_MAX_BLOCKS                  210 /*!< Maximum number of Mifare 4k Blocks 
@@ -235,6 +238,7 @@
 #define PH_FRINFC_MIFARESTD_MASK_GPB_WR                   0x03 /*!< Mask 0x03 for GPB byte */
 #define PH_FRINFC_MIFARESTD_MASK_GPB_RD                   0x0C /*!< Mask 0xOC for GPB byte */
 #define PH_FRINFC_MIFARESTD_GPB_RD_WR_VAL                 0x00 /*!< GPB Read Write value */
+#define PH_FRINFC_MIFARESTD_KEY_LEN                       0x06 /*!< MIFARE Std key length */
 
 /*@}*/
 
@@ -374,5 +378,20 @@ NFCSTATUS phFriNfc_MifareStdMap_ChkNdef(phFriNfc_NdefMap_t      *NdefMap);
 void phFriNfc_MifareStdMap_Process( void       *Context,
                                     NFCSTATUS   Status);
 
-#endif /* PHFRINFC_MIFARESTDMAP_H */
+/*!
+ *
+ * The function Convert the Mifare card to ReadOnly.
+ *
+ * \param[in] NdefMap Pointer to a valid instance of the \ref phFriNfc_NdefMap_t structure describing
+ *                    the component context.
+ *
+ * \retval NFCSTATUS_PENDING               The action has been successfully triggered.
+ * \retval NFCSTATUS_INVALID_PARAMETER     At least one parameter of the function is invalid.
+ * \retval NFCSTATUS_INVALID_STATE         The mifare card should be in read_write state to convert card to
+ *					   readonly.If any other state the function return NFCSTATUS_INVALID_STATE
+ *\retval NFCSTATUS_NOT_ALLOWED			   If card is already in read_only state or initialized state
+ *
+ */
+NFCSTATUS phFriNfc_MifareStdMap_ConvertToReadOnly(phFriNfc_NdefMap_t      *NdefMap, const uint8_t *ScrtKeyB);
 
+#endif /* PHFRINFC_MIFARESTDMAP_H */

@@ -59,6 +59,7 @@ typedef enum phLibNfc_Last_Call{
 #define     NDEF_MIFARE_4K_LEN             3356U
 #define     NDEF_MIFARE_1K_LEN              716U
 #define     MIFARE_STD_DEFAULT_KEY          {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
+#define     MIFARE_STD_KEY_LEN              6
 #define     ISO_SAK_VALUE                   0x20U
 
 

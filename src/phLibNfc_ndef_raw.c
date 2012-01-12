@@ -39,6 +39,7 @@
 #include <phLibNfc_initiator.h>
 #include <phLibNfc_discovery.h>
 #include <phFriNfc_NdefReg.h>
+#include <phFriNfc_MifareStdMap.h>
 
 /*
 *************************** Macro's  ****************************************
@@ -122,6 +123,7 @@ NFCSTATUS phLibNfc_Ndef_Read( phLibNfc_Handle                   hRemoteDevice,
                             )
 {
     NFCSTATUS RetVal = NFCSTATUS_FAILED;
+
     if((NULL == gpphLibContext)|| 
         (gpphLibContext->LibNfcState.cur_state == eLibNfcHalStateShutdown))
     {
@@ -1345,11 +1347,14 @@ NFCSTATUS phLibNfc_RemoteDev_FormatNdef(phLibNfc_Handle         hRemoteDevice,
 NFCSTATUS
 phLibNfc_ConvertToReadOnlyNdef (
     phLibNfc_Handle         hRemoteDevice,
+    phNfc_sData_t*          pScrtKey,
     pphLibNfc_RspCb_t       pNdefReadOnly_RspCb,
     void*                   pContext
     )
 {
     NFCSTATUS           ret_val = NFCSTATUS_FAILED;
+    static uint8_t      mif_std_key[6] ={0},
+                        Index = 0;
 
     if ((NULL == gpphLibContext)
         || (gpphLibContext->LibNfcState.cur_state
@@ -1406,14 +1411,34 @@ phLibNfc_ConvertToReadOnlyNdef (
                 case phHal_eMifare_PICC:
                 case phHal_eISO14443_A_PICC:
                 {
-                    if ((phHal_eMifare_PICC == ps_rem_dev_info->RemDevType) 
+                    if ((phHal_eMifare_PICC == ps_rem_dev_info->RemDevType)
                         && (0x00 != ps_rem_dev_info->RemoteDevInfo.Iso14443A_Info.Sak))
                     {
-                        /* Mifare classic 1k/4k not supported */
-                        ret_val = NFCSTATUS_REJECTED;
+                        for (fun_id = 0; fun_id < PH_FRINFC_NDEFMAP_CR; fun_id++)
+                        {
+                            /* Register the callback for the check ndef */
+                            ret_val = phFriNfc_NdefMap_SetCompletionRoutine (
+                                      gpphLibContext->ndef_cntx.psNdefMap,
+                                      fun_id, phLibNfc_Ndef_ReadOnly_Cb,
+                                      (void *)gpphLibContext);
+                        }
+
+                        /* Start mifare NFC read only function   */
+                        /* mif_std_key is required to format the mifare 1k/4k card */
+                        if(pScrtKey != NULL && pScrtKey->length == MIFARE_STD_KEY_LEN)
+                        {
+                            for (Index =0 ;Index < (pScrtKey->length); Index++ )
+                            {
+                                mif_std_key[Index] = *(pScrtKey->buffer++);
+                            }
+
+                            ret_val = phFriNfc_MifareStdMap_ConvertToReadOnly (
+                                      gpphLibContext->ndef_cntx.psNdefMap, mif_std_key);
+                            ret_val = PHNFCSTATUS(ret_val);
+                        }
                     }
                     else
-                    {   
+                    {
                         gpphLibContext->ndef_cntx.NdefSendRecvLen = NDEF_SENDRCV_BUF_LEN;
 
                         /* Call ndef format reset, this will initialize the ndef

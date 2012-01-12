@@ -99,6 +99,18 @@ NFCSTATUS phFriNfc_MapTool_SetCardState(phFriNfc_NdefMap_t  *NdefMap,
                     PH_NDEFMAP_CARD_STATE_INVALID)?
                     NdefMap->CardState:
                     PH_NDEFMAP_CARD_STATE_READ_WRITE);
+                if (NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_1K_CARD ||
+                    NdefMap->CardType == PH_FRINFC_NDEFMAP_MIFARE_STD_4K_CARD)
+                {
+                    if(NdefMap->StdMifareContainer.ReadOnlySectorIndex &&
+                       NdefMap->StdMifareContainer.SectorTrailerBlockNo == NdefMap->StdMifareContainer.currentBlock )
+                    {
+                        NdefMap->CardState = (uint8_t)((NdefMap->CardState ==
+                                                        PH_NDEFMAP_CARD_STATE_INVALID)?
+                                                        NdefMap->CardState:
+                                                        PH_NDEFMAP_CARD_STATE_READ_ONLY);
+                    }
+                }
             break;
 
             default:
