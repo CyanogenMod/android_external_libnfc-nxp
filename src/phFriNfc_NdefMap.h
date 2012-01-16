@@ -446,6 +446,8 @@ typedef struct phFriNfc_MifareStdCont
     uint8_t             SectorIndex;
     /** to read the access bits of each sector */
     uint8_t             ReadAcsBitFlag;
+    /** Flag to check if Acs bit was written in this call */
+    uint8_t             WriteAcsBitFlag;
     /** Buffer to store 16 bytes */
     uint8_t             Buffer[PH_FRINFC_NDEFMAP_MIFARESTD_RDWR_SIZE];
     /** to store the AIDs of Mifare 1k or 4k */

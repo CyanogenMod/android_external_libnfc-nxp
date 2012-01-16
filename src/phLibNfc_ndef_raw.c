@@ -1390,12 +1390,6 @@ phLibNfc_ConvertToReadOnlyNdef (
         ret_val = NFCSTATUS_REJECTED;
         PHDBG_INFO("LIbNfc:Previous Callback is Pending");
     }
-    else if (PH_NDEFMAP_CARD_STATE_READ_WRITE != 
-            gpphLibContext->ndef_cntx.psNdefMap->CardState)
-    {
-        /* Tag is in different state */
-        ret_val = NFCSTATUS_REJECTED;
-    }
     else
     {
         gpphLibContext->ndef_cntx.eLast_Call = NdefReadOnly;

@@ -1192,9 +1192,18 @@ void phFriNfc_MifareStdMap_Process( void       *Context,
                 CRFlag = (uint8_t)((Status != NFCSTATUS_PENDING)?
                                     PH_FRINFC_MIFARESTD_FLAG1:
                                     PH_FRINFC_MIFARESTD_FLAG0);
-                break;
+                if ((CRFlag == PH_FRINFC_MIFARESTD_FLAG1) &&
+                    (NdefMap->StdMifareContainer.WriteAcsBitFlag == PH_FRINFC_MIFARESTD_FLAG0))
+                {
+                    Status = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP,
+                                    NFCSTATUS_INVALID_DEVICE_REQUEST);
+                }
+            break;
 
             case PH_FRINFC_NDEFMAP_STATE_WRITE_SEC:
+                /* Set flag for writing of Acs bit */
+                NdefMap->StdMifareContainer.WriteAcsBitFlag = PH_FRINFC_MIFARESTD_FLAG1;
+
                 /* The first NDEF sector is already made read only,
                    set card state to read only and proceed*/
                 if(NdefMap->CardState != PH_NDEFMAP_CARD_STATE_READ_ONLY)
@@ -6064,11 +6073,6 @@ phFriNfc_MifareStdMap_ConvertToReadOnly (
     {
         result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_INVALID_STATE);
     }
-    else if (PH_NDEFMAP_CARD_STATE_INITIALIZED == NdefMap->CardState ||
-             PH_NDEFMAP_CARD_STATE_READ_ONLY == NdefMap->CardState )
-    {
-        result = PHNFCSTVAL(CID_FRI_NFC_NDEF_MAP, NFCSTATUS_NOT_ALLOWED);
-    }
     else
     {
         /* card state is PH_NDEFMAP_CARD_STATE_READ_WRITE now */
@@ -6107,6 +6111,7 @@ phFriNfc_MifareStdMap_ConvertToReadOnly (
             NdefMap->StdMifareContainer.RdAfterWrFlag = PH_FRINFC_MIFARESTD_FLAG0;
             NdefMap->StdMifareContainer.AuthDone = PH_FRINFC_MIFARESTD_FLAG0;
             NdefMap->StdMifareContainer.NFCforumSectFlag = PH_FRINFC_MIFARESTD_FLAG0;
+            NdefMap->StdMifareContainer.WriteAcsBitFlag = PH_FRINFC_MIFARESTD_FLAG0;
 
             /* Sector 0 is MAD sector .Start from Sector 1 */
             for(NdefMap->StdMifareContainer.ReadOnlySectorIndex = PH_FRINFC_MIFARESTD_FLAG1;
@@ -6191,10 +6196,11 @@ static NFCSTATUS phFriNfc_MifStd_H_ProSectorTrailorAcsBits(phFriNfc_NdefMap_t *N
             Result = phFriNfc_MifStd_H_ChkAcsBit(NdefMap);
             if(Result  == NFCSTATUS_SUCCESS)
             {
+
                 if(NdefMap->CardState == PH_NDEFMAP_CARD_STATE_READ_ONLY)
                 {
-                    /* No permission to read */
-                    Result = PHNFCSTVAL( CID_FRI_NFC_NDEF_MAP, NFCSTATUS_NOT_ALLOWED);
+                    /* Go to next sector */
+                    Result = phFriNfc_MifStd_H_ProWrSectorTrailor(NdefMap);
                 }
                 else
                 {
