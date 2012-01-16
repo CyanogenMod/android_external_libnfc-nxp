@@ -2611,6 +2611,47 @@ extern NFCSTATUS phLibNfc_Llcp_Socket( phLibNfc_Llcp_eSocketType_t      eType,
 
 /**
 * \ingroup grp_lib_nfc
+* \brief <b>Get SAP of remote services using their names</b>.
+*
+* This function sends SDP queries to the remote peer to get the SAP to address for a given
+* service name. The queries are aggregated as much as possible for efficiency, but if all
+* the queries cannot fit in a single packet, they will be splitted in multiple packets.
+* The callback will be called only when all of the requested services names SAP will be
+* gathered. As mentionned in LLCP specification, a SAP of 0 means that the service name
+* as not been found.
+*
+* This feature is available only since LLCP v1.1, both devices must be at least v1.1 in
+* order to be able to use this function.
+*
+* \param[in]  hRemoteDevice      Peer handle obtained during device discovery process.
+* \param[in]  psServiceNameList  The list of the service names to discover.
+* \param[out] pnSapList          The list of the corresponding SAP numbers, in the same
+*                                order than the service names list.
+* \param[in]  nListSize          The size of both service names and SAP list.
+* \param[in]  pDiscover_Cb       The callback to be called once LibNfc matched SAP for
+*                                all of the provided service names.
+* \param[in]  pContext           Upper layer context to be returned in the callback.
+*
+* \retval NFCSTATUS_SUCCESS                  Operation successful.
+* \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
+*                                            could not be properly interpreted.
+* \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
+* \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
+* \retval NFCSTATUS_FAILED                   Operation failed.
+* \retval NFCSTATUS_FEATURE_NOT_SUPPORTED    Remote peer does not support this feature (e.g.: is v1.0).
+* \retval NFCSTATUS_BUSY                     Previous request in progress can not accept new request.
+*/
+extern NFCSTATUS phLibNfc_Llcp_DiscoverServices( phLibNfc_Handle     hRemoteDevice,
+                                                 phNfc_sData_t       *psServiceNameList,
+                                                 uint8_t             *pnSapList,
+                                                 uint8_t             nListSize,
+                                                 pphLibNfc_RspCb_t   pDiscover_Cb,
+                                                 void                *pContext
+                                               );
+
+
+/**
+* \ingroup grp_lib_nfc
 * \brief <b>Close a socket on a LLCP-connected device</b>.
 *
 * This function closes a LLCP socket previously created using phLibNfc_Llcp_Socket.
@@ -2686,9 +2727,8 @@ extern NFCSTATUS phLibNfc_Llcp_SocketGetRemoteOptions( phLibNfc_Handle          
 * This function binds the socket to a local Service Access Point.
 *
 * \param[in]  hSocket               Peer handle obtained during device discovery process.
-* \param[out] pConfigInfo           Pointer on the variable to be filled with the configuration
-*                                   parameters used during activation.
-*
+* \param TODO (nSap + sn)
+
 * \retval NFCSTATUS_SUCCESS                  Operation successful.
 * \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
 *                                            could not be properly interpreted.
@@ -2701,7 +2741,8 @@ extern NFCSTATUS phLibNfc_Llcp_SocketGetRemoteOptions( phLibNfc_Handle          
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
 extern NFCSTATUS phLibNfc_Llcp_Bind( phLibNfc_Handle hSocket,
-                                     uint8_t         nSap
+                                     uint8_t         nSap,
+                                     phNfc_sData_t * psServiceName
                                      );
 
 
@@ -2718,8 +2759,6 @@ extern NFCSTATUS phLibNfc_Llcp_Bind( phLibNfc_Handle hSocket,
 *
 *
 * \param[in]  hSocket            Socket handle obtained during socket creation.
-* \param[in]  psServiceName      A buffer containing the name of the service for SDP. No SDP
-*                                advertising if set to NULL.
 * \param[in]  pListen_Cb         The callback to be called each time the
 *                                socket receive a connection request.
 * \param[in]  pContext           Upper layer context to be returned in
@@ -2735,7 +2774,6 @@ extern NFCSTATUS phLibNfc_Llcp_Bind( phLibNfc_Handle hSocket,
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
 extern NFCSTATUS phLibNfc_Llcp_Listen( phLibNfc_Handle                  hSocket,
-                                       phNfc_sData_t                    *psServiceName,
                                        pphLibNfc_LlcpSocketListenCb_t   pListen_Cb,
                                        void*                            pContext
                                        );

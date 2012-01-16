@@ -478,6 +478,73 @@ NFCSTATUS phLibNfc_Llcp_GetRemoteInfo( phLibNfc_Handle                    hRemot
    return PHNFCSTATUS(result);
 }
 
+NFCSTATUS phLibNfc_Llcp_DiscoverServices( phLibNfc_Handle     hRemoteDevice,
+                                          phNfc_sData_t       *psServiceNameList,
+                                          uint8_t             *pnSapList,
+                                          uint8_t             nListSize,
+                                          pphLibNfc_RspCb_t   pDiscover_Cb,
+                                          void                *pContext
+                                          )
+{
+   NFCSTATUS                           result;
+   PHNFC_UNUSED_VARIABLE(hRemoteDevice);
+
+   /* State checking */
+   result = static_CheckState();
+   if (result != NFCSTATUS_SUCCESS)
+   {
+      return result;
+   }
+
+   /* Parameters checking */
+   if ((hRemoteDevice == 0)       ||
+       (psServiceNameList == NULL) ||
+       (pnSapList == NULL) ||
+       (nListSize == 0) ||
+       (pDiscover_Cb == NULL))
+   {
+      return NFCSTATUS_INVALID_PARAMETER;
+   }
+
+   /* Check device */
+   result = static_CheckDevice(hRemoteDevice);
+   if (result != NFCSTATUS_SUCCESS)
+   {
+      return result;
+   }
+
+   /* Prepare callback */
+   gpphLibContext->CBInfo.pClientLlcpDiscoveryCb = pDiscover_Cb;
+   gpphLibContext->CBInfo.pClientLlcpDiscoveryCntx = pContext;
+
+   /* Update state */
+   result = phLibNfc_UpdateNextState(gpphLibContext, eLibNfcHalStateTransaction);
+   if (result != NFCSTATUS_SUCCESS)
+   {
+      return result;
+   }
+
+   /* Call the component function */
+   result = phFriNfc_LlcpTransport_DiscoverServices( &gpphLibContext->llcp_cntx.sLlcpTransportContext,
+                                                     psServiceNameList,
+                                                     pnSapList,
+                                                     nListSize,
+                                                     pDiscover_Cb,
+                                                     pContext
+                                                     );
+   result = PHNFCSTATUS(result);
+   if ((result == NFCSTATUS_PENDING) || (result == NFCSTATUS_SUCCESS))
+   {
+      /* Nothing to do */
+   }
+   else if (result != NFCSTATUS_FAILED)
+   {
+      result = NFCSTATUS_TARGET_LOST;
+   }
+
+   return result;
+}
+
 NFCSTATUS phLibNfc_Llcp_Socket( phLibNfc_Llcp_eSocketType_t      eType,
                                 phLibNfc_Llcp_sSocketOptions_t*  psOptions,
                                 phNfc_sData_t*                   psWorkingBuffer,
@@ -610,7 +677,8 @@ NFCSTATUS phLibNfc_Llcp_SocketGetRemoteOptions( phLibNfc_Handle                 
 }
 
 NFCSTATUS phLibNfc_Llcp_Bind( phLibNfc_Handle hSocket,
-                              uint8_t         nSap
+                              uint8_t         nSap,
+                              phNfc_sData_t * psServiceName
                               )
 {
    NFCSTATUS                        result;
@@ -632,13 +700,12 @@ NFCSTATUS phLibNfc_Llcp_Bind( phLibNfc_Handle hSocket,
    }
 
    /* Bind the socket to the designated port */
-   result = phFriNfc_LlcpTransport_Bind(psSocket, nSap);
+   result = phFriNfc_LlcpTransport_Bind(psSocket, nSap, psServiceName);
 
    return PHNFCSTATUS(result);
 }
 
 NFCSTATUS phLibNfc_Llcp_Listen( phLibNfc_Handle                  hSocket,
-                                phNfc_sData_t                    *psServiceName,
                                 pphLibNfc_LlcpSocketListenCb_t   pListen_Cb,
                                 void*                            pContext
                                 )
@@ -665,7 +732,6 @@ NFCSTATUS phLibNfc_Llcp_Listen( phLibNfc_Handle                  hSocket,
 
    /* Start listening for incoming connections */
    result = phFriNfc_LlcpTransport_Listen( psSocket,
-                                           psServiceName,
                                            (pphFriNfc_LlcpTransportSocketListenCb_t)pListen_Cb,
                                            pContext );
 

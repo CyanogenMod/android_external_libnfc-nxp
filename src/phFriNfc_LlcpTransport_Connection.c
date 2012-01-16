@@ -1581,7 +1581,6 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_SocketGetRemoteOptions(phFri
 *
 *
 * \param[in]  pLlcpSocket        A pointer to a phFriNfc_LlcpTransport_Socket_t.
-* \param[in]  psServiceName      A pointer to a Service Name 
 * \param[in]  pListen_Cb         The callback to be called each time the
 *                                socket receive a connection request.
 * \param[in]  pContext           Upper layer context to be returned in
@@ -1595,37 +1594,11 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_SocketGetRemoteOptions(phFri
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
 NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Listen(phFriNfc_LlcpTransport_Socket_t*          pLlcpSocket,
-                                                           phNfc_sData_t                             *psServiceName,
                                                            pphFriNfc_LlcpTransportSocketListenCb_t   pListen_Cb,
                                                            void*                                     pContext)
 {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
    uint8_t   index;
-   
-   /* Check if the service name is already registered */
-   if (psServiceName != NULL)
-   {
-      for(index=0;index<PHFRINFC_LLCP_NB_SOCKET_MAX;index++)
-      {
-         phFriNfc_LlcpTransport_Socket_t* pCurrentSocket = &pLlcpSocket->psTransport->pSocketTable[index];
-
-         if((pCurrentSocket->sServiceName.length == 0) ||
-            (pCurrentSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketRegistered))
-         {
-            /* Do not check inactive or non-SDP registered sockets */
-            continue;
-         }
-         if(pCurrentSocket->sServiceName.length != psServiceName->length) {
-            /* Service name do not match, check next */
-            continue;
-         }
-         if(memcmp(pCurrentSocket->sServiceName.buffer, psServiceName->buffer, psServiceName->length) == 0)
-         {
-            /* Service name already in use */
-            return NFCSTATUS_INVALID_PARAMETER;
-         }
-      }
-   }
 
    /* Store the listen callback */
    pLlcpSocket->pfSocketListen_Cb = pListen_Cb;
@@ -1635,15 +1608,6 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Listen(phFriNfc_LlcpTranspor
 
    /* Set RecvPending to TRUE */
    pLlcpSocket->bSocketListenPending = TRUE;
-
-   /* Store the listen socket SN */
-   pLlcpSocket->sServiceName.length = psServiceName->length;
-   pLlcpSocket->sServiceName.buffer = phOsalNfc_GetMemory(psServiceName->length);
-   if (pLlcpSocket->sServiceName.buffer == NULL)
-   {
-       return NFCSTATUS_NOT_ENOUGH_MEMORY;
-   }
-   memcpy(pLlcpSocket->sServiceName.buffer, psServiceName->buffer, psServiceName->length);
 
    /* Set the socket state*/
    pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketRegistered;

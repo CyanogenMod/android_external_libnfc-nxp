@@ -56,6 +56,7 @@
  */
  /*@{*/
 #define PHFRINFC_LLCP_NB_SOCKET_MAX          10                                /**< Max.number of simultaneous sockets */
+#define PHFRINFC_LLCP_SNL_RESPONSE_MAX       256                               /**< Max.number of simultaneous discovery requests */
 /*@}*/
 
 /**

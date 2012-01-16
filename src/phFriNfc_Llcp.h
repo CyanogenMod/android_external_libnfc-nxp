@@ -83,7 +83,7 @@ extern char phOsalNfc_DbgTraceBuffer[];
  */
  /*@{*/
 #define PHFRINFC_LLCP_VERSION_MAJOR   0x01  /**< Major number of local LLCP version.*/
-#define PHFRINFC_LLCP_VERSION_MINOR   0x00  /**< Minor number of local LLCP version.*/
+#define PHFRINFC_LLCP_VERSION_MINOR   0x01  /**< Minor number of local LLCP version.*/
 #define PHFRINFC_LLCP_VERSION         ((PHFRINFC_LLCP_VERSION_MAJOR << 4) | PHFRINFC_LLCP_VERSION_MINOR) /**< Local LLCP version.*/
 /*@}*/
 
@@ -97,17 +97,17 @@ extern char phOsalNfc_DbgTraceBuffer[];
 #define PHFRINFC_LLCP_PTYPE_AGF        0x02 /**< AGgregated Frame.*/
 #define PHFRINFC_LLCP_PTYPE_UI         0x03 /**< Unnumbered Information.*/
 #define PHFRINFC_LLCP_PTYPE_CONNECT    0x04 /**< Connect.*/
-#define PHFRINFC_LLCP_PTYPE_DISC       0x05 /**< Didconnect.*/
+#define PHFRINFC_LLCP_PTYPE_DISC       0x05 /**< Disconnect.*/
 #define PHFRINFC_LLCP_PTYPE_CC         0x06 /**< Connection Complete.*/
 #define PHFRINFC_LLCP_PTYPE_DM         0x07 /**< Disconnected Mode.*/
 #define PHFRINFC_LLCP_PTYPE_FRMR       0x08 /**< FRaMe Reject.*/
-#define PHFRINFC_LLCP_PTYPE_RESERVED1  0x09 /**< Reserved.*/
-#define PHFRINFC_LLCP_PTYPE_RESERVED2  0x0A /**< Reserved.*/
-#define PHFRINFC_LLCP_PTYPE_RESERVED3  0x0B /**< Reserved.*/
+#define PHFRINFC_LLCP_PTYPE_SNL        0x09 /**< Service Name Lookup.*/
+#define PHFRINFC_LLCP_PTYPE_RESERVED1  0x0A /**< Reserved.*/
+#define PHFRINFC_LLCP_PTYPE_RESERVED2  0x0B /**< Reserved.*/
 #define PHFRINFC_LLCP_PTYPE_I          0x0C /**< Information.*/
 #define PHFRINFC_LLCP_PTYPE_RR         0x0D /**< Receive Ready.*/
 #define PHFRINFC_LLCP_PTYPE_RNR        0x0E /**< Receive Not Ready.*/
-#define PHFRINFC_LLCP_PTYPE_RESERVED4  0x0F /**< Reserved.*/
+#define PHFRINFC_LLCP_PTYPE_RESERVED3  0x0F /**< Reserved.*/
 /*@}*/
 
 /**
@@ -122,6 +122,15 @@ extern char phOsalNfc_DbgTraceBuffer[];
 #define PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST   0x20 /**< First SAP number from SDP-unavertised SAP range.*/
 #define PHFRINFC_LLCP_SAP_NUMBER                   0x40 /**< Number of possible SAP values (also first invalid value).*/
 #define PHFRINFC_LLCP_SAP_DEFAULT                  0xFF /**< Default number when a socket is created or reset */
+#define PHFRINFC_LLCP_SDP_ADVERTISED_NB            0x10 /**< Number of SDP advertised SAP slots */
+/*@}*/
+
+/**
+ *  \name LLCP well-known SAPs.
+ *
+ */
+ /*@{*/
+#define PHFRINFC_LLCP_SERVICENAME_SDP              "urn:nfc:sn:sdp" /**< Service Discovery Protocol name.*/
 /*@}*/
 
 /**
@@ -158,6 +167,8 @@ extern char phOsalNfc_DbgTraceBuffer[];
 #define PHFRINFC_LLCP_TLV_TYPE_RW                    0x05   /**< \internal RW parameter Type code.*/
 #define PHFRINFC_LLCP_TLV_TYPE_SN                    0x06   /**< \internal SN parameter Type code.*/
 #define PHFRINFC_LLCP_TLV_TYPE_OPT                   0x07   /**< \internal OPT parameter Type code.*/
+#define PHFRINFC_LLCP_TLV_TYPE_SDREQ                 0x08   /**< \internal SDREQ parameter Type code.*/
+#define PHFRINFC_LLCP_TLV_TYPE_SDRES                 0x09   /**< \internal SDRES parameter Type code.*/
 /*@}*/
 
 /**

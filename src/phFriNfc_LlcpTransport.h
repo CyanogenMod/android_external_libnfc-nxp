@@ -47,6 +47,9 @@ typedef struct phFriNfc_LlcpTransport phFriNfc_LlcpTransport_t;
 struct phFriNfc_LlcpTransport_Socket;
 typedef struct phFriNfc_LlcpTransport_Socket phFriNfc_LlcpTransport_Socket_t;
 
+struct phFriNfc_Llcp_CachedServiceName;
+typedef struct phFriNfc_Llcp_CachedServiceName phFriNfc_Llcp_CachedServiceName_t;
+
 /*========== ENUMERATES ===========*/
 
 /* Enum reperesents the different LLCP Link status*/
@@ -167,6 +170,9 @@ struct phFriNfc_LlcpTransport_Socket
    uint16_t                                       localMIUX;
    uint8_t                                        index;
 
+   /* SDP related fields */
+   uint8_t                                       nTid;
+
    /* Information Flags */
    bool_t                                        bSocketRecvPending;
    bool_t                                        bSocketSendPending;
@@ -226,12 +232,24 @@ struct phFriNfc_LlcpTransport_Socket
 
 /**
  * \ingroup grp_fri_nfc_llcp_mac
+ * \brief TODO
+ */
+struct phFriNfc_Llcp_CachedServiceName
+{
+   phNfc_sData_t                         sServiceName;
+   uint8_t                               nSap;
+};
+
+
+/**
+ * \ingroup grp_fri_nfc_llcp_mac
  * \brief Declaration of a TRANSPORT Type with a table of PHFRINFC_LLCP_NB_SOCKET_DEFAULT sockets
  *        and a pointer a Llcp layer
  */
 struct phFriNfc_LlcpTransport 
 {
    phFriNfc_LlcpTransport_Socket_t       pSocketTable[PHFRINFC_LLCP_NB_SOCKET_MAX];
+   phFriNfc_Llcp_CachedServiceName_t     pCachedServiceNames[PHFRINFC_LLCP_SDP_ADVERTISED_NB];
    phFriNfc_Llcp_t                       *pLlcp;
    bool_t                                bSendPending;
    bool_t                                bRecvPending;
@@ -254,6 +272,22 @@ struct phFriNfc_LlcpTransport
    uint8_t                               DmInfoBuffer[3];
 
    uint8_t                               LinkStatusError;
+
+   /**< Service discovery related infos */
+   phNfc_sData_t                         *psDiscoveryServiceNameList;
+   uint8_t                               *pnDiscoverySapList;
+   uint8_t                               nDiscoveryListSize;
+   uint8_t                               nDiscoveryReqOffset;
+   uint8_t                               nDiscoveryResOffset;
+
+   uint8_t                               nDiscoveryResTidList[PHFRINFC_LLCP_SNL_RESPONSE_MAX];
+   uint8_t                               nDiscoveryResSapList[PHFRINFC_LLCP_SNL_RESPONSE_MAX];
+   uint8_t                               nDiscoveryResListSize;
+
+   uint8_t                               pDiscoveryBuffer[PHFRINFC_LLCP_MIU_DEFAULT];
+   pphFriNfc_Cr_t                        pfDiscover_Cb;
+   void                                  *pDiscoverContext;
+
 };
 
 /*
@@ -322,6 +356,16 @@ NFCSTATUS phFriNfc_LlcpTransport_SendFrameReject(phFriNfc_LlcpTransport_t       
                                                  uint8_t                            vr,
                                                  uint8_t                            vra);
 
+/*!
+* \ingroup grp_fri_nfc
+* \brief <b>Discover remote services SAP using SDP protocol</b>.
+ */
+NFCSTATUS phFriNfc_LlcpTransport_DiscoverServices( phFriNfc_LlcpTransport_t  *pLlcpTransport,
+                                                   phNfc_sData_t             *psServiceNameList,
+                                                   uint8_t                   *pnSapList,
+                                                   uint8_t                   nListSize,
+                                                   pphFriNfc_Cr_t            pDiscover_Cb,
+                                                   void                      *pContext );
 
 /**
 * \ingroup grp_lib_nfc
@@ -435,6 +479,7 @@ NFCSTATUS phFriNfc_LlcpTransport_Close(phFriNfc_LlcpTransport_Socket_t*   pLlcpS
 *
 * \param[out] pLlcpSocket           A pointer to a phFriNfc_LlcpTransport_Socket_t.
 * \param[in]  pConfigInfo           A port number for a specific socket
+* \param TODO
 *
 * \retval NFCSTATUS_SUCCESS                  Operation successful.
 * \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
@@ -446,7 +491,8 @@ NFCSTATUS phFriNfc_LlcpTransport_Close(phFriNfc_LlcpTransport_Socket_t*   pLlcpS
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
 NFCSTATUS phFriNfc_LlcpTransport_Bind(phFriNfc_LlcpTransport_Socket_t    *pLlcpSocket,
-                                      uint8_t                            nSap);
+                                      uint8_t                            nSap,
+                                      phNfc_sData_t                      *psServiceName);
 
 /**
 * \ingroup grp_fri_nfc
@@ -460,7 +506,6 @@ NFCSTATUS phFriNfc_LlcpTransport_Bind(phFriNfc_LlcpTransport_Socket_t    *pLlcpS
 *
 *
 * \param[in]  pLlcpSocket        A pointer to a phFriNfc_LlcpTransport_Socket_t.
-* \param[in]  psServiceName      A pointer to a Service Name 
 * \param[in]  pListen_Cb         The callback to be called each time the
 *                                socket receive a connection request.
 * \param[in]  pContext           Upper layer context to be returned in
@@ -474,9 +519,9 @@ NFCSTATUS phFriNfc_LlcpTransport_Bind(phFriNfc_LlcpTransport_Socket_t    *pLlcpS
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
 NFCSTATUS phFriNfc_LlcpTransport_Listen(phFriNfc_LlcpTransport_Socket_t*          pLlcpSocket,
-                                        phNfc_sData_t                             *psServiceName,
                                         pphFriNfc_LlcpTransportSocketListenCb_t   pListen_Cb,
                                         void*                                     pContext);
+
 /**
 * \ingroup grp_fri_nfc
 * \brief <b>Accept an incoming connection request for a socket</b>.

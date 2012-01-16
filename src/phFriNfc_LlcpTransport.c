@@ -37,15 +37,50 @@
 /* Check if (a <= x < b) */
 #define IS_BETWEEN(x, a, b) (((x)>=(a)) && ((x)<(b)))
 
+static NFCSTATUS phFriNfc_LlcpTransport_RegisterName(phFriNfc_LlcpTransport_Socket_t*   pLlcpSocket,
+                                                     uint8_t                            nSap,
+                                                     phNfc_sData_t                      *psServiceName);
 
-static NFCSTATUS phFriNfc_LlcpTransport_AutoBind(phFriNfc_LlcpTransport_Socket_t *pSocket)
+static NFCSTATUS phFriNfc_LlcpTransport_DiscoverServicesEx(phFriNfc_LlcpTransport_t *psTransport);
+
+static void phFriNfc_LlcpTransport_Send_CB(void            *pContext,
+                                           NFCSTATUS        status);
+
+static NFCSTATUS phFriNfc_LlcpTransport_GetFreeSap(phFriNfc_LlcpTransport_t * psTransport, phNfc_sData_t *psServiceName, uint8_t * pnSap)
 {
    uint8_t i;
    uint8_t sap;
-   phFriNfc_LlcpTransport_Socket_t* pSocketTable = pSocket->psTransport->pSocketTable;
+   uint8_t min_sap_range, max_sap_range;
+   phFriNfc_LlcpTransport_Socket_t* pSocketTable = psTransport->pSocketTable;
+
+   /* Calculate authorized SAP range */
+   if ((psServiceName != NULL) && (psServiceName->length > 0))
+   {
+      /* Make sure that we will return the same SAP if service name was already used in the past */
+      for(i=0 ; i<PHFRINFC_LLCP_SDP_ADVERTISED_NB ; i++)
+      {
+         if((psTransport->pCachedServiceNames[i].sServiceName.length > 0) &&
+            (memcmp(psTransport->pCachedServiceNames[i].sServiceName.buffer, psServiceName->buffer, psServiceName->length) == 0))
+         {
+            /* Service name matched in cached service names list */
+            *pnSap = psTransport->pCachedServiceNames[i].nSap;
+            return NFCSTATUS_SUCCESS;
+         }
+      }
+
+      /* SDP advertised service */
+      min_sap_range = PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST;
+      max_sap_range = PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST;
+   }
+   else
+   {
+      /* Non-SDP advertised service */
+      min_sap_range = PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST;
+      max_sap_range = PHFRINFC_LLCP_SAP_NUMBER;
+   }
 
    /* Try all possible SAPs */
-   for(sap=PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST ; sap<PHFRINFC_LLCP_SAP_NUMBER ; sap++)
+   for(sap=min_sap_range ; sap<max_sap_range ; sap++)
    {
       /* Go through socket list to check if current SAP is in use */
       for(i=0 ; i<PHFRINFC_LLCP_NB_SOCKET_MAX ; i++)
@@ -61,8 +96,7 @@ static NFCSTATUS phFriNfc_LlcpTransport_AutoBind(phFriNfc_LlcpTransport_Socket_t
       if (i >= PHFRINFC_LLCP_NB_SOCKET_MAX)
       {
          /* No socket is using current SAP, proceed with binding */
-         pSocket->socket_sSap = sap;
-         pSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
+         *pnSap = sap;
          return NFCSTATUS_SUCCESS;
       }
    }
@@ -70,6 +104,343 @@ static NFCSTATUS phFriNfc_LlcpTransport_AutoBind(phFriNfc_LlcpTransport_Socket_t
    /* If we reach this point, it means that no SAP is free */
    return NFCSTATUS_INSUFFICIENT_RESOURCES;
 }
+
+static NFCSTATUS phFriNfc_LlcpTransport_EncodeSdreqTlv(phNfc_sData_t  *psTlvData,
+                                                       uint32_t       *pOffset,
+                                                       uint8_t        nTid,
+                                                       phNfc_sData_t  *psServiceName)
+{
+   NFCSTATUS result;
+   uint32_t nTlvOffset = *pOffset;
+   uint32_t nTlvStartOffset = nTlvOffset;
+
+   /* Encode the TID */
+   result = phFriNfc_Llcp_EncodeTLV(psTlvData,
+                                    &nTlvOffset,
+                                    PHFRINFC_LLCP_TLV_TYPE_SDREQ,
+                                    1,
+                                    &nTid);
+   if (result != NFCSTATUS_SUCCESS)
+   {
+      goto clean_and_return;
+   }
+
+   /* Encode the service name itself */
+   result = phFriNfc_Llcp_AppendTLV(psTlvData,
+                                    nTlvStartOffset,
+                                    &nTlvOffset,
+                                    psServiceName->length,
+                                    psServiceName->buffer);
+   if (result != NFCSTATUS_SUCCESS)
+   {
+      goto clean_and_return;
+   }
+
+clean_and_return:
+   /* Save offset if no error occured */
+   if (result == NFCSTATUS_SUCCESS)
+   {
+      *pOffset = nTlvOffset;
+   }
+
+   return result;
+}
+
+static NFCSTATUS phFriNfc_LlcpTransport_EncodeSdresTlv(phNfc_sData_t  *psTlvData,
+                                                       uint32_t       *pOffset,
+                                                       uint8_t        nTid,
+                                                       uint8_t        nSap)
+{
+   NFCSTATUS result;
+   uint32_t nTlvStartOffset = *pOffset;
+
+   /* Encode the TID */
+   result = phFriNfc_Llcp_EncodeTLV(psTlvData,
+                                    pOffset,
+                                    PHFRINFC_LLCP_TLV_TYPE_SDRES,
+                                    1,
+                                    &nTid);
+   if (result != NFCSTATUS_SUCCESS)
+   {
+      goto clean_and_return;
+   }
+
+   /* Encode the service name itself */
+   result = phFriNfc_Llcp_AppendTLV(psTlvData,
+                                    nTlvStartOffset,
+                                    pOffset,
+                                    1,
+                                    &nSap);
+   if (result != NFCSTATUS_SUCCESS)
+   {
+      goto clean_and_return;
+   }
+
+clean_and_return:
+   /* Restore previous offset if an error occured */
+   if (result != NFCSTATUS_SUCCESS)
+   {
+      *pOffset = nTlvStartOffset;
+   }
+
+   return result;
+}
+
+static phFriNfc_LlcpTransport_Socket_t* phFriNfc_LlcpTransport_ServiceNameLoockup(phFriNfc_LlcpTransport_t *psTransport,
+                                                                                  phNfc_sData_t            *pServiceName)
+{
+   uint32_t                            index;
+   uint8_t                             cacheIndex;
+   phFriNfc_Llcp_CachedServiceName_t * pCachedServiceName;
+   phFriNfc_LlcpTransport_Socket_t *   pSocket;
+
+   /* Search a socket with the SN */
+   for(index=0;index<PHFRINFC_LLCP_NB_SOCKET_MAX;index++)
+   {
+      pSocket = &psTransport->pSocketTable[index];
+      /* Test if the CO socket is in Listen state or the CL socket is bound
+         and if its SN is the good one */
+      if((((pSocket->eSocket_Type == phFriNfc_LlcpTransport_eConnectionOriented)
+         && (pSocket->eSocket_State == phFriNfc_LlcpTransportSocket_eSocketRegistered))
+         || ((pSocket->eSocket_Type == phFriNfc_LlcpTransport_eConnectionLess)
+         && (pSocket->eSocket_State == phFriNfc_LlcpTransportSocket_eSocketBound)))
+         &&
+         (pServiceName->length == pSocket->sServiceName.length)
+         && !memcmp(pServiceName->buffer, pSocket->sServiceName.buffer, pServiceName->length))
+      {
+         /* Add new entry to cached service name/sap if not already in table */
+         for(cacheIndex=0;cacheIndex<PHFRINFC_LLCP_SDP_ADVERTISED_NB;cacheIndex++)
+         {
+            pCachedServiceName = &psTransport->pCachedServiceNames[cacheIndex];
+            if (pCachedServiceName->sServiceName.buffer != NULL)
+            {
+               if ((pCachedServiceName->sServiceName.length == pServiceName->length) &&
+                   (memcmp(pCachedServiceName->sServiceName.buffer, pServiceName->buffer, pServiceName->length) == 0))
+               {
+                  /* Already registered */
+                  break;
+               }
+            }
+            else
+            {
+               /* Reached end of existing entries and not found the service name,
+                * => Add the new entry
+                */
+               pCachedServiceName->nSap = pSocket->socket_sSap;
+               pCachedServiceName->sServiceName.buffer = phOsalNfc_GetMemory(pServiceName->length);
+               if (pCachedServiceName->sServiceName.buffer == NULL)
+               {
+                  /* Unable to cache this entry, so report this service as not found */
+                  return NULL;
+               }
+               memcpy(pCachedServiceName->sServiceName.buffer, pServiceName->buffer, pServiceName->length);
+               pCachedServiceName->sServiceName.length = pServiceName->length;
+               break;
+            }
+         }
+
+         return pSocket;
+      }
+   }
+
+   return NULL;
+}
+
+
+static NFCSTATUS phFriNfc_LlcpTransport_DiscoveryAnswer(phFriNfc_LlcpTransport_t *psTransport)
+{
+   NFCSTATUS         result = NFCSTATUS_PENDING;
+   phNfc_sData_t     sInfoBuffer;
+   uint32_t          nTlvOffset;
+   uint8_t           index;
+   uint8_t           nTid, nSap;
+
+   /* Test if a send is pending */
+   if(!psTransport->bSendPending)
+   {
+      /* Set the header */
+      psTransport->sLlcpHeader.dsap  = PHFRINFC_LLCP_SAP_SDP;
+      psTransport->sLlcpHeader.ptype = PHFRINFC_LLCP_PTYPE_SNL;
+      psTransport->sLlcpHeader.ssap  = PHFRINFC_LLCP_SAP_SDP;
+
+      /* Prepare the info buffer */
+      sInfoBuffer.buffer = psTransport->pDiscoveryBuffer;
+      sInfoBuffer.length = sizeof(psTransport->pDiscoveryBuffer);
+
+      /* Encode as many requests as possible */
+      nTlvOffset = 0;
+      for(index=0 ; index<psTransport->nDiscoveryResListSize ; index++)
+      {
+         /* Get current TID/SAP and try to encode them in SNL frame */
+         nTid = psTransport->nDiscoveryResTidList[index];
+         nSap = psTransport->nDiscoveryResSapList[index];
+         /* Encode response */
+         result = phFriNfc_LlcpTransport_EncodeSdresTlv(&sInfoBuffer,
+                                                        &nTlvOffset,
+                                                        nTid,
+                                                        nSap);
+         if (result != NFCSTATUS_SUCCESS)
+         {
+            /* Impossible to fit the entire response */
+            /* TODO: support reponse framgentation */
+            break;
+         }
+      }
+
+      /* Reset list size to be able to handle a new request */
+      psTransport->nDiscoveryResListSize = 0;
+
+      /* Update buffer length to match real TLV size */
+      sInfoBuffer.length = nTlvOffset;
+
+      /* Send Pending */
+      psTransport->bSendPending = TRUE;
+
+      /* Send SNL frame */
+      result =  phFriNfc_Llcp_Send(psTransport->pLlcp,
+                                   &psTransport->sLlcpHeader,
+                                   NULL,
+                                   &sInfoBuffer,
+                                   phFriNfc_LlcpTransport_Send_CB,
+                                   psTransport);
+   }
+   else
+   {
+      /* Impossible to send now, this function will be called again on next opportunity */
+   }
+
+   return result;
+}
+
+
+static void Handle_Discovery_IncomingFrame(phFriNfc_LlcpTransport_t           *psTransport,
+                                           phNfc_sData_t                      *psData)
+{
+   NFCSTATUS                        result;
+   phNfc_sData_t                    sValue;
+   phNfc_sData_t                    sResponseData;
+   phNfc_sData_t                    sServiceName;
+   uint32_t                         nInTlvOffset;
+   uint8_t                          nType;
+   uint8_t                          nTid;
+   uint8_t                          nSap;
+   pphFriNfc_Cr_t                   pfSavedCb;
+   void                             *pfSavedContext;
+   phFriNfc_LlcpTransport_Socket_t  *pSocket;
+
+
+   /* Prepare buffer */
+   sResponseData.buffer = psTransport->pDiscoveryBuffer;
+   sResponseData.length = sizeof(psTransport->pDiscoveryBuffer);
+
+   /* Parse all TLVs in frame */
+   nInTlvOffset = 0;
+   while(nInTlvOffset < psData->length)
+   {
+      result = phFriNfc_Llcp_DecodeTLV(psData,
+                                       &nInTlvOffset,
+                                       &nType,
+                                       &sValue );
+      switch(nType)
+      {
+         case PHFRINFC_LLCP_TLV_TYPE_SDREQ:
+            if (sValue.length < 2)
+            {
+               /* Erroneous request, ignore */
+               break;
+            }
+            /* Decode TID */
+            nTid = sValue.buffer[0];
+            /* Decode service name */
+            sServiceName.buffer = sValue.buffer + 1;
+            sServiceName.length = sValue.length - 1;
+
+            /* Handle SDP service name */
+            if((sServiceName.length == sizeof(PHFRINFC_LLCP_SERVICENAME_SDP)-1)
+               && !memcmp(sServiceName.buffer, PHFRINFC_LLCP_SERVICENAME_SDP, sServiceName.length))
+            {
+               nSap = PHFRINFC_LLCP_SAP_SDP;
+            }
+            else
+            {
+               /* Match service name in socket list */
+               pSocket = phFriNfc_LlcpTransport_ServiceNameLoockup(psTransport, &sServiceName);
+               if (pSocket != NULL)
+               {
+                  nSap = pSocket->socket_sSap;
+               }
+               else
+               {
+                  nSap = 0;
+               }
+            }
+
+            /* Encode response */
+            if (psTransport->nDiscoveryResListSize < PHFRINFC_LLCP_SNL_RESPONSE_MAX)
+            {
+               psTransport->nDiscoveryResSapList[psTransport->nDiscoveryResListSize] = nSap;
+               psTransport->nDiscoveryResTidList[psTransport->nDiscoveryResListSize] = nTid;
+               psTransport->nDiscoveryResListSize++;
+            }
+            else
+            {
+               /* Remote peer is sending more than max. allowed requests (max. 256
+                  different TID values), drop invalid requests to avoid buffer overflow
+               */
+            }
+            break;
+
+         case PHFRINFC_LLCP_TLV_TYPE_SDRES:
+            if (psTransport->pfDiscover_Cb == NULL)
+            {
+               /* Ignore response when no requests are pending */
+               break;
+            }
+            if (sValue.length != 2)
+            {
+               /* Erroneous response, ignore it */
+               break;
+            }
+            /* Decode TID and SAP */
+            nTid = sValue.buffer[0];
+            if (nTid >= psTransport->nDiscoveryListSize)
+            {
+               /* Unkown TID, ignore it */
+               break;
+            }
+            nSap = sValue.buffer[1];
+            /* Save response */
+            psTransport->pnDiscoverySapList[nTid] = nSap;
+            /* Update response counter */
+            psTransport->nDiscoveryResOffset++;
+            break;
+
+         default:
+            /* Ignored */
+            break;
+      }
+   }
+
+   /* If discovery requests have been received, send response */
+   if (psTransport->nDiscoveryResListSize > 0)
+   {
+      phFriNfc_LlcpTransport_DiscoveryAnswer(psTransport);
+   }
+
+   /* If all discovery responses have been received, trigger callback (if any) */
+   if ((psTransport->pfDiscover_Cb != NULL) &&
+       (psTransport->nDiscoveryResOffset >= psTransport->nDiscoveryListSize))
+   {
+      pfSavedCb = psTransport->pfDiscover_Cb;
+      pfSavedContext = psTransport->pDiscoverContext;
+
+      psTransport->pfDiscover_Cb = NULL;
+      psTransport->pDiscoverContext = NULL;
+
+      pfSavedCb(pfSavedContext, NFCSTATUS_SUCCESS);
+   }
+}
+
 
 /* TODO: comment function Transport recv CB */
 static void phFriNfc_LlcpTransport__Recv_CB(void            *pContext,
@@ -112,6 +483,20 @@ static void phFriNfc_LlcpTransport__Recv_CB(void            *pContext,
                                                  ssap);
          }break;
 
+      /* Service Discovery Protocol */
+      case PHFRINFC_LLCP_PTYPE_SNL:
+         {
+            if ((ssap == PHFRINFC_LLCP_SAP_SDP) && (dsap == PHFRINFC_LLCP_SAP_SDP))
+            {
+               Handle_Discovery_IncomingFrame(pLlcpTransport,
+                                              psData);
+            }
+            else
+            {
+               /* Ignore frame if source and destination are not the SDP service */
+            }
+         }break;
+
       /* Connection oriented */
       /* NOTE: forward reserved PTYPE to enable FRMR sending */
       case PHFRINFC_LLCP_PTYPE_CONNECT:
@@ -125,7 +510,6 @@ static void phFriNfc_LlcpTransport__Recv_CB(void            *pContext,
       case PHFRINFC_LLCP_PTYPE_RESERVED1:
       case PHFRINFC_LLCP_PTYPE_RESERVED2:
       case PHFRINFC_LLCP_PTYPE_RESERVED3:
-      case PHFRINFC_LLCP_PTYPE_RESERVED4:
          {
             Handle_ConnectionOriented_IncommingFrame(pLlcpTransport,
                                                      psData,
@@ -212,6 +596,17 @@ static void phFriNfc_LlcpTransport_Send_CB(void            *pContext,
 
    /* 4 - Handle pending send operations */
 
+   /* Check for pending discovery requests/responses */
+   if (psTransport->nDiscoveryResListSize > 0)
+   {
+      phFriNfc_LlcpTransport_DiscoveryAnswer(psTransport);
+   }
+   if ( (psTransport->pfDiscover_Cb != NULL) &&
+        (psTransport->nDiscoveryReqOffset < psTransport->nDiscoveryListSize) )
+   {
+      result = phFriNfc_LlcpTransport_DiscoverServicesEx(psTransport);
+   }
+
    /* Init index */
    index = psTransport->socketIndex;
 
@@ -269,7 +664,10 @@ NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpTran
       pLlcpTransport->bFrmrPending     = FALSE;
       pLlcpTransport->socketIndex      = FALSE;
       pLlcpTransport->LinkStatusError  = 0;
+      pLlcpTransport->pfDiscover_Cb    = NULL;
 
+      /* Initialize cached service name/sap table */
+      memset(pLlcpTransport->pCachedServiceNames, 0x00, sizeof(phFriNfc_Llcp_CachedServiceName_t)*PHFRINFC_LLCP_SDP_ADVERTISED_NB);
 
       /* Reset all the socket info in the table */
       for(i=0;i<PHFRINFC_LLCP_NB_SOCKET_MAX;i++)
@@ -340,8 +738,9 @@ NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpTran
 /* TODO: comment function Transport CloseAll */
 NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t *pLlcpTransport)
 {
-   NFCSTATUS status = NFCSTATUS_SUCCESS;
-   uint8_t i;
+   NFCSTATUS                           status = NFCSTATUS_SUCCESS;
+   phFriNfc_Llcp_CachedServiceName_t * pCachedServiceName;
+   uint8_t                             i;
 
    /* Check for NULL pointers */
    if(pLlcpTransport == NULL)
@@ -374,6 +773,21 @@ NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t *pLlcpTransp
          phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
       }
    }
+
+   /* Reset cached service name/sap table */
+   for(i=0;i<PHFRINFC_LLCP_SDP_ADVERTISED_NB;i++)
+   {
+      pCachedServiceName = &pLlcpTransport->pCachedServiceNames[i];
+
+      pCachedServiceName->nSap = 0;
+      if (pCachedServiceName->sServiceName.buffer != NULL)
+      {
+         phOsalNfc_FreeMemory(pCachedServiceName->sServiceName.buffer);
+         pCachedServiceName->sServiceName.buffer = NULL;
+      }
+      pCachedServiceName->sServiceName.length = 0;
+   }
+
    return status;
 }
 
@@ -647,6 +1061,101 @@ NFCSTATUS phFriNfc_LlcpTransport_SocketGetRemoteOptions(phFriNfc_LlcpTransport_S
    return status;
 }
 
+
+static NFCSTATUS phFriNfc_LlcpTransport_DiscoverServicesEx(phFriNfc_LlcpTransport_t *psTransport)
+{
+   NFCSTATUS         result = NFCSTATUS_PENDING;
+   phNfc_sData_t     sInfoBuffer;
+   phNfc_sData_t     *psServiceName;
+   uint32_t          nTlvOffset;
+
+   /* Test if a send is pending */
+   if(!psTransport->bSendPending)
+   {
+      /* Set the header */
+      psTransport->sLlcpHeader.dsap  = PHFRINFC_LLCP_SAP_SDP;
+      psTransport->sLlcpHeader.ptype = PHFRINFC_LLCP_PTYPE_SNL;
+      psTransport->sLlcpHeader.ssap  = PHFRINFC_LLCP_SAP_SDP;
+
+      /* Prepare the info buffer */
+      sInfoBuffer.buffer = psTransport->pDiscoveryBuffer;
+      sInfoBuffer.length = sizeof(psTransport->pDiscoveryBuffer);
+
+      /* Encode as many requests as possible */
+      nTlvOffset = 0;
+      while(psTransport->nDiscoveryReqOffset < psTransport->nDiscoveryListSize)
+      {
+         /* Get current service name and try to encode it in SNL frame */
+         psServiceName = &psTransport->psDiscoveryServiceNameList[psTransport->nDiscoveryReqOffset];
+         result = phFriNfc_LlcpTransport_EncodeSdreqTlv(&sInfoBuffer,
+                                                        &nTlvOffset,
+                                                        psTransport->nDiscoveryReqOffset,
+                                                        psServiceName);
+         if (result != NFCSTATUS_SUCCESS)
+         {
+            /* Impossible to fit more requests in a single frame,
+             * will be continued on next opportunity
+             */
+            break;
+         }
+
+         /* Update request counter */
+         psTransport->nDiscoveryReqOffset++;
+      }
+
+      /* Update buffer length to match real TLV size */
+      sInfoBuffer.length = nTlvOffset;
+
+      /* Send Pending */
+      psTransport->bSendPending = TRUE;
+
+      /* Send SNL frame */
+      result =  phFriNfc_Llcp_Send(psTransport->pLlcp,
+                                   &psTransport->sLlcpHeader,
+                                   NULL,
+                                   &sInfoBuffer,
+                                   phFriNfc_LlcpTransport_Send_CB,
+                                   psTransport);
+   }
+   else
+   {
+      /* Impossible to send now, this function will be called again on next opportunity */
+   }
+
+   return result;
+}
+
+/*!
+* \ingroup grp_fri_nfc
+* \brief <b>Discover remote services SAP using SDP protocol</b>.
+ */
+NFCSTATUS phFriNfc_LlcpTransport_DiscoverServices( phFriNfc_LlcpTransport_t  *pLlcpTransport,
+                                                   phNfc_sData_t             *psServiceNameList,
+                                                   uint8_t                   *pnSapList,
+                                                   uint8_t                   nListSize,
+                                                   pphFriNfc_Cr_t            pDiscover_Cb,
+                                                   void                      *pContext )
+{
+   NFCSTATUS         result = NFCSTATUS_FAILED;
+
+   /* Save request details */
+   pLlcpTransport->psDiscoveryServiceNameList = psServiceNameList;
+   pLlcpTransport->pnDiscoverySapList = pnSapList;
+   pLlcpTransport->nDiscoveryListSize = nListSize;
+   pLlcpTransport->pfDiscover_Cb = pDiscover_Cb;
+   pLlcpTransport->pDiscoverContext = pContext;
+
+   /* Reset internal counters */
+   pLlcpTransport->nDiscoveryReqOffset = 0;
+   pLlcpTransport->nDiscoveryResOffset = 0;
+
+   /* Perform request */
+   result = phFriNfc_LlcpTransport_DiscoverServicesEx(pLlcpTransport);
+
+   return result;
+}
+
+
  /**
 * \ingroup grp_fri_nfc
 * \brief <b>Create a socket on a LLCP-connected device</b>.
@@ -841,8 +1350,9 @@ NFCSTATUS phFriNfc_LlcpTransport_Close(phFriNfc_LlcpTransport_Socket_t*   pLlcpS
 *
 * This function binds the socket to a local Service Access Point.
 *
-* \param[out] pLlcpSocket           A pointer to a phFriNfc_LlcpTransport_Socket_t.
-* \param[in]  pConfigInfo           A port number for a specific socket
+* \param[in]  pLlcpSocket           A pointer to a phFriNfc_LlcpTransport_Socket_t.
+* \param[in]  nSap                  The SAP number to bind with, or 0 for auto-bind to a free SAP.
+* \param[in]  psServiceName         A pointer to Service Name, or NULL if no service name.
 *
 * \retval NFCSTATUS_SUCCESS                  Operation successful.
 * \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
@@ -855,10 +1365,13 @@ NFCSTATUS phFriNfc_LlcpTransport_Close(phFriNfc_LlcpTransport_Socket_t*   pLlcpS
 */
 
 NFCSTATUS phFriNfc_LlcpTransport_Bind(phFriNfc_LlcpTransport_Socket_t    *pLlcpSocket,
-                                      uint8_t                            nSap)
+                                      uint8_t                            nSap,
+                                      phNfc_sData_t                      *psServiceName)
 {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
    uint8_t i;
+   uint8_t min_sap_range;
+   uint8_t max_sap_range;
 
    /* Check for NULL pointers */
    if(pLlcpSocket == NULL)
@@ -869,25 +1382,59 @@ NFCSTATUS phFriNfc_LlcpTransport_Bind(phFriNfc_LlcpTransport_Socket_t    *pLlcpS
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
    }
-   else if(nSap<2 || nSap>63)
-   {
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-   }
    else
    {
-      /* Test if the nSap it is useb by another socket */
-      for(i=0;i<PHFRINFC_LLCP_NB_SOCKET_MAX;i++)
+      /* Calculate authorized SAP range */
+      if ((psServiceName != NULL) && (psServiceName->length > 0))
       {
-         if((pLlcpSocket->psTransport->pSocketTable[i].socket_sSap == nSap) 
-            && (pLlcpSocket->psTransport->pSocketTable[i].eSocket_Type == pLlcpSocket->eSocket_Type))
+         /* SDP advertised service */
+         min_sap_range = PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST;
+         max_sap_range = PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST;
+      }
+      else
+      {
+         /* Non-SDP advertised service */
+         min_sap_range = PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST;
+         max_sap_range = PHFRINFC_LLCP_SAP_NUMBER;
+      }
+
+      /* Handle dynamic SAP allocation */
+      if (nSap == 0)
+      {
+         status = phFriNfc_LlcpTransport_GetFreeSap(pLlcpSocket->psTransport, psServiceName, &nSap);
+         if (status != NFCSTATUS_SUCCESS)
          {
-            return status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_ALREADY_REGISTERED);
+            return status;
          }
       }
-      /* Set the nSap value of the socket */
-      pLlcpSocket->socket_sSap = nSap;
-      /* Set the socket state */
-      pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
+
+      /* Test the SAP range */
+      if(!IS_BETWEEN(nSap, min_sap_range, max_sap_range) &&
+         !IS_BETWEEN(nSap, PHFRINFC_LLCP_SAP_WKS_FIRST, PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST))
+      {
+         status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+      }
+      else
+      {
+         /* Test if the nSap it is used by another socket */
+         for(i=0;i<PHFRINFC_LLCP_NB_SOCKET_MAX;i++)
+         {
+            if(pLlcpSocket->psTransport->pSocketTable[i].socket_sSap == nSap)
+            {
+               return status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_ALREADY_REGISTERED);
+            }
+         }
+         /* Set service name */
+         status = phFriNfc_LlcpTransport_RegisterName(pLlcpSocket, nSap, psServiceName);
+         if (status != NFCSTATUS_SUCCESS)
+         {
+            return status;
+         }
+         /* Set the nSap value of the socket */
+         pLlcpSocket->socket_sSap = nSap;
+         /* Set the socket state */
+         pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketBound;
+      }
    }
    return status;
 }
@@ -908,7 +1455,6 @@ NFCSTATUS phFriNfc_LlcpTransport_Bind(phFriNfc_LlcpTransport_Socket_t    *pLlcpS
 *
 *
 * \param[in]  pLlcpSocket        A pointer to a phFriNfc_LlcpTransport_Socket_t.
-* \param[in]  psServiceName      A pointer to Service Name 
 * \param[in]  pListen_Cb         The callback to be called each time the
 *                                socket receive a connection request.
 * \param[in]  pContext           Upper layer context to be returned in
@@ -922,14 +1468,13 @@ NFCSTATUS phFriNfc_LlcpTransport_Bind(phFriNfc_LlcpTransport_Socket_t    *pLlcpS
 * \retval NFCSTATUS_FAILED                   Operation failed.
 */
 NFCSTATUS phFriNfc_LlcpTransport_Listen(phFriNfc_LlcpTransport_Socket_t*          pLlcpSocket,
-                                        phNfc_sData_t                             *psServiceName,
                                         pphFriNfc_LlcpTransportSocketListenCb_t   pListen_Cb,
                                         void*                                     pContext)
 {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
 
    /* Check for NULL pointers */
-   if(pLlcpSocket == NULL || pListen_Cb == NULL|| pContext == NULL || psServiceName == NULL)
+   if(pLlcpSocket == NULL || pListen_Cb == NULL|| pContext == NULL )
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
@@ -948,33 +1493,107 @@ NFCSTATUS phFriNfc_LlcpTransport_Listen(phFriNfc_LlcpTransport_Socket_t*        
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
-   /* Test the length of the SN */
-   else if(psServiceName->length > PHFRINFC_LLCP_SN_MAX_LENGTH)
-   {
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-   }
-   /* Test the SAP range for SDP-advertised services */
-   else if((psServiceName->length > 0) &&
-           (!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST, PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST)) &&
-           (!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_WKS_FIRST, PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST)))
-   {
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-   }
-   /* Test the SAP range for non SDP-advertised services */
-   else if((psServiceName->length == 0) &&
-           (!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_SDP_UNADVERTISED_FIRST, PHFRINFC_LLCP_SAP_NUMBER)) &&
-           (!IS_BETWEEN(pLlcpSocket->socket_sSap, PHFRINFC_LLCP_SAP_WKS_FIRST, PHFRINFC_LLCP_SAP_SDP_ADVERTISED_FIRST)))
-   {
-      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
-   }
    else
    {
       status = phFriNfc_LlcpTransport_ConnectionOriented_Listen(pLlcpSocket,
-                                                                psServiceName,
                                                                 pListen_Cb,
                                                                 pContext);
    }
    return status;
+}
+
+
+/**
+* \ingroup grp_fri_nfc
+* \brief <b>Register the socket service name</b>.
+*
+* This function changes the service name of the corresponding socket.
+*
+* \param[in]  pLlcpSocket        A pointer to a phFriNfc_LlcpTransport_Socket_t.
+* \param[in]  nSap               SAP number associated to the service name.
+* \param[in]  psServiceName      A pointer to a Service Name.
+*
+* \retval NFCSTATUS_SUCCESS                  Operation successful.
+* \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
+*                                            could not be properly interpreted.
+* \retval NFCSTATUS_FAILED                   Operation failed.
+*/
+static NFCSTATUS phFriNfc_LlcpTransport_RegisterName(phFriNfc_LlcpTransport_Socket_t*   pLlcpSocket,
+                                                     uint8_t                            nSap,
+                                                     phNfc_sData_t                      *psServiceName)
+{
+   phFriNfc_LlcpTransport_t *       psTransport = pLlcpSocket->psTransport;
+   uint8_t                          index;
+   uint8_t                          bSnMatch, bSapMatch;
+
+   /* Check in cache if sap has been used for different service name */
+   for(index=0 ; index<PHFRINFC_LLCP_SDP_ADVERTISED_NB ; index++)
+   {
+      if(psTransport->pCachedServiceNames[index].sServiceName.length == 0)
+      {
+         /* Reached end of table */
+         break;
+      }
+
+      bSnMatch = (memcmp(psTransport->pCachedServiceNames[index].sServiceName.buffer, psServiceName->buffer, psServiceName->length) == 0);
+      bSapMatch = psTransport->pCachedServiceNames[index].nSap == nSap;
+      if(bSnMatch && bSapMatch)
+      {
+         /* Request match cache */
+         break;
+      }
+      else if((bSnMatch && !bSapMatch) || (!bSnMatch && bSapMatch))
+      {
+         /* Request mismatch with cache */
+         return NFCSTATUS_INVALID_PARAMETER;
+      }
+   }
+
+   /* Handle service with no name */
+   if (psServiceName == NULL)
+   {
+      if (pLlcpSocket->sServiceName.buffer != NULL)
+      {
+         phOsalNfc_FreeMemory(pLlcpSocket->sServiceName.buffer);
+      }
+      pLlcpSocket->sServiceName.buffer = NULL;
+      pLlcpSocket->sServiceName.length = 0;
+   }
+   else
+   {
+      /* Check if name already in use */
+      for(index=0;index<PHFRINFC_LLCP_NB_SOCKET_MAX;index++)
+      {
+         phFriNfc_LlcpTransport_Socket_t* pCurrentSocket = &pLlcpSocket->psTransport->pSocketTable[index];
+
+         if(   (pCurrentSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
+            && (pCurrentSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketRegistered))
+         {
+            /* Only bound or listening sockets may have a service name */
+            continue;
+         }
+         if(pCurrentSocket->sServiceName.length != psServiceName->length) {
+            /* Service name do not match, check next */
+            continue;
+         }
+         if(memcmp(pCurrentSocket->sServiceName.buffer, psServiceName->buffer, psServiceName->length) == 0)
+         {
+            /* Service name already in use */
+            return NFCSTATUS_INVALID_PARAMETER;
+         }
+      }
+
+      /* Store the listen socket SN */
+      pLlcpSocket->sServiceName.length = psServiceName->length;
+      pLlcpSocket->sServiceName.buffer = phOsalNfc_GetMemory(psServiceName->length);
+      if (pLlcpSocket->sServiceName.buffer == NULL)
+      {
+          return NFCSTATUS_NOT_ENOUGH_MEMORY;
+      }
+      memcpy(pLlcpSocket->sServiceName.buffer, psServiceName->buffer, psServiceName->length);
+   }
+
+   return NFCSTATUS_SUCCESS;
 }
 
 /**
@@ -1133,6 +1752,7 @@ NFCSTATUS phFriNfc_LlcpTransport_Connect( phFriNfc_LlcpTransport_Socket_t*      
                                           void*                                      pContext)
 {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
+   uint8_t nLocalSap;
    uint8_t i;
 
    /* Check for NULL pointers */
@@ -1150,7 +1770,11 @@ NFCSTATUS phFriNfc_LlcpTransport_Connect( phFriNfc_LlcpTransport_Socket_t*      
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
    }
-
+   /* Test if the socket has a service name */
+   else if(pLlcpSocket->sServiceName.length != 0)
+   {
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
+   }
    /* Test if the socket is not in connecting or connected state*/
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketCreated && pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
    {
@@ -1161,11 +1785,13 @@ NFCSTATUS phFriNfc_LlcpTransport_Connect( phFriNfc_LlcpTransport_Socket_t*      
       /* Implicit bind if socket is not already bound */
       if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
       {
-         status = phFriNfc_LlcpTransport_AutoBind(pLlcpSocket);
+         /* Bind to a free sap */
+         status = phFriNfc_LlcpTransport_GetFreeSap(pLlcpSocket->psTransport, NULL, &nLocalSap);
          if (status != NFCSTATUS_SUCCESS)
          {
             return status;
          }
+         pLlcpSocket->socket_sSap = nLocalSap;
       }
 
       /* Test the SAP range for non SDP-advertised services */
@@ -1218,6 +1844,7 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectByUri(phFriNfc_LlcpTransport_Socket_t*  
 {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
    uint8_t i;
+   uint8_t nLocalSap;
 
    /* Check for NULL pointers */
    if(pLlcpSocket == NULL || pConnect_RspCb == NULL || pContext == NULL)
@@ -1244,11 +1871,13 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectByUri(phFriNfc_LlcpTransport_Socket_t*  
       /* Implicit bind if socket is not already bound */
       if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
       {
-         status = phFriNfc_LlcpTransport_AutoBind(pLlcpSocket);
+         /* Bind to a free sap */
+         status = phFriNfc_LlcpTransport_GetFreeSap(pLlcpSocket->psTransport, NULL, &nLocalSap);
          if (status != NFCSTATUS_SUCCESS)
          {
             return status;
          }
+         pLlcpSocket->socket_sSap = nLocalSap;
       }
 
       /* Test the SAP range for non SDP-advertised services */

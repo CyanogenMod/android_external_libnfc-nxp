@@ -86,6 +86,7 @@ NFCSTATUS phFriNfc_Llcp_EncodeTLV( phNfc_sData_t  *psValueBuffer,
                                    uint8_t        *pValue)
 {
    uint32_t offset = *pOffset;
+   uint32_t finalOffset = offset + 2 + length; /* 2 stands for Type and Length fields size */
    uint8_t i;
 
    /* Check for NULL pointers */
@@ -100,8 +101,8 @@ NFCSTATUS phFriNfc_Llcp_EncodeTLV( phNfc_sData_t  *psValueBuffer,
       return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
    }
 
-   /* Check if enough room for Type and Length (with overflow check) */
-   if ((offset+2 > psValueBuffer->length) && (offset+2 > offset))
+   /* Check if enough room for Type, Length and Value (with overflow check) */
+   if ((finalOffset > psValueBuffer->length) || (finalOffset < offset))
    {
       return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
    }
@@ -125,6 +126,47 @@ NFCSTATUS phFriNfc_Llcp_EncodeTLV( phNfc_sData_t  *psValueBuffer,
 
    return NFCSTATUS_SUCCESS;
 }
+
+NFCSTATUS phFriNfc_Llcp_AppendTLV( phNfc_sData_t  *psValueBuffer,
+                                   uint32_t       nTlvOffset,
+                                   uint32_t       *pCurrentOffset,
+                                   uint8_t        length,
+                                   uint8_t        *pValue)
+{
+   uint32_t offset = *pCurrentOffset;
+   uint32_t finalOffset = offset + length;
+
+   /* Check for NULL pointers */
+   if ((psValueBuffer == NULL) || (pCurrentOffset == NULL) || (pValue == NULL))
+   {
+      return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+   }
+
+   /* Check offset */
+   if (offset > psValueBuffer->length)
+   {
+      return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+   }
+
+   /* Check if enough room for Type and Length (with overflow check) */
+   if ((finalOffset > psValueBuffer->length) || (finalOffset < offset))
+   {
+      return PHNFCSTVAL(CID_FRI_NFC_LLCP, NFCSTATUS_INVALID_PARAMETER);
+   }
+
+   /* Update the LENGTH */
+   psValueBuffer->buffer[nTlvOffset+1] += length;
+
+   /* Set the VALUE */
+   memcpy(psValueBuffer->buffer + offset, pValue, length);
+   offset += length;
+
+   /* Save updated offset */
+   *pCurrentOffset = offset;
+
+   return NFCSTATUS_SUCCESS;
+}
+
 
 /* TODO: comment function EncodeMIUX */
 void phFriNfc_Llcp_EncodeMIUX(uint16_t miux,
