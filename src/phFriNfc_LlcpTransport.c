@@ -147,6 +147,105 @@ static void phFriNfc_LlcpTransport__Recv_CB(void            *pContext,
 }
 
 
+/* TODO: comment function Transport recv CB */
+static void phFriNfc_LlcpTransport_Send_CB(void            *pContext,
+                                           NFCSTATUS        status)
+{
+   phFriNfc_LlcpTransport_t         *psTransport = (phFriNfc_LlcpTransport_t*)pContext;
+   NFCSTATUS                        result = NFCSTATUS_FAILED;
+   phNfc_sData_t                    sFrmrBuffer;
+   phFriNfc_Llcp_Send_CB_t          pfSavedCb;
+   void                             *pSavedContext;
+   phFriNfc_LlcpTransport_Socket_t  *pCurrentSocket = NULL;
+   uint8_t                          index;
+
+   /* 1 - Reset the FLAG send pending*/
+
+   psTransport->bSendPending = FALSE;
+
+   /* 2 - Handle pending error responses */
+
+   if(psTransport->bFrmrPending)
+   {
+      /* Reset FRMR pending */
+      psTransport->bFrmrPending = FALSE;
+
+      /* Send Frmr */
+      sFrmrBuffer.buffer = psTransport->FrmrInfoBuffer;
+      sFrmrBuffer.length = 0x04; /* Size of FRMR Information field */
+
+      /* Send Pending */
+      psTransport->bSendPending = TRUE;
+
+      result =  phFriNfc_Llcp_Send(psTransport->pLlcp,
+                                   &psTransport->sLlcpHeader,
+                                   NULL,
+                                   &sFrmrBuffer,
+                                   phFriNfc_LlcpTransport_Send_CB,
+                                   psTransport);
+
+   }
+   else if(psTransport->bDmPending)
+   {
+      /* Reset DM pending */
+      psTransport->bDmPending = FALSE;
+
+      /* Send DM pending */
+      result = phFriNfc_LlcpTransport_SendDisconnectMode(psTransport,
+                                                         psTransport->DmInfoBuffer[0],
+                                                         psTransport->DmInfoBuffer[1],
+                                                         psTransport->DmInfoBuffer[2]);
+   }
+
+   /* 3 - Call the original callback */
+
+   if (psTransport->pfLinkSendCb != NULL)
+   {
+      pfSavedCb = psTransport->pfLinkSendCb;
+      pSavedContext = psTransport->pLinkSendContext;
+
+      psTransport->pfLinkSendCb = NULL;
+      psTransport->pLinkSendContext = NULL;
+
+      (*pfSavedCb)(pSavedContext, status);
+   }
+
+   /* 4 - Handle pending send operations */
+
+   /* Init index */
+   index = psTransport->socketIndex;
+
+   /* Check all sockets for pending operation */
+   do
+   {
+      /* Modulo-increment index */
+      index = (index + 1) % PHFRINFC_LLCP_NB_SOCKET_MAX;
+
+      pCurrentSocket = &psTransport->pSocketTable[index];
+
+      /* Dispatch to the corresponding transport layer */
+      if (pCurrentSocket->eSocket_Type == phFriNfc_LlcpTransport_eConnectionOriented)
+      {
+         result = phFriNfc_LlcpTransport_ConnectionOriented_HandlePendingOperations(pCurrentSocket);
+      }
+      else if (pCurrentSocket->eSocket_Type == phFriNfc_LlcpTransport_eConnectionLess)
+      {
+         result = phFriNfc_LlcpTransport_Connectionless_HandlePendingOperations(pCurrentSocket);
+      }
+
+      if (result != NFCSTATUS_FAILED)
+      {
+         /* Stop looping if pending operation has been found */
+         break;
+      }
+
+   } while(index != psTransport->socketIndex);
+
+   /* Save the new index */
+   psTransport->socketIndex = index;
+}
+
+
 /* TODO: comment function Transport reset */
 NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpTransport,
                                         phFriNfc_Llcp_t               *pLlcp)
@@ -265,7 +364,9 @@ NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t *pLlcpTransp
          case phFriNfc_LlcpTransportSocket_eSocketRejected:
             phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
             break;
-         default: break;
+         default:
+            /* Do nothing */
+            break;
          }
       }
       else
@@ -273,6 +374,176 @@ NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t *pLlcpTransp
          phFriNfc_LlcpTransport_Close(&pLlcpTransport->pSocketTable[i]);
       }
    }
+   return status;
+}
+
+
+/* TODO: comment function Transport LinkSend */
+NFCSTATUS phFriNfc_LlcpTransport_LinkSend( phFriNfc_LlcpTransport_t         *LlcpTransport,
+                                           phFriNfc_Llcp_sPacketHeader_t    *psHeader,
+                                           phFriNfc_Llcp_sPacketSequence_t  *psSequence,
+                                           phNfc_sData_t                    *psInfo,
+                                           phFriNfc_Llcp_Send_CB_t          pfSend_CB,
+                                           void                             *pContext )
+{
+   /* Check if a send is already ongoing */
+   if (LlcpTransport->pfLinkSendCb != NULL)
+   {
+      return NFCSTATUS_BUSY;
+   }
+
+   /* Save callback details */
+   LlcpTransport->pfLinkSendCb = pfSend_CB;
+   LlcpTransport->pLinkSendContext = pContext;
+
+   /* Call the link-level send function */
+   return phFriNfc_Llcp_Send(LlcpTransport->pLlcp, psHeader, psSequence, psInfo, phFriNfc_LlcpTransport_Send_CB, (void*)LlcpTransport);
+}
+
+
+/* TODO: comment function Transport SendFrameReject */
+NFCSTATUS phFriNfc_LlcpTransport_SendFrameReject(phFriNfc_LlcpTransport_t           *psTransport,
+                                                 uint8_t                            dsap,
+                                                 uint8_t                            rejectedPTYPE,
+                                                 uint8_t                            ssap,
+                                                 phFriNfc_Llcp_sPacketSequence_t*   sLlcpSequence,
+                                                 uint8_t                            WFlag,
+                                                 uint8_t                            IFlag,
+                                                 uint8_t                            RFlag,
+                                                 uint8_t                            SFlag,
+                                                 uint8_t                            vs,
+                                                 uint8_t                            vsa,
+                                                 uint8_t                            vr,
+                                                 uint8_t                            vra)
+{
+   NFCSTATUS                       status = NFCSTATUS_SUCCESS;
+   phNfc_sData_t                   sFrmrBuffer;
+   uint8_t                         flagValue;
+   uint8_t                         sequence = 0;
+   uint8_t     index;
+   uint8_t     socketFound = FALSE;
+
+   /* Search a socket waiting for a FRAME */
+   for(index=0;index<PHFRINFC_LLCP_NB_SOCKET_MAX;index++)
+   {
+      /* Test if the socket is in connected state and if its SSAP and DSAP are valid */
+      if(psTransport->pSocketTable[index].socket_sSap == dsap
+         && psTransport->pSocketTable[index].socket_dSap == ssap)
+      {
+         /* socket found */
+         socketFound = TRUE;
+         break;
+      }
+   }
+
+   /* Test if a socket has been found */
+   if(socketFound)
+   {
+      /* Set socket state to disconnected */
+      psTransport->pSocketTable[index].eSocket_State =  phFriNfc_LlcpTransportSocket_eSocketDefault;
+
+      /* Call ErrCB due to a FRMR*/
+      psTransport->pSocketTable[index].pSocketErrCb( psTransport->pSocketTable[index].pContext,PHFRINFC_LLCP_ERR_FRAME_REJECTED);
+
+      /* Close the socket */
+      status = phFriNfc_LlcpTransport_ConnectionOriented_Close(&psTransport->pSocketTable[index]);
+
+      /* Set FRMR Header */
+      psTransport->sLlcpHeader.dsap   = dsap;
+      psTransport->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_FRMR;
+      psTransport->sLlcpHeader.ssap   = ssap;
+
+      /* Set FRMR Information Field */
+      flagValue = (WFlag<<7) | (IFlag<<6) | (RFlag<<5) | (SFlag<<4) | rejectedPTYPE;
+      if (sLlcpSequence != NULL)
+      {
+         sequence = (uint8_t)((sLlcpSequence->ns<<4)|(sLlcpSequence->nr));
+      }
+
+      psTransport->FrmrInfoBuffer[0] = flagValue;
+      psTransport->FrmrInfoBuffer[1] = sequence;
+      psTransport->FrmrInfoBuffer[2] = (vs<<4)|vr ;
+      psTransport->FrmrInfoBuffer[3] = (vsa<<4)|vra ;
+
+      /* Test if a send is pending */
+      if(psTransport->bSendPending)
+      {
+         psTransport->bFrmrPending = TRUE;
+         status = NFCSTATUS_PENDING;
+      }
+      else
+      {
+         sFrmrBuffer.buffer =  psTransport->FrmrInfoBuffer;
+         sFrmrBuffer.length =  0x04; /* Size of FRMR Information field */
+
+         /* Send Pending */
+         psTransport->bSendPending = TRUE;
+
+         /* Send FRMR frame */
+         status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
+                                      &psTransport->sLlcpHeader,
+                                      NULL,
+                                      &sFrmrBuffer,
+                                      phFriNfc_LlcpTransport_Send_CB,
+                                      psTransport);
+      }
+   }
+   else
+   {
+      /* No active  socket*/
+      /* FRMR Frame not handled*/
+   }
+   return status;
+}
+
+
+/* TODO: comment function Transport SendDisconnectMode (NOTE: used only
+ * for requests not bound to a socket, like "service not found")
+ */
+NFCSTATUS phFriNfc_LlcpTransport_SendDisconnectMode(phFriNfc_LlcpTransport_t* psTransport,
+                                                    uint8_t                   dsap,
+                                                    uint8_t                   ssap,
+                                                    uint8_t                   dmOpCode)
+{
+   NFCSTATUS                       status = NFCSTATUS_SUCCESS;
+
+   /* Test if a send is pending */
+   if(psTransport->bSendPending)
+   {
+      /* DM pending */
+      psTransport->bDmPending        = TRUE;
+
+      /* Store DM Info */
+      psTransport->DmInfoBuffer[0] = dsap;
+      psTransport->DmInfoBuffer[1] = ssap;
+      psTransport->DmInfoBuffer[2] = dmOpCode;
+
+     status = NFCSTATUS_PENDING;
+   }
+   else
+   {
+      /* Set the header */
+      psTransport->sDmHeader.dsap  = dsap;
+      psTransport->sDmHeader.ptype = PHFRINFC_LLCP_PTYPE_DM;
+      psTransport->sDmHeader.ssap  = ssap;
+
+      /* Save Operation Code to be provided in DM frame payload */
+      psTransport->DmInfoBuffer[2] = dmOpCode;
+      psTransport->sDmPayload.buffer    = &psTransport->DmInfoBuffer[2];
+      psTransport->sDmPayload.length    = PHFRINFC_LLCP_DM_LENGTH;
+
+      /* Send Pending */
+      psTransport->bSendPending = TRUE;
+
+      /* Send DM frame */
+      status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
+                                   &psTransport->sDmHeader,
+                                   NULL,
+                                   &psTransport->sDmPayload,
+                                   phFriNfc_LlcpTransport_Send_CB,
+                                   psTransport);
+   }
+
    return status;
 }
 
@@ -1241,6 +1512,11 @@ NFCSTATUS phFriNfc_LlcpTransport_SendTo( phFriNfc_LlcpTransport_Socket_t        
    else if(pLlcpSocket->eSocket_State != phFriNfc_LlcpTransportSocket_eSocketBound)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_STATE);
+   }
+   /* Test if a send is pending */
+   else if(pLlcpSocket->pfSocketSend_Cb != NULL)
+   {
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_REJECTED);
    }
    else
    {

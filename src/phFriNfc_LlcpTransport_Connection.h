@@ -30,12 +30,13 @@
 
 #include <phFriNfc_Llcp.h>
 
-
 void Handle_ConnectionOriented_IncommingFrame(phFriNfc_LlcpTransport_t      *pLlcpTransport,
                                               phNfc_sData_t                 *psData,
                                               uint8_t                       dsap,
                                               uint8_t                       ptype,
                                               uint8_t                       ssap);
+
+NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_HandlePendingOperations(phFriNfc_LlcpTransport_Socket_t *pSocket);
 
 /**
 * \ingroup grp_lib_nfc

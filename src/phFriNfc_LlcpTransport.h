@@ -238,6 +238,9 @@ struct phFriNfc_LlcpTransport
    bool_t                                bDmPending;
    bool_t                                bFrmrPending;
 
+   phFriNfc_Llcp_Send_CB_t               pfLinkSendCb;
+   void                                  *pLinkSendContext;
+
    uint8_t                               socketIndex;
 
    /**< Info field of pending FRMR packet*/
@@ -274,6 +277,50 @@ NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpSock
 *
 */
 NFCSTATUS phFriNfc_LlcpTransport_CloseAll (phFriNfc_LlcpTransport_t  *pLlcpSocketTable);
+
+
+/**
+* \ingroup grp_fri_nfc
+* \brief <b>Used by transport layers to request a send on link layer</b>.
+*
+*/
+NFCSTATUS phFriNfc_LlcpTransport_LinkSend( phFriNfc_LlcpTransport_t         *LlcpTransport,
+                                           phFriNfc_Llcp_sPacketHeader_t    *psHeader,
+                                           phFriNfc_Llcp_sPacketSequence_t  *psSequence,
+                                           phNfc_sData_t                    *psInfo,
+                                           phFriNfc_Llcp_Send_CB_t          pfSend_CB,
+                                           void                             *pContext );
+
+
+/**
+* \ingroup grp_fri_nfc
+* \brief <b>Used by transport layers to send a DM frame</b>.
+*
+*  This function is only used when the DM is not related to a DISC on a socket.
+*/
+NFCSTATUS phFriNfc_LlcpTransport_SendDisconnectMode(phFriNfc_LlcpTransport_t* psTransport,
+                                                    uint8_t                   dsap,
+                                                    uint8_t                   ssap,
+                                                    uint8_t                   dmOpCode);
+
+/**
+* \ingroup grp_fri_nfc
+* \brief <b>Used by transport layers to send a FRMR frame</b>.
+*
+*/
+NFCSTATUS phFriNfc_LlcpTransport_SendFrameReject(phFriNfc_LlcpTransport_t           *psTransport,
+                                                 uint8_t                            dsap,
+                                                 uint8_t                            rejectedPTYPE,
+                                                 uint8_t                            ssap,
+                                                 phFriNfc_Llcp_sPacketSequence_t*   sLlcpSequence,
+                                                 uint8_t                            WFlag,
+                                                 uint8_t                            IFlag,
+                                                 uint8_t                            RFlag,
+                                                 uint8_t                            SFlag,
+                                                 uint8_t                            vs,
+                                                 uint8_t                            vsa,
+                                                 uint8_t                            vr,
+                                                 uint8_t                            vra);
 
 
 /**

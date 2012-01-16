@@ -29,6 +29,39 @@
 #include <phFriNfc_LlcpTransport.h>
 #include <phFriNfc_Llcp.h>
 
+static void phFriNfc_LlcpTransport_Connectionless_SendTo_CB(void*        pContext,
+                                                            NFCSTATUS    status);
+
+NFCSTATUS phFriNfc_LlcpTransport_Connectionless_HandlePendingOperations(phFriNfc_LlcpTransport_Socket_t *pSocket)
+{
+   NFCSTATUS status = NFCSTATUS_FAILED;
+
+   /* Check if something is pending and if transport layer is ready to send */
+   if ((pSocket->pfSocketSend_Cb != NULL) &&
+       (pSocket->psTransport->bSendPending == FALSE))
+   {
+      /* Fill the psLlcpHeader stuture with the DSAP,PTYPE and the SSAP */
+      pSocket->sLlcpHeader.dsap  = pSocket->socket_dSap;
+      pSocket->sLlcpHeader.ptype = PHFRINFC_LLCP_PTYPE_UI;
+      pSocket->sLlcpHeader.ssap  = pSocket->socket_sSap;
+
+      /* Send to data to the approiate socket */
+      status =  phFriNfc_LlcpTransport_LinkSend(pSocket->psTransport,
+                                   &pSocket->sLlcpHeader,
+                                   NULL,
+                                   &pSocket->sSocketSendBuffer,
+                                   phFriNfc_LlcpTransport_Connectionless_SendTo_CB,
+                                   pSocket);
+   }
+   else
+   {
+      /* Cannot send now, retry later */
+   }
+
+   return status;
+}
+
+
 /* TODO: comment function Handle_Connectionless_IncommingFrame */
 void Handle_Connectionless_IncommingFrame(phFriNfc_LlcpTransport_t      *pLlcpTransport,
                                           phNfc_sData_t                 *psData,
@@ -66,19 +99,17 @@ void Handle_Connectionless_IncommingFrame(phFriNfc_LlcpTransport_t      *pLlcpTr
 static void phFriNfc_LlcpTransport_Connectionless_SendTo_CB(void*        pContext,
                                                             NFCSTATUS    status)
 {
-   phFriNfc_LlcpTransport_Socket_t   *pLlcpSocket = (phFriNfc_LlcpTransport_Socket_t*)pContext;
-   pphFriNfc_LlcpTransportSocketSendCb_t pfSendCallback = pLlcpSocket->pfSocketSend_Cb;
-
-   /* Reset the SendPending variable */
-   pLlcpSocket->bSocketSendPending = FALSE;
-
-   /* Clear out the callback */
-   pLlcpSocket->pfSocketSend_Cb = NULL;
+   phFriNfc_LlcpTransport_Socket_t *         pLlcpSocket = (phFriNfc_LlcpTransport_Socket_t*)pContext;
+   pphFriNfc_LlcpTransportSocketSendCb_t     pfSavedCallback;
+   void *                                    pSavedContext;
 
    /* Call the send callback */
-   pfSendCallback(pLlcpSocket->pSendContext,status);
-
-   
+   pfSavedCallback = pLlcpSocket->pfSocketSend_Cb;
+   if (pfSavedCallback != NULL)
+   {
+      pLlcpSocket->pfSocketSend_Cb = NULL;
+      pfSavedCallback(pLlcpSocket->pSendContext, status);
+   }
 }
 
 static void phFriNfc_LlcpTransport_Connectionless_Abort(phFriNfc_LlcpTransport_Socket_t* pLlcpSocket)
@@ -185,19 +216,19 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_SendTo(phFriNfc_LlcpTransport_So
                                                        pphFriNfc_LlcpTransportSocketSendCb_t       pSend_RspCb,
                                                        void*                                       pContext)
 {
-   NFCSTATUS status = NFCSTATUS_SUCCESS;
+   NFCSTATUS status = NFCSTATUS_FAILED;
 
    /* Store send callback  and context*/
    pLlcpSocket->pfSocketSend_Cb = pSend_RspCb;
    pLlcpSocket->pSendContext    = pContext;
 
-   /* Test if a send is pending with this socket */
-   if(pLlcpSocket->bSocketSendPending == TRUE)
+   /* Test if a send is already pending at transport level */
+   if(pLlcpSocket->psTransport->bSendPending == TRUE)
    {
-      pphFriNfc_LlcpTransportSocketSendCb_t pfSendCallback = pLlcpSocket->pfSocketSend_Cb;
-      status = NFCSTATUS_FAILED;
-      pLlcpSocket->pfSocketSend_Cb = NULL;
-      pfSendCallback(pLlcpSocket->pSendContext,status);
+      /* Save the request so it can be handled in phFriNfc_LlcpTransport_Connectionless_HandlePendingOperations() */
+      pLlcpSocket->sSocketSendBuffer = *psBuffer;
+      pLlcpSocket->socket_dSap      = nSap;
+      status = NFCSTATUS_PENDING;
    }
    else
    {
@@ -206,10 +237,8 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_SendTo(phFriNfc_LlcpTransport_So
       pLlcpSocket->sLlcpHeader.ptype = PHFRINFC_LLCP_PTYPE_UI;
       pLlcpSocket->sLlcpHeader.ssap  = pLlcpSocket->socket_sSap;
 
-      pLlcpSocket->bSocketSendPending = TRUE;
-
       /* Send to data to the approiate socket */
-      status =  phFriNfc_Llcp_Send(pLlcpSocket->psTransport->pLlcp,
+      status =  phFriNfc_LlcpTransport_LinkSend(pLlcpSocket->psTransport,
                                    &pLlcpSocket->sLlcpHeader,
                                    NULL,
                                    psBuffer,

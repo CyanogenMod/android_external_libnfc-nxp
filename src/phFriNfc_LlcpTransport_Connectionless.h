@@ -36,6 +36,8 @@ void Handle_Connectionless_IncommingFrame(phFriNfc_LlcpTransport_t      *pLlcpTr
                                           uint8_t                       dsap,
                                           uint8_t                       ssap);
 
+NFCSTATUS phFriNfc_LlcpTransport_Connectionless_HandlePendingOperations(phFriNfc_LlcpTransport_Socket_t *pSocket);
+
 /**
 * \ingroup grp_fri_nfc
 * \brief <b>Close a socket on a LLCP-connectionless device</b>.
