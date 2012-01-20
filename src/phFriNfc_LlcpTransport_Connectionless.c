@@ -42,6 +42,7 @@ void Handle_Connectionless_IncommingFrame(phFriNfc_LlcpTransport_t      *pLlcpTr
       /* Test if a socket is registered to get this packet */
       if(pLlcpTransport->pSocketTable[i].socket_sSap == dsap && pLlcpTransport->pSocketTable[i].bSocketRecvPending == TRUE)
       {
+         pphFriNfc_LlcpTransportSocketRecvFromCb_t pfRecvFromCallback = pLlcpTransport->pSocketTable[i].pfSocketRecvFrom_Cb;
          /* Reset the RecvPending variable */
          pLlcpTransport->pSocketTable[i].bSocketRecvPending = FALSE;
 
@@ -51,8 +52,11 @@ void Handle_Connectionless_IncommingFrame(phFriNfc_LlcpTransport_t      *pLlcpTr
          /* Update the received length */
          *pLlcpTransport->pSocketTable[i].receivedLength = psData->length;
 
+         /* Clear the Recv callback */
+         pLlcpTransport->pSocketTable[i].pfSocketRecvFrom_Cb = NULL;
+
          /* call the Recv callback */
-         pLlcpTransport->pSocketTable[i].pfSocketRecvFrom_Cb(pLlcpTransport->pSocketTable[i].pRecvContext,ssap,NFCSTATUS_SUCCESS);
+         pfRecvFromCallback(pLlcpTransport->pSocketTable[i].pRecvContext,ssap,NFCSTATUS_SUCCESS);
          break;
       }
    }
@@ -63,12 +67,17 @@ static void phFriNfc_LlcpTransport_Connectionless_SendTo_CB(void*        pContex
                                                             NFCSTATUS    status)
 {
    phFriNfc_LlcpTransport_Socket_t   *pLlcpSocket = (phFriNfc_LlcpTransport_Socket_t*)pContext;
+   pphFriNfc_LlcpTransportSocketSendCb_t pfSendCallback = pLlcpSocket->pfSocketSend_Cb;
 
    /* Reset the SendPending variable */
    pLlcpSocket->bSocketSendPending = FALSE;
 
+   /* Clear out the callback */
+   pLlcpSocket->pfSocketSend_Cb = NULL;
+
    /* Call the send callback */
-   pLlcpSocket->pfSocketSend_Cb(pLlcpSocket->pSendContext,status);
+   pfSendCallback(pLlcpSocket->pSendContext,status);
+
    
 }
 
@@ -185,8 +194,10 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_SendTo(phFriNfc_LlcpTransport_So
    /* Test if a send is pending with this socket */
    if(pLlcpSocket->bSocketSendPending == TRUE)
    {
+      pphFriNfc_LlcpTransportSocketSendCb_t pfSendCallback = pLlcpSocket->pfSocketSend_Cb;
       status = NFCSTATUS_FAILED;
-      pLlcpSocket->pfSocketSend_Cb(pLlcpSocket->pSendContext,status);
+      pLlcpSocket->pfSocketSend_Cb = NULL;
+      pfSendCallback(pLlcpSocket->pSendContext,status);
    }
    else
    {
