@@ -927,7 +927,9 @@ NFCSTATUS phHal4Nfc_RegisterNotification(
                     = pNotificationHandler;  /*Register the P2P Notification*/
                 break;
             case eRegisterHostCardEmulation:
-                RetStatus = NFCSTATUS_FEATURE_NOT_SUPPORTED;
+                Hal4Ctxt->sUpperLayerInfo.HCEEventNotificationCtxt = Context;
+                Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification 
+                       = pNotificationHandler; /*Register the CE Notification*/
                 break;
             case eRegisterSecureElement:
                 Hal4Ctxt->sUpperLayerInfo.EventNotificationCtxt = Context;
@@ -990,8 +992,10 @@ NFCSTATUS phHal4Nfc_UnregisterNotification(
             Hal4Ctxt->sUpperLayerInfo.pP2PNotification = NULL;  
             PHDBG_INFO("Hal4:P2P Discovery Listener Unregistered");
             break;            
-        case eRegisterHostCardEmulation:/*RFU*/
-            RetStatus = NFCSTATUS_FEATURE_NOT_SUPPORTED;
+        case eRegisterHostCardEmulation:
+            Hal4Ctxt->sUpperLayerInfo.HCEEventNotificationCtxt = NULL;
+            Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification = NULL;
+            PHDBG_INFO("Hal4:SE Listener Unregistered");
             break;
             /*UnRegister the Se Notification*/
         case eRegisterSecureElement:

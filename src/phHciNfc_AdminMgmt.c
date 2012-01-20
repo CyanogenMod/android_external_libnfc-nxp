@@ -322,6 +322,14 @@ phHciNfc_Admin_Initialise(
                     cmp_val = phOsalNfc_MemCompare(p_hw_config->session_id , 
                                  p_hw_ref->session_id , 
                                          sizeof(p_hw_ref->session_id));
+//this ifdef can be removed when this is not a patch that is being 
+//administered after a new release of Android.  it is required that 
+//the new pipes for A and B emu get created for the CE patch
+//if this patch is adminstered after the phone has been updated with
+//a release, it is possible that the create A/B pipe code could never
+//get executed, so we are forcing it every time.  this can be removed
+//for a main build with a new OS release
+#ifndef FIRST_CE_PATCH
                     if((cmp_val == 0) 
                         && ( HCI_SESSION == psHciContext->init_mode)
                         )
@@ -352,6 +360,7 @@ phHciNfc_Admin_Initialise(
                         break;
                     }
                     else
+#endif
                     {
                         /* To clear the pipe information*/
                         psHciContext->hci_mode = hciMode_Override;

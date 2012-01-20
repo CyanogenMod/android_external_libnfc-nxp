@@ -173,6 +173,9 @@ typedef struct phHal4Nfc_UpperLayerInfo{
     void                            *EventNotificationCtxt;
     /**Notification handler for emulation and other events*/
     pphHal4Nfc_Notification_t        pEventNotification;
+    /**Notification handler for emulation and other events*/
+    void                            *HCEEventNotificationCtxt;
+    pphHal4Nfc_Notification_t        pHCEEventNotification;
     /**Upper layer's Config discovery/Emulation callback registry*/
     pphHal4Nfc_GenCallback_t         pConfigCallback;
     void                            *psUpperLayerCtxt;
@@ -279,8 +282,20 @@ extern void phHal4Nfc_HandleEmulationEvent(
 /*Callback completion routine for NFCIP1 Receive*/
 extern void phHal4Nfc_RecvCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
 
+/*Callback completion routine for CE_A Receive*/
+extern void phHal4Nfc_CE_A_RecvCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
+
+/*Callback completion routine for CE_B Receive*/
+extern void phHal4Nfc_CE_B_RecvCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
+
 /*Callback completion routine for Send*/
 extern void phHal4Nfc_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
+
+/*Callback completion routine for Send*/
+extern void phHal4Nfc_CE_A_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
+
+/*Callback completion routine for Send*/
+extern void phHal4Nfc_CE_B_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
 
 /*Callback completion routine for P2P Activate Event received from HCI*/
 extern void phHal4Nfc_P2PActivateComplete(

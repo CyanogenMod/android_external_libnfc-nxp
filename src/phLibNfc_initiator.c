@@ -1010,6 +1010,16 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
         RetVal= NFCSTATUS_BUSY;
     }
 #endif /* #ifdef LLCP_TRANSACT_CHANGES */
+#if defined (HOST_EMULATION)
+    else if(((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType == phHal_eISO14443_A_PCD)
+    {
+    	  RetVal = phLibNfc_RemoteDev_CE_A_Transceive(&psTransceiveInfo->sSendData,pTransceive_RspCb,pContext);
+    }
+    else if(((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType == phHal_eISO14443_B_PCD)
+    {
+    	  RetVal = phLibNfc_RemoteDev_CE_B_Transceive(&psTransceiveInfo->sSendData,pTransceive_RspCb,pContext);
+    }
+#endif //HOST_EMULATION
     else
     {
         gpphLibContext->ndef_cntx.eLast_Call = RawTrans;

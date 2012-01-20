@@ -59,6 +59,8 @@
 #include <phHciNfc_WI.h>
 #include <phOsalNfc.h>
 
+#include <phHciNfc_CE_A.h>
+#include <phHciNfc_CE_B.h>
 /*
 ################################################################################
 ****************************** Macro Definitions *******************************
@@ -2342,6 +2344,22 @@ phHciNfc_Transact_Sequence(
             psHciContext->p_xchg_info = NULL ;
             break;
         }
+#if defined(HOST_EMULATION)
+        case phHal_eISO14443_A_PICC:
+        {
+            HCI_PRINT(" HCI Send operation Completed. \n");
+            transact_info.status = NFCSTATUS_SUCCESS;
+            transact_result = NFC_NOTIFY_SEND_CE_A_COMPLETED;
+            break;
+        }
+        case phHal_eISO14443_B_PICC:
+        {
+            HCI_PRINT(" HCI Send operation Completed. \n");
+            transact_info.status = NFCSTATUS_SUCCESS;
+            transact_result = NFC_NOTIFY_SEND_CE_B_COMPLETED;
+            break;
+        }
+#endif
 #if defined(ENABLE_P2P)
         case phHal_eNfcIP1_Initiator:
         case phHal_eNfcIP1_Target:

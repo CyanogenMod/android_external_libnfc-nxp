@@ -60,7 +60,17 @@ void phHal4Nfc_HandleEmulationEvent(
             NFCSTATUS_SUCCESS
             );
     }
-    else/*No Event notification handler registered*/
+    if(NULL != Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification)
+    {
+       Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification(
+            Hal4Ctxt->sUpperLayerInfo.HCEEventNotificationCtxt,
+            psNotificationInfo->type,
+            uNotificationInfo,
+            NFCSTATUS_SUCCESS
+            );
+    }
+    if(NULL == Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification &&
+    	 NULL == Hal4Ctxt->sUpperLayerInfo.pEventNotification)
     {
         /*Use default handler to notify to the upper layer*/
         if(NULL != Hal4Ctxt->sUpperLayerInfo.pDefaultEventHandler)

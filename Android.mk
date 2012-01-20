@@ -32,6 +32,7 @@ LOCAL_SRC_FILES += src/phDnldNfc.c
 #phHciNfc
 LOCAL_SRC_FILES += src/phHciNfc_AdminMgmt.c
 LOCAL_SRC_FILES += src/phHciNfc.c
+LOCAL_SRC_FILES += src/phHciNfc_CE.c
 LOCAL_SRC_FILES += src/phHciNfc_CE_A.c
 LOCAL_SRC_FILES += src/phHciNfc_CE_B.c
 LOCAL_SRC_FILES += src/phHciNfc_DevMgmt.c

@@ -104,7 +104,7 @@ static phHciNfc_GateID_t host_gate_list[] = {
 #endif
         phHciNfc_NfcWIMgmtGate,
         phHciNfc_SwpMgmtGate,
-#if defined(HOST_EMULATION) && ( NXP_UICC_CE_RIGHTS < 0x01 )
+#if defined(HOST_EMULATION) /*&& ( NXP_UICC_CE_RIGHTS < 0x01 )*/
         phHciNfc_CETypeAGate,
         phHciNfc_CETypeBGate,
 #endif
@@ -709,11 +709,57 @@ phHciNfc_Create_All_Pipes(
                 {
                     status = phHciNfc_Create_Pipe( psHciContext, pHwRef,
                                 &id_dest, &p_pipe_info);
+#ifndef HOST_EMULATION
+                    status = ((NFCSTATUS_PENDING == status )?
+                                        NFCSTATUS_SUCCESS : status);
+#endif
+                }
+                break;
+            }
+#ifdef HOST_EMULATION
+            case PIPE_CARD_A_CREATE:
+            {
+                phHciNfc_Gate_Info_t        id_dest;
+
+                id_dest.host_id = (uint8_t)phHciNfc_HostControllerID;
+                id_dest.gate_id = (uint8_t)phHciNfc_CETypeAGate;
+
+                status = phHciNfc_CE_A_Init_Resources ( psHciContext );
+                if((status == NFCSTATUS_SUCCESS)
+#ifdef ESTABLISH_SESSION
+                    && (hciMode_Session != psHciContext->hci_mode)
+#endif
+                    )
+                {
+                    status = phHciNfc_Create_Pipe( psHciContext, pHwRef,
+                                &id_dest, &p_pipe_info);
+                    /*status = ((NFCSTATUS_PENDING == status )?
+                                        NFCSTATUS_SUCCESS : status);*/
+                }
+                break;
+            }
+            case PIPE_CARD_B_CREATE:
+            {
+                phHciNfc_Gate_Info_t        id_dest;
+
+                id_dest.host_id = (uint8_t)phHciNfc_HostControllerID;
+                id_dest.gate_id = (uint8_t)phHciNfc_CETypeBGate;
+
+                status = phHciNfc_CE_B_Init_Resources ( psHciContext );
+                if((status == NFCSTATUS_SUCCESS)
+#ifdef ESTABLISH_SESSION
+                    && (hciMode_Session != psHciContext->hci_mode)
+#endif
+                    )
+                {
+                    status = phHciNfc_Create_Pipe( psHciContext, pHwRef,
+                                &id_dest, &p_pipe_info);
                     status = ((NFCSTATUS_PENDING == status )?
                                         NFCSTATUS_SUCCESS : status);
                 }
                 break;
             }
+ #endif //HOST_EMULATION
             /* case PIPE_MGMT_END : */
             default:
             {
@@ -987,7 +1033,11 @@ phHciNfc_Update_PipeInfo(
                             pipe_id, pPipeInfo);
                 if(NFCSTATUS_SUCCESS == status)
                 {
+#ifdef HOST_EMULATION
+                    *pPipeSeq = PIPE_CARD_A_CREATE;
+#else
                     *pPipeSeq = PIPE_DELETE_ALL;
+#endif
                 }
                 break;
             }

@@ -167,35 +167,6 @@ phHciNfc_CE_B_Update_PipeInfo(
 *                                      context Structure.
 *  \param[in]  pHwRef                  pHwRef is the Information of
 *                                      the Device Interface Link
-*  \param[in]  pipeID                  pipeID of the card emulation B gate
-*  \param[in]  pPipeInfo               Update the pipe Information of the card 
-*                                      emulation B gate
-*
-*  \retval NFCSTATUS_SUCCESS           Function execution is successful.
-*  \retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters
-*                                      could not be interpreted properly.
-*
-*/
-#ifdef CE_B_SEND_EVENT
-extern
-NFCSTATUS
-phHciNfc_CE_B_SendData_Event(
-                             void               *psContext,
-                             void               *pHwRef,
-                             uint8_t            *pEvent,
-                             uint8_t            length
-                       );
-#endif /* #ifdef CE_B_SEND_EVENT */
-
-/**
-* \ingroup grp_hci_nfc
-*
-*  The phHciNfc_CE_B_Mode function sends data to the set the card emulation mode
-*
-*  \param[in]  psHciContext            psHciContext is the pointer to HCI Layer
-*                                      context Structure.
-*  \param[in]  pHwRef                  pHwRef is the Information of
-*                                      the Device Interface Link
 *  \param[in]  enable_type             type to enable
 *
 *  \retval NFCSTATUS_SUCCESS           Function execution is successful.
@@ -203,6 +174,7 @@ phHciNfc_CE_B_SendData_Event(
 *                                      could not be interpreted properly.
 *
 */
+extern
 NFCSTATUS
 phHciNfc_CE_B_Mode(
                             void        *psHciHandle,

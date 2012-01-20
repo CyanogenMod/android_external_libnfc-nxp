@@ -41,6 +41,7 @@
 #include <phFriNfc_LlcpTransport.h>
 #include <phOsalNfc_Timer.h>
 #include <phLibNfc_SE.h>
+#include <phHciNfc_CE.h>
 #include <phFriNfc_NdefReg.h>
 #include <phLibNfc.h>
 #include <phLibNfc_initiator.h>
@@ -205,6 +206,7 @@ typedef struct phLibNfc_LibContext
     Status_t                     status;
     phHal_sEmulationCfg_t        sCardEmulCfg;
     phLibNfc_SeCtxt_t            sSeContext;
+    phLibNfc_CeCtxt_t            sCeContext;
     phNfc_sState_t               LibNfcState;
 
     phHal_sDevInputParam_t       *psDevInputParam;

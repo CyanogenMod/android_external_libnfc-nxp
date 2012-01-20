@@ -990,6 +990,22 @@ static void phHal4Nfc_LowerNotificationHandler(
                     phHal4Nfc_SendCompleteHandler(Hal4Ctxt,pInfo);
                 }
                 break;
+#if defined (HOST_EMULATION)
+            case NFC_NOTIFY_SEND_CE_A_COMPLETED   :
+                PHDBG_INFO("Hal4:CE A Send Callback");
+                if(NULL != Hal4Ctxt->psTrcvCtxtInfo)
+                {
+                    phHal4Nfc_CE_A_SendCompleteHandler(Hal4Ctxt,pInfo);
+                }
+                break;
+            case NFC_NOTIFY_SEND_CE_B_COMPLETED   :
+                PHDBG_INFO("Hal4:CE B Send Callback");
+                if(NULL != Hal4Ctxt->psTrcvCtxtInfo)
+                {
+                    phHal4Nfc_CE_B_SendCompleteHandler(Hal4Ctxt,pInfo);
+                }
+                break;
+#endif //HOST_EMULATION
             case NFC_NOTIFY_TRANSACTION  :
                 phHal4Nfc_HandleEmulationEvent(Hal4Ctxt,pInfo);
                 break;
@@ -1013,6 +1029,46 @@ static void phHal4Nfc_LowerNotificationHandler(
                 }
                 phHal4Nfc_RecvCompleteHandler(Hal4Ctxt,pInfo);
                 break;
+#if defined (HOST_EMULATION)
+            case NFC_NOTIFY_CE_A_RECV_EVENT:
+                PHDBG_INFO("Hal4:Receive Event");
+                if(NULL != Hal4Ctxt->psTrcvCtxtInfo)
+                {
+                    if(Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
+                        != PH_OSALNFC_INVALID_TIMER_ID)
+                    {
+                        phOsalNfc_Timer_Stop(
+                            Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
+                            );
+                        phOsalNfc_Timer_Delete(
+                            Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
+                            );
+                        Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
+                            = PH_OSALNFC_INVALID_TIMER_ID;
+                    }
+                }
+                phHal4Nfc_CE_A_RecvCompleteHandler(Hal4Ctxt,pInfo);
+                break;
+            case NFC_NOTIFY_CE_B_RECV_EVENT:
+                PHDBG_INFO("Hal4:Receive Event");
+                if(NULL != Hal4Ctxt->psTrcvCtxtInfo)
+                {
+                    if(Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
+                        != PH_OSALNFC_INVALID_TIMER_ID)
+                    {
+                        phOsalNfc_Timer_Stop(
+                            Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
+                            );
+                        phOsalNfc_Timer_Delete(
+                            Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
+                            );
+                        Hal4Ctxt->psTrcvCtxtInfo->TransactionTimerId
+                            = PH_OSALNFC_INVALID_TIMER_ID;
+                    }
+                }
+                phHal4Nfc_CE_B_RecvCompleteHandler(Hal4Ctxt,pInfo);
+                break;
+#endif  //HOST_EMULATION
             case NFC_NOTIFY_TARGET_PRESENT:
                 phHal4Nfc_PresenceChkComplete(Hal4Ctxt,pInfo);
                 break;

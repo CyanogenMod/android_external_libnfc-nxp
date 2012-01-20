@@ -373,7 +373,17 @@
 #define RECONNECT_SUPPORT
 
 /**< Macro to Enable the Card Emulation Feature */
-/* #define HOST_EMULATION */
+#define HOST_EMULATION 
+
+//this ifdef can be removed when this is not a patch that is being 
+//administered after a new release of Android.  it is required that 
+//the new pipes for A and B emu get created for the CE patch ON THE NFC CHIP
+//if this patch is adminstered AFTER the phone has been already updated with
+//a release, it is possible that the create A/B pipe code could never
+//get executed, so we are forcing it every time.  this can be removed
+//for a main build with a new OS release, or any time this build has run at 
+//least once on a device
+#define FIRST_CE_PATCH
 
 #define NXP_HAL_VERIFY_EEPROM_CRC  0x01U
 

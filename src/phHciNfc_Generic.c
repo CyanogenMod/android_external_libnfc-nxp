@@ -1911,6 +1911,8 @@ phHciNfc_Notify_Event(
             case NFC_NOTIFY_EVENT:
             /* To Notify the Data Receive  Notification 
              * to the Above Layer */
+            case NFC_NOTIFY_CE_A_RECV_EVENT:
+            case NFC_NOTIFY_CE_B_RECV_EVENT:
             case NFC_NOTIFY_RECV_EVENT:
             {
                 phNfc_sCompletionInfo_t *psCompInfo = 
@@ -1923,6 +1925,17 @@ phHciNfc_Notify_Event(
                     /* Rollback due to Transmission Error */
                     phHciNfc_FSM_Rollback(psHciContext);
                 }
+                if(((phHal_sEventInfo_t *)pInfo)->eventType == NFC_EVT_DEACTIVATED)
+                { 
+                	  //reset HCI state   
+                	  phHciNfc_FSM_Rollback(psHciContext);
+                }
+                else if(((phHal_sEventInfo_t *)pInfo)->eventType == NFC_EVT_ACTIVATED)
+                { 
+                	  //update the HCI state
+                	  phHciNfc_FSM_Update(psHciContext,hciState_Transact);
+                }
+
                 psHciContext->event_pending = FALSE;
                 phHciNfc_Notify(psHciContext->p_upper_notify,
                             psHciContext->p_upper_context, pHwRef,

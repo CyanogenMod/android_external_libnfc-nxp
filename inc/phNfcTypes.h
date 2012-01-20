@@ -603,6 +603,22 @@ typedef struct phNfc_sIso14443BInfo_t
                                                              Tag Discovered */
 } phNfc_sIso14443BInfo_t;
 
+/** \ingroup grp_hal_nfci
+*
+*  \brief Remote Device 14443-4 Card RF Gate Information Container 
+*
+*  The <em> Card 14443-4 structure </em> includes the available information
+*  related to the discovered ISO14443-4 PCD remote device. This information 
+*  is updated for every device discovery.
+*  \note None.
+*
+*/
+typedef struct phNfc_sIso14443_4_PCD_Info_t 
+{
+    uint8_t         *buffer;  /**< Data submitted to the emulated card*/  
+    uint16_t        length;  /**< Data length*/  
+} phNfc_sIso14443_4_PCD_Info_t;
+
 
 /** \ingroup grp_hal_nfci
 *
@@ -767,6 +783,7 @@ typedef union phNfc_uRemoteDevInfo_t
     phNfc_sFelicaInfo_t             Felica_Info;
     phNfc_sJewelInfo_t              Jewel_Info;
     phNfc_sIso15693Info_t           Iso15693_Info;
+    phNfc_sIso14443_4_PCD_Info_t    Iso14443_4_PCD_Info;
 } phNfc_uRemoteDevInfo_t;
 
 

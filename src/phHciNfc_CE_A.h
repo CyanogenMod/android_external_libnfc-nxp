@@ -167,35 +167,6 @@ phHciNfc_CE_A_Update_PipeInfo(
 /**
 * \ingroup grp_hci_nfc
 *
-*  The phHciNfc_CE_A_SendData_Event function sends data to the lo
-*
-*  \param[in]  psHciContext            psHciContext is the pointer to HCI Layer
-*                                      context Structure.
-*  \param[in]  pHwRef                  pHwRef is the Information of
-*                                      the Device Interface Link
-*  \param[in]  pipeID                  pipeID of the card emulation A gate
-*  \param[in]  pPipeInfo               Update the pipe Information of the reader 
-*                                      A gate
-*
-*  \retval NFCSTATUS_SUCCESS           Function execution is successful.
-*  \retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters
-*                                      could not be interpreted properly.
-*
-*/
-#ifdef CE_A_SEND_EVENT
-extern
-NFCSTATUS
-phHciNfc_CE_A_SendData_Event(
-                             void               *psContext,
-                             void               *pHwRef,
-                             uint8_t            *pEvent,
-                             uint8_t            length
-                       );
-#endif /* #ifdef CE_A_SEND_EVENT */
-
-/**
-* \ingroup grp_hci_nfc
-*
 *  The phHciNfc_CE_A_Mode function sends data to the set the card emulation mode
 *
 *  \param[in]  psHciContext            psHciContext is the pointer to HCI Layer
