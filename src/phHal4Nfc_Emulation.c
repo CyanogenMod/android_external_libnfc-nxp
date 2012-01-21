@@ -140,8 +140,6 @@ NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
             }
             else
             {   
-                /* Register Upper layer context */
-                Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = pContext;
                 /* Switch request to Wired mode */
                 if(eSmartMx_Wired == smx_mode)
                 {
@@ -270,8 +268,6 @@ NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
             }
             else
             {   
-                /* Register Upper layer context */
-                Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = pContext; 
                 /*Switch mode to On or off*/
                 CfgStatus = phHciNfc_Switch_SwpMode(
                                     Hal4Ctxt->psHciHandle,
