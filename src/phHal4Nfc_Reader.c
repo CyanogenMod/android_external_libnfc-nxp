@@ -558,7 +558,7 @@ NFCSTATUS phHal4Nfc_Transceive(
                 Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = pContext;     
                 /*Register upper layer callback*/
                 Hal4Ctxt->psTrcvCtxtInfo->pUpperTranceiveCb  = pTrcvCallback;                           
-                if(PH_HAL4NFC_MAX_SEND_LEN
+                if(psRemoteDevInfo->RemoteDevInfo.NfcIP_Info.MaxFrameLength
                     >= psTransceiveInfo->sSendData.length)
                 {
                     Hal4Ctxt->psTrcvCtxtInfo->
@@ -577,17 +577,17 @@ NFCSTATUS phHal4Nfc_Transceive(
                     Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer
                         = Hal4Ctxt->psTrcvCtxtInfo->psUpperSendData->buffer;
                     Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_length
-                                                = PH_HAL4NFC_MAX_SEND_LEN;
+                                                = psRemoteDevInfo->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
 #if 0
                     Hal4Ctxt->psTrcvCtxtInfo->psUpperSendData->buffer
-                                                += PH_HAL4NFC_MAX_SEND_LEN;
+                                                += psRemoteDevInfo->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
 #else
                     Hal4Ctxt->psTrcvCtxtInfo->NumberOfBytesSent
-                        += PH_HAL4NFC_MAX_SEND_LEN;
+                        += psRemoteDevInfo->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
 #endif
                     /*Number of bytes remaining for next send*/
                     Hal4Ctxt->psTrcvCtxtInfo->psUpperSendData->length
-                                               -= PH_HAL4NFC_MAX_SEND_LEN;
+                                               -= psRemoteDevInfo->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
                 }
                 Hal4Ctxt->Hal4NextState = eHal4StateTransaction;
 #ifdef TRANSACTION_TIMER

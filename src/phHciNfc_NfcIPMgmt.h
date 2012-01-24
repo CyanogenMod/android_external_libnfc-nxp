@@ -68,7 +68,7 @@
 /* LENGTH definition */
 #define NFCIP_ATR_MAX_LENGTH                PHHAL_MAX_ATR_LENGTH
 #define NFCIP_NFCID_LENGTH                  PHHAL_MAX_UID_LENGTH
-
+#define NFCIP_MAX_DEP_REQ_HDR_LEN           0x05
 
 typedef enum phHciNfc_eNfcIPType{
     NFCIP_INVALID                        = 0x00U,

@@ -33,6 +33,7 @@
 #include <phOsalNfc_Timer.h>
 #include <phHciNfc.h>
 #include <phNfcConfig.h>
+
 /* ------------------------------- Macros ------------------------------------*/
 
 #ifdef _WIN32
@@ -66,6 +67,7 @@ phHal4Nfc_Send(
 {
     NFCSTATUS RetStatus = NFCSTATUS_PENDING;
     phHal4Nfc_Hal4Ctxt_t *Hal4Ctxt = NULL;
+
     /*NULL checks*/
     if((NULL == psHwReference) 
         ||( NULL == pSendCallback )
@@ -123,8 +125,9 @@ phHal4Nfc_Send(
                 = sTransferData.buffer;
             Hal4Ctxt->psTrcvCtxtInfo->psUpperSendData->length 
                 = sTransferData.length;
-            /*If data size is less than MAX_SEND_LEN ,no chaining is required*/
-            if(PH_HAL4NFC_MAX_SEND_LEN >= sTransferData.length)
+
+            /* If data size is less than Peer's Max frame length, then no chaining is required */
+            if(Hal4Ctxt->rem_dev_list[0]->RemoteDevInfo.NfcIP_Info.MaxFrameLength >= sTransferData.length)
             {
                 Hal4Ctxt->psTrcvCtxtInfo->
                     XchangeInfo.params.nfc_info.more_info = FALSE;
@@ -138,11 +141,11 @@ phHal4Nfc_Send(
                 Hal4Ctxt->psTrcvCtxtInfo->
                     XchangeInfo.params.nfc_info.more_info = TRUE;
                 Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_length
-                    = PH_HAL4NFC_MAX_SEND_LEN;
+                    = Hal4Ctxt->rem_dev_list[0]->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
                 Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer
                     = sTransferData.buffer;
                 Hal4Ctxt->psTrcvCtxtInfo->NumberOfBytesSent
-                    += PH_HAL4NFC_MAX_SEND_LEN;
+                    += Hal4Ctxt->rem_dev_list[0]->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
             }
             PHDBG_INFO("HAL4:Calling Hci_Send_data()");
             RetStatus = phHciNfc_Send_Data (
@@ -380,7 +383,7 @@ void phHal4Nfc_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo)
         /*More info remaining in send buffer.continue with sending remaining 
           bytes*/
         if(Hal4Ctxt->psTrcvCtxtInfo->psUpperSendData->length
-                                            > PH_HAL4NFC_MAX_SEND_LEN)
+                                            > Hal4Ctxt->rem_dev_list[0]->RemoteDevInfo.NfcIP_Info.MaxFrameLength)
         {           
             /*Set more info*/
             Hal4Ctxt->psTrcvCtxtInfo->
@@ -391,11 +394,11 @@ void phHal4Nfc_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo)
                 = (Hal4Ctxt->psTrcvCtxtInfo->psUpperSendData->buffer
                    + Hal4Ctxt->psTrcvCtxtInfo->NumberOfBytesSent);
             Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_length
-                = PH_HAL4NFC_MAX_SEND_LEN;
+                = Hal4Ctxt->rem_dev_list[0]->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
             Hal4Ctxt->psTrcvCtxtInfo->NumberOfBytesSent
-                += PH_HAL4NFC_MAX_SEND_LEN;
+                += Hal4Ctxt->rem_dev_list[0]->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
             Hal4Ctxt->psTrcvCtxtInfo->psUpperSendData->length
-                -= PH_HAL4NFC_MAX_SEND_LEN;
+                -= Hal4Ctxt->rem_dev_list[0]->RemoteDevInfo.NfcIP_Info.MaxFrameLength;
             PHDBG_INFO("Hal4:Calling Hci_senddata() from sendcompletehandler1");
             SendStatus = phHciNfc_Send_Data (
                 Hal4Ctxt->psHciHandle,

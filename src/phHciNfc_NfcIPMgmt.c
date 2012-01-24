@@ -1407,15 +1407,25 @@ phHciNfc_NfcIP_InfoUpdate(
                                 (*reg_value & NFCIP_COMM_FACTOR);
                 p_nfcipinfo->max_frame_len = NFCIP_DATA_RATE_CALC(*reg_value);
 
-                if (NULL != psHciContext->p_target_info)
+                if (p_nfcipinfo->max_frame_len > NFCIP_MAX_DEP_REQ_HDR_LEN)
                 {
-                    phHal_sNfcIPInfo_t       *p_remtgt_info = NULL;
-                    /* This is given to user */
-                    p_remtgt_info = 
-                    &(psHciContext->p_target_info->RemoteDevInfo.NfcIP_Info);
-                    p_remtgt_info->MaxFrameLength = p_nfcipinfo->max_frame_len;
-                    p_remtgt_info->Nfcip_Datarate = (phHalNfc_eDataRate_t)
+                    p_nfcipinfo->max_frame_len -= NFCIP_MAX_DEP_REQ_HDR_LEN;
+
+                    if (NULL != psHciContext->p_target_info)
+                    {
+                        phHal_sNfcIPInfo_t       *p_remtgt_info = NULL;
+                        /* This is given to user */
+                        p_remtgt_info =
+                        &(psHciContext->p_target_info->RemoteDevInfo.NfcIP_Info);
+                        p_remtgt_info->MaxFrameLength = p_nfcipinfo->max_frame_len;
+                        p_remtgt_info->Nfcip_Datarate = (phHalNfc_eDataRate_t)
                                                 p_nfcipinfo->initiator_speed;
+                    }
+                }
+                else
+                {
+                    status = PHNFCSTVAL(CID_NFC_HCI,
+                                    NFCSTATUS_INVALID_HCI_RESPONSE);
                 }
             } 
             else
