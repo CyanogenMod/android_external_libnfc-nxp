@@ -544,7 +544,6 @@ static void phFriNfc_LlcpTransport_Send_CB(void            *pContext,
    uint8_t                          index;
 
    /* 1 - Reset the FLAG send pending*/
-
    psTransport->bSendPending = FALSE;
 
    /* 2 - Handle pending error responses */
@@ -800,18 +799,24 @@ NFCSTATUS phFriNfc_LlcpTransport_LinkSend( phFriNfc_LlcpTransport_t         *Llc
                                            phFriNfc_Llcp_Send_CB_t          pfSend_CB,
                                            void                             *pContext )
 {
+   NFCSTATUS status;
    /* Check if a send is already ongoing */
    if (LlcpTransport->pfLinkSendCb != NULL)
    {
       return NFCSTATUS_BUSY;
    }
-
    /* Save callback details */
    LlcpTransport->pfLinkSendCb = pfSend_CB;
    LlcpTransport->pLinkSendContext = pContext;
 
    /* Call the link-level send function */
-   return phFriNfc_Llcp_Send(LlcpTransport->pLlcp, psHeader, psSequence, psInfo, phFriNfc_LlcpTransport_Send_CB, (void*)LlcpTransport);
+   status = phFriNfc_Llcp_Send(LlcpTransport->pLlcp, psHeader, psSequence, psInfo, phFriNfc_LlcpTransport_Send_CB, (void*)LlcpTransport);
+   if (status != NFCSTATUS_PENDING && status != NFCSTATUS_SUCCESS) {
+       // Clear out callbacks
+       LlcpTransport->pfLinkSendCb = NULL;
+       LlcpTransport->pLinkSendContext = NULL;
+   }
+   return status;
 }
 
 

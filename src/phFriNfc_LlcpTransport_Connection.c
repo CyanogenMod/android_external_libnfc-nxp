@@ -316,6 +316,9 @@ static NFCSTATUS phFriNfc_Llcp_Send_ReceiveReady_Frame(phFriNfc_LlcpTransport_So
    }
    else
    {
+      /* Set transport to pending */
+      pLlcpSocket->psTransport->bSendPending = TRUE;
+
       /* Set the header of the RR frame */
       pLlcpSocket->sLlcpHeader.dsap   = pLlcpSocket->socket_dSap;
       pLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_RR;
@@ -356,6 +359,9 @@ static NFCSTATUS phFriNfc_Llcp_Send_ReceiveNotReady_Frame(phFriNfc_LlcpTransport
    }
    else
    {
+      /* Set transport to pending */
+      pLlcpSocket->psTransport->bSendPending = TRUE;
+
       /* Set the header of the RNR frame */
       pLlcpSocket->sLlcpHeader.dsap   = pLlcpSocket->socket_dSap;
       pLlcpSocket->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_RNR;
