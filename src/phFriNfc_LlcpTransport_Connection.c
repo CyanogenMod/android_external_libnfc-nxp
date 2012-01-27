@@ -1016,6 +1016,9 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
       }
       else
       {
+        /* Update VSA */
+        psLocalLlcpSocket->socket_VSA = (uint8_t)sLlcpLocalSequence.nr;
+
         /* Test if the Linear Buffer length is null */
         if(psLocalLlcpSocket->bufferLinearLength == 0)
         {
@@ -1031,9 +1034,6 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
 
                /* Update VR */
                psLocalLlcpSocket->socket_VR = (psLocalLlcpSocket->socket_VR+1)%16;
-
-               /* Update VSA */
-               psLocalLlcpSocket->socket_VSA = (uint8_t)sLlcpLocalSequence.nr;
 
                /* Call the Receive CB */
                psLocalLlcpSocket->pfSocketRecv_Cb(psLocalLlcpSocket->pRecvContext, NFCSTATUS_SUCCESS);
@@ -1099,9 +1099,6 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
 
               /* Update VR */
               psLocalLlcpSocket->socket_VR = (psLocalLlcpSocket->socket_VR+1)%16;
-
-              /* Update VSA */
-              psLocalLlcpSocket->socket_VSA = (uint8_t)sLlcpLocalSequence.nr;
 
               /* Update the length */
               psLocalLlcpSocket->sSocketRwBufferTable[(psLocalLlcpSocket->indexRwWrite%psLocalLlcpSocket->localRW)].length = 0x00;
