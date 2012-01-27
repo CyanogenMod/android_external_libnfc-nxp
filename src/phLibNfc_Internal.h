@@ -196,10 +196,10 @@ typedef struct phLibNfc_LlcpInfo
    phFriNfc_Llcp_t sLlcpContext;
 
    /* LLC Rx buffer */
-   uint8_t pRxBuffer[1024];
+   uint8_t pRxBuffer[PHFRINFC_LLCP_PDU_HEADER_MAX + PHFRINFC_LLCP_MIU_DEFAULT + PHFRINFC_LLCP_MIUX_MAX];
 
    /* LLC Tx buffer */
-   uint8_t pTxBuffer[1024];
+   uint8_t pTxBuffer[PHFRINFC_LLCP_PDU_HEADER_MAX + PHFRINFC_LLCP_MIU_DEFAULT + PHFRINFC_LLCP_MIUX_MAX];
 
 } phLibNfc_LlcpInfo_t;
 
