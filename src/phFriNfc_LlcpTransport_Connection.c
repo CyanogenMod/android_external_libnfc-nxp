@@ -2103,6 +2103,9 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_DisconnectClose_CB(void*  
       pLlcpSocket->socket_VR                          = 0;
       pLlcpSocket->socket_VRA                         = 0;
 
+      pLlcpSocket->indexRwRead                        = 0;
+      pLlcpSocket->indexRwWrite                       = 0;
+
       phFriNfc_LlcpTransport_ConnectionOriented_Abort(pLlcpSocket);
 
       memset(&pLlcpSocket->sSocketOption, 0x00, sizeof(phFriNfc_LlcpTransport_sSocketOptions_t));
@@ -2163,6 +2166,9 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_Close(phFriNfc_LlcpTransport
       pLlcpSocket->socket_VSA                         = 0;
       pLlcpSocket->socket_VR                          = 0;
       pLlcpSocket->socket_VRA                         = 0;
+
+      pLlcpSocket->indexRwRead                        = 0;
+      pLlcpSocket->indexRwWrite                       = 0;
 
       phFriNfc_LlcpTransport_ConnectionOriented_Abort(pLlcpSocket);
 
