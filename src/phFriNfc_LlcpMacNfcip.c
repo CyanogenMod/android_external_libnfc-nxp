@@ -104,9 +104,9 @@ static NFCSTATUS phFriNfc_LlcpMac_Nfcip_Chk(phFriNfc_LlcpMac_t                  
       {
          status = PHNFCSTVAL(CID_FRI_NFC_LLCP_MAC, NFCSTATUS_FAILED);
       }
+      ChkLlcpMac_Cb(pContext,status);
    }
 
-   ChkLlcpMac_Cb(pContext,status);
    return status;
 }
 
@@ -142,28 +142,26 @@ static NFCSTATUS phFriNfc_LlcpMac_Nfcip_Deactivate (phFriNfc_LlcpMac_t   *LlcpMa
    {
       /* Set the flag of LinkStatus to deactivate */
       LlcpMac->LinkState = phFriNfc_LlcpMac_eLinkDeactivated;
+
+      if (LlcpMac->SendPending)
+      {
+         /* Reset Flag */
+         LlcpMac->SendPending = FALSE;
+         phFriNfc_LlcpMac_Nfcip_TriggerSendCb(LlcpMac, NFCSTATUS_FAILED);
+      }
+
+      if (LlcpMac->RecvPending)
+      {
+         /* Reset Flag */
+         LlcpMac->RecvPending = FALSE;
+         phFriNfc_LlcpMac_Nfcip_TriggerRecvCb(LlcpMac, NFCSTATUS_FAILED);
+      }
+
+      LlcpMac->LinkStatus_Cb(LlcpMac->LinkStatus_Context,
+                             LlcpMac->LinkState,
+                             NULL,
+                             LlcpMac->PeerRemoteDevType);
    }
-
-   if (LlcpMac->SendPending)
-   {
-      /* Reset Flag */
-      LlcpMac->SendPending = FALSE;
-
-      phFriNfc_LlcpMac_Nfcip_TriggerSendCb(LlcpMac, NFCSTATUS_FAILED);
-   }
-
-   if (LlcpMac->RecvPending)
-   {
-      /* Reset Flag */
-      LlcpMac->RecvPending = FALSE;
-
-      phFriNfc_LlcpMac_Nfcip_TriggerRecvCb(LlcpMac, NFCSTATUS_FAILED);
-   }
-
-   LlcpMac->LinkStatus_Cb(LlcpMac->LinkStatus_Context,
-                          LlcpMac->LinkState,
-                          NULL,
-                          LlcpMac->PeerRemoteDevType);
 
    return status;
 }
