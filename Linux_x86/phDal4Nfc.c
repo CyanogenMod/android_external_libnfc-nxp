@@ -718,8 +718,17 @@ int phDal4Nfc_ReaderThread(void * pArg)
     int i;
     int i2c_error_count;
     int i2c_workaround;
+    int i2c_device_address = 0x57;
     if (gDalContext.pDev != NULL) {
         i2c_workaround = gDalContext.pDev->enable_i2c_workaround;
+        if (gDalContext.pDev->i2c_device_address) {
+            i2c_device_address = gDalContext.pDev->i2c_device_address;
+            if (i2c_workaround && i2c_device_address < 32)
+            {
+                LOGE("i2c_device_address not set to valid value");
+                return NFCSTATUS_FAILED;
+            }
+        }
     } else {
         LOGE("gDalContext.pDev is not set");
         return NFCSTATUS_FAILED;
@@ -758,15 +767,17 @@ retry:
 	/* Wait for IRQ !!!  */
     gReadWriteContext.nNbOfBytesRead = gLinkFunc.read(gReadWriteContext.pReadBuffer, gReadWriteContext.nNbOfBytesToRead);
 
-    /* Reading the value 0x57 indicates a HW I2C error at I2C address 0x57
+    /* A read value equal to the i2c_device_address indicates a HW I2C error at I2C address i2c_device_address
      * (pn544). There should not be false positives because a read of length 1
-     * must be a HCI length read, and a length of 0x57 is impossible (max is 33).
+     * must be a HCI length read, and a length of i2c_device_address is impossible (max is 33).
      */
-    if(i2c_workaround && gReadWriteContext.nNbOfBytesToRead == 1 &&
-            gReadWriteContext.pReadBuffer[0] == 0x57)
+    if (i2c_workaround && gReadWriteContext.nNbOfBytesToRead == 1 &&
+            gReadWriteContext.pReadBuffer[0] == i2c_device_address)
     {
         i2c_error_count++;
-        DAL_DEBUG("RX Thread Read 0x57 %d times\n", i2c_error_count);
+        DAL_DEBUG("RX Thread Read 0x%02x  ", i2c_device_address);
+        DAL_DEBUG("%d times\n", i2c_error_count);
+
         if (i2c_error_count < 5) {
             usleep(2000);
             goto retry;
