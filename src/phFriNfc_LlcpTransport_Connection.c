@@ -1026,7 +1026,7 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
             if(psLocalLlcpSocket->bSocketRecvPending == TRUE && (psLocalLlcpSocket->indexRwWrite == psLocalLlcpSocket->indexRwRead))
             {
                /* Reset Flag */
-               psTransport->pSocketTable[psTransport->socketIndex].bSocketRecvPending = FALSE;
+               psLocalLlcpSocket->bSocketRecvPending = FALSE;
 
                /* Save I_FRAME into the Receive Buffer */
                memcpy(psLocalLlcpSocket->sSocketRecvBuffer->buffer,psData->buffer,psData->length);
