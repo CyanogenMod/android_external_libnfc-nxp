@@ -1206,7 +1206,12 @@ NFCSTATUS phFriNfc_LlcpTransport_Socket(phFriNfc_LlcpTransport_t                
    uint8_t cpt;
 
    /* Check for NULL pointers */
-   if (((NULL == psOptions) && (eType != phFriNfc_LlcpTransport_eConnectionLess)) || ((psWorkingBuffer == NULL) && (eType != phFriNfc_LlcpTransport_eConnectionLess)) || pLlcpSocket == NULL || pErr_Cb == NULL || pContext == NULL || pLlcpTransport == NULL)
+   if (   ((psOptions == NULL) && (eType == phFriNfc_LlcpTransport_eConnectionOriented))
+       || ((psWorkingBuffer == NULL) && (eType == phFriNfc_LlcpTransport_eConnectionOriented))
+       || (pLlcpSocket == NULL)
+       || (pErr_Cb == NULL)
+       || (pContext == NULL)
+       || (pLlcpTransport == NULL))
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
       return status;
@@ -1217,12 +1222,19 @@ NFCSTATUS phFriNfc_LlcpTransport_Socket(phFriNfc_LlcpTransport_t                
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
       return status;
    }
+   /* Connectionless sockets don't support options */
+   else if ((psOptions != NULL) && (eType == phFriNfc_LlcpTransport_eConnectionLess))
+   {
+      status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+      return status;
+   }
 
    /* Get the local parameters of the LLCP Link */
    status = phFriNfc_Llcp_GetLocalInfo(pLlcpTransport->pLlcp,&LlcpLinkParamInfo);
    if(status != NFCSTATUS_SUCCESS)
    {
       status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_FAILED);
+      return status;
    }
    else
    {
@@ -1242,56 +1254,89 @@ NFCSTATUS phFriNfc_LlcpTransport_Socket(phFriNfc_LlcpTransport_t                
             pLlcpTransport->pSocketTable[index].pContext   = pContext;
 
             /* Set the pointers to the different working buffers */
-            if(pLlcpTransport->pSocketTable[index].eSocket_Type != phFriNfc_LlcpTransport_eConnectionLess)
+            if (eType == phFriNfc_LlcpTransport_eConnectionOriented)
             {
-               /* Test the socket options */
-               if((psOptions->rw > PHFRINFC_LLCP_RW_MAX) && (eType == phFriNfc_LlcpTransport_eConnectionOriented))
+                /* Test the socket options */
+                if (psOptions->rw > PHFRINFC_LLCP_RW_MAX)
+                {
+                    status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+                    return status;
+                }
+
+                /* Set socket options */
+                memcpy(&pLlcpTransport->pSocketTable[index].sSocketOption, psOptions, sizeof(phFriNfc_LlcpTransport_sSocketOptions_t));
+
+                /* Set socket local params (MIUX & RW) */
+                pLlcpTransport->pSocketTable[index].localMIUX = (pLlcpTransport->pSocketTable[index].sSocketOption.miu - PHFRINFC_LLCP_MIU_DEFAULT) & PHFRINFC_LLCP_TLV_MIUX_MASK;
+                pLlcpTransport->pSocketTable[index].localRW   = pLlcpTransport->pSocketTable[index].sSocketOption.rw & PHFRINFC_LLCP_TLV_RW_MASK;
+
+                /* Set the Max length for the Send and Receive Window Buffer */
+                pLlcpTransport->pSocketTable[index].bufferSendMaxLength   = pLlcpTransport->pSocketTable[index].sSocketOption.miu;
+                pLlcpTransport->pSocketTable[index].bufferRwMaxLength     = pLlcpTransport->pSocketTable[index].sSocketOption.miu * ((pLlcpTransport->pSocketTable[index].sSocketOption.rw & PHFRINFC_LLCP_TLV_RW_MASK));
+                pLlcpTransport->pSocketTable[index].bufferLinearLength    = psWorkingBuffer->length - pLlcpTransport->pSocketTable[index].bufferSendMaxLength - pLlcpTransport->pSocketTable[index].bufferRwMaxLength;
+
+                /* Test the connection oriented buffers length */
+                if((pLlcpTransport->pSocketTable[index].bufferSendMaxLength + pLlcpTransport->pSocketTable[index].bufferRwMaxLength) > psWorkingBuffer->length  
+                    || ((pLlcpTransport->pSocketTable[index].bufferLinearLength < PHFRINFC_LLCP_MIU_DEFAULT) && (pLlcpTransport->pSocketTable[index].bufferLinearLength != 0)))
+                {
+                    status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_BUFFER_TOO_SMALL);
+                    return status;
+                }
+
+                /* Set the pointer and the length for the Receive Window Buffer */
+                for(cpt=0;cpt<pLlcpTransport->pSocketTable[index].localRW;cpt++)
+                {
+                    pLlcpTransport->pSocketTable[index].sSocketRwBufferTable[cpt].buffer = psWorkingBuffer->buffer + (cpt*pLlcpTransport->pSocketTable[index].sSocketOption.miu);
+                    pLlcpTransport->pSocketTable[index].sSocketRwBufferTable[cpt].length = 0;
+                }
+
+                /* Set the pointer and the length for the Send Buffer */
+                pLlcpTransport->pSocketTable[index].sSocketSendBuffer.buffer     = psWorkingBuffer->buffer + pLlcpTransport->pSocketTable[index].bufferRwMaxLength;
+                pLlcpTransport->pSocketTable[index].sSocketSendBuffer.length     = pLlcpTransport->pSocketTable[index].bufferSendMaxLength;
+
+                /** Set the pointer and the length for the Linear Buffer */
+                pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.buffer   = psWorkingBuffer->buffer + pLlcpTransport->pSocketTable[index].bufferRwMaxLength + pLlcpTransport->pSocketTable[index].bufferSendMaxLength;
+                pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.length   = pLlcpTransport->pSocketTable[index].bufferLinearLength;
+
+                if(pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.length != 0)
+                {
+                    /* Init Cyclic Fifo */
+                    phFriNfc_Llcp_CyclicFifoInit(&pLlcpTransport->pSocketTable[index].sCyclicFifoBuffer,
+                                                pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.buffer,
+                                                pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.length);
+                }
+            }
+            /* Handle connectionless socket with buffering option */
+            else if (eType == phFriNfc_LlcpTransport_eConnectionLess)
+            {
+               /* Determine how many packets can be bufferized in working buffer */
+               if (psWorkingBuffer != NULL)
                {
-                  status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_INVALID_PARAMETER);
+                  /* NOTE: the extra byte is used to store SSAP */
+                  pLlcpTransport->pSocketTable[index].localRW = psWorkingBuffer->length / (pLlcpTransport->pLlcp->sLocalParams.miu + 1);
                }
-               /* Set socket options */
-               memcpy(&pLlcpTransport->pSocketTable[index].sSocketOption, psOptions, sizeof(phFriNfc_LlcpTransport_sSocketOptions_t));
-
-               /* Set socket local params (MIUX & RW) */
-               pLlcpTransport->pSocketTable[index].localMIUX = (pLlcpTransport->pSocketTable[index].sSocketOption.miu - PHFRINFC_LLCP_MIU_DEFAULT) & PHFRINFC_LLCP_TLV_MIUX_MASK;
-               pLlcpTransport->pSocketTable[index].localRW   = pLlcpTransport->pSocketTable[index].sSocketOption.rw & PHFRINFC_LLCP_TLV_RW_MASK;
-
-               /* Set the Max length for the Send and Receive Window Buffer */
-               pLlcpTransport->pSocketTable[index].bufferSendMaxLength   = pLlcpTransport->pSocketTable[index].sSocketOption.miu;
-               pLlcpTransport->pSocketTable[index].bufferRwMaxLength     = pLlcpTransport->pSocketTable[index].sSocketOption.miu * ((pLlcpTransport->pSocketTable[index].sSocketOption.rw & PHFRINFC_LLCP_TLV_RW_MASK));
-               pLlcpTransport->pSocketTable[index].bufferLinearLength    = psWorkingBuffer->length - pLlcpTransport->pSocketTable[index].bufferSendMaxLength - pLlcpTransport->pSocketTable[index].bufferRwMaxLength;
-
-               /* Test the connection oriented buffers length */
-               if((pLlcpTransport->pSocketTable[index].bufferSendMaxLength + pLlcpTransport->pSocketTable[index].bufferRwMaxLength) > psWorkingBuffer->length  
-                   || ((pLlcpTransport->pSocketTable[index].bufferLinearLength < PHFRINFC_LLCP_MIU_DEFAULT) && (pLlcpTransport->pSocketTable[index].bufferLinearLength != 0)))
+               else
                {
-                  status = PHNFCSTVAL(CID_FRI_NFC_LLCP_TRANSPORT, NFCSTATUS_BUFFER_TOO_SMALL);
-                  return status;
+                  pLlcpTransport->pSocketTable[index].localRW = 0;
                }
 
-               /* Set the pointer and the length for the Receive Window Buffer */
-               for(cpt=0;cpt<pLlcpTransport->pSocketTable[index].localRW;cpt++)
+               if (pLlcpTransport->pSocketTable[index].localRW > PHFRINFC_LLCP_RW_MAX)
                {
-                  pLlcpTransport->pSocketTable[index].sSocketRwBufferTable[cpt].buffer = psWorkingBuffer->buffer + (cpt*pLlcpTransport->pSocketTable[index].sSocketOption.miu);
+                  pLlcpTransport->pSocketTable[index].localRW = PHFRINFC_LLCP_RW_MAX;
+               }
+
+               /* Set the pointers and the lengths for buffering */
+               for(cpt=0 ; cpt<pLlcpTransport->pSocketTable[index].localRW ; cpt++)
+               {
+                  pLlcpTransport->pSocketTable[index].sSocketRwBufferTable[cpt].buffer = psWorkingBuffer->buffer + (cpt*(pLlcpTransport->pLlcp->sLocalParams.miu + 1));
                   pLlcpTransport->pSocketTable[index].sSocketRwBufferTable[cpt].length = 0;
                }
 
-               /* Set the pointer and the length for the Send Buffer */
-               pLlcpTransport->pSocketTable[index].sSocketSendBuffer.buffer     = psWorkingBuffer->buffer + pLlcpTransport->pSocketTable[index].bufferRwMaxLength;
-               pLlcpTransport->pSocketTable[index].sSocketSendBuffer.length     = pLlcpTransport->pSocketTable[index].bufferSendMaxLength;
-
-               /** Set the pointer and the length for the Linear Buffer */
-               pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.buffer   = psWorkingBuffer->buffer + pLlcpTransport->pSocketTable[index].bufferRwMaxLength + pLlcpTransport->pSocketTable[index].bufferSendMaxLength;
-               pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.length   = pLlcpTransport->pSocketTable[index].bufferLinearLength;
-
-               if(pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.length != 0)
-               {
-                  /* Init Cyclic Fifo */
-                  phFriNfc_Llcp_CyclicFifoInit(&pLlcpTransport->pSocketTable[index].sCyclicFifoBuffer,
-                                               pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.buffer,
-                                               pLlcpTransport->pSocketTable[index].sSocketLinearBuffer.length);
-               }
+               /* Set other socket internals */
+               pLlcpTransport->pSocketTable[index].indexRwRead      = 0;
+               pLlcpTransport->pSocketTable[index].indexRwWrite     = 0;
             }
+
             /* Store index of the socket */
             pLlcpTransport->pSocketTable[index].index = index;
 

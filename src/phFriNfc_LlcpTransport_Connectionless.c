@@ -68,28 +68,56 @@ void Handle_Connectionless_IncommingFrame(phFriNfc_LlcpTransport_t      *pLlcpTr
                                           uint8_t                       dsap,
                                           uint8_t                       ssap)
 {
-   uint8_t i=0;
+   phFriNfc_LlcpTransport_Socket_t * pSocket = NULL;
+   uint8_t                           i       = 0;
+   uint8_t                           writeIndex;
 
+   /* Look through the socket table for a match */
    for(i=0;i<PHFRINFC_LLCP_NB_SOCKET_MAX;i++)
    {
-      /* Test if a socket is registered to get this packet */
-      if(pLlcpTransport->pSocketTable[i].socket_sSap == dsap && pLlcpTransport->pSocketTable[i].bSocketRecvPending == TRUE)
+      if(pLlcpTransport->pSocketTable[i].socket_sSap == dsap)
       {
-         pphFriNfc_LlcpTransportSocketRecvFromCb_t pfRecvFromCallback = pLlcpTransport->pSocketTable[i].pfSocketRecvFrom_Cb;
-         /* Reset the RecvPending variable */
-         pLlcpTransport->pSocketTable[i].bSocketRecvPending = FALSE;
+         /* Socket found ! */
+         pSocket = &pLlcpTransport->pSocketTable[i];
 
-         /* Copy the received buffer into the receive buffer */   
-         memcpy(pLlcpTransport->pSocketTable[i].sSocketRecvBuffer->buffer,psData->buffer,psData->length);
+         /* Forward directly to application if a read is pending */
+         if (pSocket->bSocketRecvPending == TRUE)
+         {
+            /* Reset the RecvPending variable */
+            pSocket->bSocketRecvPending = FALSE;
 
-         /* Update the received length */
-         *pLlcpTransport->pSocketTable[i].receivedLength = psData->length;
+            /* Copy the received buffer into the receive buffer */
+            memcpy(pSocket->sSocketRecvBuffer->buffer, psData->buffer, psData->length);
 
-         /* Clear the Recv callback */
-         pLlcpTransport->pSocketTable[i].pfSocketRecvFrom_Cb = NULL;
+            /* Update the received length */
+            *pSocket->receivedLength = psData->length;
 
-         /* call the Recv callback */
-         pfRecvFromCallback(pLlcpTransport->pSocketTable[i].pRecvContext,ssap,NFCSTATUS_SUCCESS);
+            /* call the recv callback */
+            pSocket->pfSocketRecvFrom_Cb(pSocket->pRecvContext, ssap, NFCSTATUS_SUCCESS);
+            pSocket->pfSocketRecvFrom_Cb = NULL;
+         }
+         /* If no read is pending, try to bufferize for later reading */
+         else
+         {
+            if((pSocket->indexRwWrite - pSocket->indexRwRead) < pSocket->localRW)
+            {
+               writeIndex = pSocket->indexRwWrite % pSocket->localRW;
+               /* Save SSAP */
+               pSocket->sSocketRwBufferTable[writeIndex].buffer[0] = ssap;
+               /* Save UI frame payload */
+               memcpy(pSocket->sSocketRwBufferTable[writeIndex].buffer + 1,
+                      psData->buffer,
+                      psData->length);
+               pSocket->sSocketRwBufferTable[writeIndex].length = psData->length;
+
+               /* Update the RW write index */
+               pSocket->indexRwWrite++;
+            }
+            else
+            {
+               /* Unable to bufferize the packet, drop it */
+            }
+         }
          break;
       }
    }
@@ -281,7 +309,9 @@ NFCSTATUS phLibNfc_LlcpTransport_Connectionless_RecvFrom(phFriNfc_LlcpTransport_
                                                          pphFriNfc_LlcpTransportSocketRecvFromCb_t         pRecv_Cb,
                                                          void                                              *pContext)
 {
-   NFCSTATUS status = NFCSTATUS_PENDING;
+   NFCSTATUS   status = NFCSTATUS_PENDING;
+   uint8_t     readIndex;
+   uint8_t     ssap;
 
    if(pLlcpSocket->bSocketRecvPending)
    {
@@ -289,16 +319,43 @@ NFCSTATUS phLibNfc_LlcpTransport_Connectionless_RecvFrom(phFriNfc_LlcpTransport_
    }
    else
    {
-      /* Store the callback and context*/
-      pLlcpSocket->pfSocketRecvFrom_Cb  = pRecv_Cb;
-      pLlcpSocket->pRecvContext         = pContext;
+      /* Check if pending packets in RW */
+      if(pLlcpSocket->indexRwRead != pLlcpSocket->indexRwWrite)
+      {
+         readIndex = pLlcpSocket->indexRwRead % pLlcpSocket->localRW;
 
-      /* Store the pointer to the receive buffer */
-      pLlcpSocket->sSocketRecvBuffer   =  psBuffer;
-      pLlcpSocket->receivedLength      =  &psBuffer->length;
+         /* Extract ssap and buffer from RW buffer */
+         ssap = pLlcpSocket->sSocketRwBufferTable[readIndex].buffer[0];
+         memcpy(psBuffer->buffer,
+                pLlcpSocket->sSocketRwBufferTable[readIndex].buffer + 1,
+                pLlcpSocket->sSocketRwBufferTable[readIndex].length);
+         psBuffer->length = pLlcpSocket->sSocketRwBufferTable[readIndex].length;
 
-      /* Set RecvPending to TRUE */
-      pLlcpSocket->bSocketRecvPending = TRUE;
+         /* Reset RW buffer length */
+         pLlcpSocket->sSocketRwBufferTable[readIndex].length = 0;
+
+         /* Update Value Rw Read Index */
+         pLlcpSocket->indexRwRead++;
+
+         /* call the recv callback */
+         pRecv_Cb(pContext, ssap, NFCSTATUS_SUCCESS);
+
+         status = NFCSTATUS_SUCCESS;
+      }
+      /* Otherwise, wait for a packet to come */
+      else
+      {
+         /* Store the callback and context*/
+         pLlcpSocket->pfSocketRecvFrom_Cb  = pRecv_Cb;
+         pLlcpSocket->pRecvContext         = pContext;
+
+         /* Store the pointer to the receive buffer */
+         pLlcpSocket->sSocketRecvBuffer   =  psBuffer;
+         pLlcpSocket->receivedLength      =  &psBuffer->length;
+
+         /* Set RecvPending to TRUE */
+         pLlcpSocket->bSocketRecvPending = TRUE;
+      }
    }
    return status;
 }

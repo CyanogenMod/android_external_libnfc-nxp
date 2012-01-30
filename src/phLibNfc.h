@@ -2577,7 +2577,9 @@ extern NFCSTATUS phLibNfc_Llcp_GetRemoteInfo( phLibNfc_Handle                   
 * must provide a working buffer to the socket in order to handle incoming data. This buffer
 * must be large enough to fit the receive window (RW * MIU), the remaining space being
 * used as a linear buffer to store incoming data as a stream. Data will be readable later
-* using the phLibNfc_Llcp_Recv function.
+* using the phLibNfc_Llcp_Recv function. If the socket is connectionless, the caller may
+* provide a working buffer to the socket in order to bufferize as many packets as the buffer
+* can contain (each packet needs MIU + 1 bytes).
 * The options and working buffer are not required if the socket is used as a listening socket,
 * since it cannot be directly used for communication.
 *
