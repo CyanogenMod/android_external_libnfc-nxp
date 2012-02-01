@@ -1160,7 +1160,6 @@ phHciNfc_NfcIP_Info_Sequence (
                     rem_nfcipinfo->NfcIP_Info.Nfcip_Active = 
                                             p_nfcipinfo->activation_mode;
                     
-                    
                     if (NFCIP_INITIATOR == p_nfcipinfo->nfcip_type)
                     {
                         phNfc_sCompletionInfo_t         CompInfo;
@@ -1403,8 +1402,34 @@ phHciNfc_NfcIP_InfoUpdate(
                 p_nfcipinfo->initiator_speed = (phHciNfc_eP2PSpeed_t)
                                 ((*reg_value >> NFCIP_COMM_INITIATOR_SHIFT)
                                 & NFCIP_COMM_FACTOR);
+                if (p_nfcipinfo->nfcip_type == NFCIP_INITIATOR) {
+                    switch(p_nfcipinfo->initiator_speed) {
+                        case phNfc_eDataRate_106:
+                            ALOGI("I'm P2P %s Initiator @ 106 kb/s", p_nfcipinfo->activation_mode ? "Active" : "Passive");
+                            break;
+                        case phNfc_eDataRate_212:
+                            ALOGI("I'm P2P %s Initiator @ 212 kb/s", p_nfcipinfo->activation_mode ? "Active" : "Passive");
+                            break;
+                        case phNfc_eDataRate_424:
+                            ALOGI("I'm P2P %s Initiator @ 424 kb/s", p_nfcipinfo->activation_mode ? "Active" : "Passive");
+                            break;
+                    }
+                }
                 p_nfcipinfo->target_speed = (phHciNfc_eP2PSpeed_t)
                                 (*reg_value & NFCIP_COMM_FACTOR);
+                if (p_nfcipinfo->nfcip_type == NFCIP_TARGET) {
+                    switch(p_nfcipinfo->target_speed) {
+                        case phNfc_eDataRate_106:
+                            ALOGI("I'm P2P %s Target @ 106 kb/s", p_nfcipinfo->activation_mode ? "Active" : "Passive");
+                            break;
+                        case phNfc_eDataRate_212:
+                            ALOGI("I'm P2P %s Target @ 212 kb/s", p_nfcipinfo->activation_mode ? "Active" : "Passive");
+                            break;
+                        case phNfc_eDataRate_424:
+                            ALOGI("I'm P2P %s Target @ 424 kb/s", p_nfcipinfo->activation_mode ? "Active" : "Passive");
+                            break;
+                    }
+                }
                 p_nfcipinfo->max_frame_len = NFCIP_DATA_RATE_CALC(*reg_value);
 
                 if (p_nfcipinfo->max_frame_len > NFCIP_MAX_DEP_REQ_HDR_LEN)

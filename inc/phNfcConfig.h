@@ -518,6 +518,7 @@
  * speed during Discovery configuration
  */
 #define INITIATOR_SPEED
+#define TARGET_SPEED
 
 
 /**/

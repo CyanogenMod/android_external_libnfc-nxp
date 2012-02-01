@@ -1098,6 +1098,7 @@ typedef struct phNfc_sADD_Cfg_t
                                                     This is used to enable NFC-IP Discovery 
                                                     The related Reader Type will be implicitly
                                                     selected */
+    uint8_t                     NfcIP_Target_Mode ;
     uint8_t                     NfcIP_Tgt_Disable;   /**< Flag to 
                                                    disable the NFCIP1 TARGET */
 } phNfc_sADD_Cfg_t;
