@@ -868,9 +868,9 @@ NFCSTATUS phFriNfc_LlcpTransport_SendFrameReject(phFriNfc_LlcpTransport_t       
       status = phFriNfc_LlcpTransport_ConnectionOriented_Close(&psTransport->pSocketTable[index]);
 
       /* Set FRMR Header */
-      psTransport->sLlcpHeader.dsap   = dsap;
+      psTransport->sLlcpHeader.dsap   = ssap;
       psTransport->sLlcpHeader.ptype  = PHFRINFC_LLCP_PTYPE_FRMR;
-      psTransport->sLlcpHeader.ssap   = ssap;
+      psTransport->sLlcpHeader.ssap   = dsap;
 
       /* Set FRMR Information Field */
       flagValue = (WFlag<<7) | (IFlag<<6) | (RFlag<<5) | (SFlag<<4) | rejectedPTYPE;
