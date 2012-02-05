@@ -627,7 +627,7 @@ static void phFriNfc_Llcp_HandleMACLinkDeactivated( phFriNfc_Llcp_t  *Llcp )
    }
 
    /* Reset state */
-   Llcp->state = PHFRINFC_LLCP_STATE_DEACTIVATION;
+   Llcp->state = PHFRINFC_LLCP_STATE_RESET_INIT;
 
    switch (state)
    {
@@ -717,7 +717,8 @@ static void phFriNfc_Llcp_ResetLTO( phFriNfc_Llcp_t *Llcp )
    {
       Llcp->state = PHFRINFC_LLCP_STATE_OPERATION_RECV;
    }
-   else if (Llcp->state != PHFRINFC_LLCP_STATE_DEACTIVATION)
+   else if (Llcp->state != PHFRINFC_LLCP_STATE_DEACTIVATION &&
+            Llcp->state != PHFRINFC_LLCP_STATE_RESET_INIT)
    {
       /* Not yet in OPERATION state, perform first reset */
       if (Llcp->eRole == phFriNfc_LlcpMac_ePeerTypeInitiator)
