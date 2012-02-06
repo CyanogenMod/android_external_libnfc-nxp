@@ -491,9 +491,9 @@ static void Handle_ConnectionFrame(phFriNfc_LlcpTransport_t      *psTransport,
       /* Incorrect TLV */
       /* send FRMR */ 
       status  = phFriNfc_LlcpTransport_SendFrameReject(psTransport,
-                                                       ssap,
-                                                       PHFRINFC_LLCP_PTYPE_CONNECT,
                                                        dsap,
+                                                       PHFRINFC_LLCP_PTYPE_CONNECT,
+                                                       ssap,
                                                        0x00,
                                                        0x00,
                                                        0x00,
@@ -661,9 +661,9 @@ static void Handle_ConnectionCompleteFrame(phFriNfc_LlcpTransport_t      *psTran
       /* Incorrect TLV */
       /* send FRMR */ 
       status  = phFriNfc_LlcpTransport_SendFrameReject(psTransport,
-                                                       ssap,
-                                                       PHFRINFC_LLCP_PTYPE_CC,
                                                        dsap,
+                                                       PHFRINFC_LLCP_PTYPE_CC,
+                                                       ssap,
                                                        0x00,
                                                        0x00,
                                                        0x00,
@@ -820,9 +820,9 @@ static void Handle_DisconnetModeFrame(phFriNfc_LlcpTransport_t      *psTransport
    {
       /* send FRMR */
       status  = phFriNfc_LlcpTransport_SendFrameReject(psTransport,
-                                                       ssap,
-                                                       PHFRINFC_LLCP_PTYPE_DM,
                                                        dsap,
+                                                       PHFRINFC_LLCP_PTYPE_DM,
+                                                       ssap,
                                                        0x00,
                                                        0x00,
                                                        0x00,
@@ -1000,9 +1000,9 @@ static void Handle_Receive_IFrame(phFriNfc_LlcpTransport_t      *psTransport,
       {
          /* Send FRMR */
          status = phFriNfc_LlcpTransport_SendFrameReject(psTransport,
-                                                         ssap,
-                                                         PHFRINFC_LLCP_PTYPE_I,
                                                          dsap,
+                                                         PHFRINFC_LLCP_PTYPE_I,
+                                                         ssap,
                                                          &sLlcpLocalSequence,
                                                          WFlag,
                                                          IFlag,
@@ -1227,7 +1227,7 @@ static void Handle_ReceiveReady_Frame(phFriNfc_LlcpTransport_t      *psTransport
       {
          /* Send FRMR */
          status = phFriNfc_LlcpTransport_SendFrameReject(psTransport,
-                                                         ssap, PHFRINFC_LLCP_PTYPE_RR, dsap,
+                                                         dsap, PHFRINFC_LLCP_PTYPE_RR, ssap,
                                                          &sLlcpLocalSequence,
                                                          WFlag, IFlag, RFlag, SFlag,
                                                          psLocalLlcpSocket->socket_VS,
@@ -1342,7 +1342,7 @@ static void Handle_ReceiveNotReady_Frame(phFriNfc_LlcpTransport_t      *psTransp
       {
          /* Send FRMR */
          status = phFriNfc_LlcpTransport_SendFrameReject(psTransport,
-                                                         ssap, PHFRINFC_LLCP_PTYPE_RNR, dsap,
+                                                         dsap, PHFRINFC_LLCP_PTYPE_RNR, ssap,
                                                          &sLlcpLocalSequence,
                                                          bWFlag, bIFlag, bRFlag, bSFlag,
                                                          psLocalLlcpSocket->socket_VS,
