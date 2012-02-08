@@ -106,6 +106,11 @@ LOCAL_SRC_FILES += Linux_x86/phDal4Nfc_messageQueueLib.c
 
 LOCAL_CFLAGS += -DNXP_MESSAGING -DANDROID -DNFC_TIMER_CONTEXT -fno-strict-aliasing
 
+ifneq (,$(findstring $(TARGET_DEVICE),phantasm))
+# phantasm has no secure element
+LOCAL_CFLAGS += -DNXP_SMX=0
+endif
+
 # Uncomment for Chipset command/responses
 # Or use "setprop debug.nfc.LOW_LEVEL_TRACES" at run-time
 # LOCAL_CFLAGS += -DLOW_LEVEL_TRACES
