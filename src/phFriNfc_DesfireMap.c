@@ -1671,7 +1671,7 @@ NFCSTATUS  phFriNfc_Desfire_Update_SmartTagCapContainer(phFriNfc_NdefMap_t    *N
                 }
                 /* check for the entire LENGTH Validity
                 CCLEN + TLV L value == CCLEN*/
-                if ( CapContSize != CCLen )
+                if ( CapContSize < CCLen )
                 {
                     ErrFlag=1;
                 }
