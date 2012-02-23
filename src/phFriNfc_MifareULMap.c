@@ -1584,7 +1584,9 @@ static NFCSTATUS phFriNfc_MfUL_H_findNDEFTLV(phFriNfc_NdefMap_t     *NdefMap,
             if ((NdefMap->SendRecvBuf[Temp16Bytes] == 
                         PH_FRINFC_NDEFMAP_MFUL_LOCK_CTRL_TLV) ||
                         (NdefMap->SendRecvBuf[Temp16Bytes] == 
-                        PH_FRINFC_NDEFMAP_MFUL_MEM_CTRL_TLV) )  
+                        PH_FRINFC_NDEFMAP_MFUL_MEM_CTRL_TLV) ||
+                        (NdefMap->SendRecvBuf[Temp16Bytes] ==
+                        PH_FRINFC_NDEFMAP_MFUL_PROPRIETRY_TLV))
             {
 
                  NdefMap->TLVStruct.NdefTLVByte = 
