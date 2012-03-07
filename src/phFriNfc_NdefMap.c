@@ -1171,7 +1171,7 @@ NFCSTATUS phFriNfc_NdefMap_EraseNdef(phFriNfc_NdefMap_t *NdefMap)
 
     static uint8_t     PktData[3] = PH_FRINFC_NDEFMAP_EMPTY_NDEF_MSG;
     uint8_t     MemOffset = PH_FRINFC_NDEFMAP_SEEK_BEGIN;
-    uint32_t    PacketDataLength = sizeof(PktData);
+    static uint32_t    PacketDataLength = sizeof(PktData);
 
     if (NdefMap == NULL )
     {
