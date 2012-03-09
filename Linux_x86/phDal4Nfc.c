@@ -725,7 +725,7 @@ int phDal4Nfc_ReaderThread(void * pArg)
             i2c_device_address = gDalContext.pDev->i2c_device_address;
             if (i2c_workaround && i2c_device_address < 32)
             {
-                LOGE("i2c_device_address not set to valid value");
+                ALOGE("i2c_device_address not set to valid value");
                 return NFCSTATUS_FAILED;
             }
         }
