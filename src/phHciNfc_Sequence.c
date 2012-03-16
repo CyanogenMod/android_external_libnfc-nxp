@@ -1666,7 +1666,7 @@ phHciNfc_PollLoop_Sequence(
 #define NFCIP_ACTIVE_SHIFT	0x03U
 #define NFCIP_PASSIVE_MASK	0x07U
                 uint8_t mode = targetSpeed;
-                ALOGE("Setting target mode to 0x%02X", mode);
+                HCI_DEBUG("Setting target mode to 0x%02X", mode);
                 status = 
                     phHciNfc_NfcIP_SetMode( psHciContext, pHwRef, NFCIP_TARGET,
                      (uint8_t) mode );
@@ -1687,7 +1687,7 @@ phHciNfc_PollLoop_Sequence(
 #if defined (ENABLE_P2P) && defined (INITIATOR_SPEED)
             case INITIATOR_SPEED_SEQ:
             {
-                ALOGE("Setting initiator mode to 0x%02X", speed);
+                HCI_DEBUG("Setting initiator mode to 0x%02X", speed);
                 status = 
                     phHciNfc_NfcIP_SetMode( psHciContext, pHwRef, NFCIP_INITIATOR,
                      (uint8_t) (speed & DEFAULT_NFCIP_INITIATOR_MODE_SUPPORT));
