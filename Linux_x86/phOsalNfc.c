@@ -47,6 +47,8 @@ phOsalNfc_Exception_t phOsalNfc_Exception;
 char phOsalNfc_DbgTraceBuffer[MAX_PRINT_BUFSIZE];
 #endif
 
+void phLibNfc_Mgt_Recovery();
+
 /*!
  * \brief Allocates memory.
  *        This function attempts to allocate \a size bytes on the heap and
@@ -145,6 +147,7 @@ void phOsalNfc_RaiseException(phOsalNfc_ExceptionType_t eExceptionType, uint16_t
     if(eExceptionType == phOsalNfc_e_UnrecovFirmwareErr)
     {
         ALOGE("HCI Timeout - Exception raised");
+        phLibNfc_Mgt_Recovery();
         ALOGE("Force restart of NFC Service");
         abort();
     }

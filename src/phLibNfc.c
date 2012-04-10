@@ -129,6 +129,18 @@ int phLibNfc_Load_Firmware_Image ()
     return status;
 }
 
+// Function for delay the recovery in case wired mode is set
+// to complete the possible pending transaction with SE
+void phLibNfc_Mgt_Recovery ()
+{
+    /* Wait before recovery if wired mode */
+    if (gpphLibContext->sSeContext.eActivatedMode == phLibNfc_SE_ActModeWired)
+    {
+        usleep (12000000);
+    }
+
+    return;
+}
 
 extern uint8_t nxp_nfc_isoxchg_timeout;
 NFCSTATUS phLibNfc_SetIsoXchgTimeout(uint8_t timeout) {
