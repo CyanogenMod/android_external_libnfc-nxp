@@ -889,7 +889,7 @@ phFriNfc_MfUL_ParseTLVs (
 
                         case NDEF_TYPE_IN_TLV:
                         {
-                            parse_tlv = NDEF_TLV_T;
+                            parse_tlv = NDEF_TLV_L;
                             /* Default lock bytes shall be taken */
                             NdefSmtCrdFmt->AddInfo.Type2Info.DefaultLockBytesFlag = 
                                                                             TRUE;
