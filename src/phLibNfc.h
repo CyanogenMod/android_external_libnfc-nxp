@@ -856,6 +856,10 @@ NFCSTATUS phLibNfc_Download_Mode ();
 
 int phLibNfc_Load_Firmware_Image ();
 
+// Function for delay the recovery in case wired mode is set
+// to complete the possible pending transaction with SE
+void phLibNfc_Mgt_Recovery ();
+
 // timeout is 8 bits
 // bits [0..3] => timeout value, (256*16/13.56*10^6) * 2^value
 //                  [0] -> 0.0003s
