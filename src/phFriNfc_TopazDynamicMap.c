@@ -199,6 +199,9 @@ so there are 4 segements in the card */
     ((((block_no) + 1) == TOPAZ_STATIC_LOCK_FIRST_BLOCK_NO) ? \
     (((block_no) + 1) + TOPAZ_STATIC_LOCK_BLOCK_AREAS) : \
     ((block_no) + 1))
+/* Check topaz spec version number */
+#define TOPAZ_COMPARE_VERSION(device_ver, tag_ver) \
+    ((device_ver & 0xF0) >= (tag_ver & 0xF0))
 
 #ifdef FRINFC_READONLY_NDEF
 
@@ -2368,7 +2371,7 @@ phFriNfc_Tpz_H_CheckCCBytesForWrite (
     {
         check_index = (uint8_t)(check_index + 1);
 
-        if ((check_cc_rw[0] != ps_tpz_info->CCByteBuf[1]) || 
+        if ((!TOPAZ_COMPARE_VERSION(check_cc_rw[0], ps_tpz_info->CCByteBuf[1])) ||
             (check_cc_rw[1] != ps_tpz_info->CCByteBuf[2]) || 
             (check_cc_rw[2] != ps_tpz_info->CCByteBuf[3]))
         {
