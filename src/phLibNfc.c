@@ -162,7 +162,7 @@ int phLibNfc_GetHciTimeout() {
     return nxp_nfc_hci_response_timeout;
 }
 
-extern uint32_t nxp_nfc_felica_timeout;
+extern uint8_t nxp_nfc_felica_timeout;
 NFCSTATUS phLibNfc_SetFelicaTimeout(uint8_t timeout_in_ms) {
     nxp_nfc_felica_timeout = timeout_in_ms;
     return NFCSTATUS_SUCCESS;
