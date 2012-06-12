@@ -142,14 +142,12 @@ void phOsalNfc_DbgTrace(uint8_t data[], uint32_t size)
  */
 void phOsalNfc_RaiseException(phOsalNfc_ExceptionType_t eExceptionType, uint16_t reason)
 {
-    ALOGD("phOsalNfc_RaiseException() called");
-
     if(eExceptionType == phOsalNfc_e_UnrecovFirmwareErr)
     {
-        ALOGE("HCI Timeout - Exception raised");
         phLibNfc_Mgt_Recovery();
-        ALOGE("Force restart of NFC Service");
         abort();
+    } else {
+        ALOGD("phOsalNfc_RaiseException() called");
     }
 }
 
