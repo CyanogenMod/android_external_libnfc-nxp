@@ -53,20 +53,6 @@
 
 phHal4Nfc_Hal4Ctxt_t *gpHal4Ctxt;
                                                               
-/* Jewel Commands */
-#define PH_HAL4NFC_JEWEL_READALL                    0x00
-#define PH_HAL4NFC_JEWEL_READ1                      0x01
-#define PH_HAL4NFC_JEWEL_READ4                      0x02
-#define PH_HAL4NFC_JEWEL_READ8                      0x03
-#define PH_HAL4NFC_JEWEL_WRITE1E                    0x53
-#define PH_HAL4NFC_JEWEL_WRITE4E                    0x54
-#define PH_HAL4NFC_JEWEL_WRITE8E                    0x55
-#define PH_HAL4NFC_JEWEL_WRITE1NE                   0x1A
-#define PH_HAL4NFC_JEWEL_WRITE4NE                   0x1B
-#define PH_HAL4NFC_JEWEL_WRITE8NE                   0x1C
-#define PH_HAL4NFC_JEWEL_RID                        0x78
-#define PH_HAL4NFC_JEWEL_READSEG                    0x10
-
 /* --------------------Structures and enumerations --------------------------*/
 
 static void phHal4Nfc_Iso_3A_Transceive(
@@ -549,24 +535,6 @@ NFCSTATUS phHal4Nfc_Transceive(
                     Hal4Ctxt->psTrcvCtxtInfo->
                         XchangeInfo.params.tag_info.cmd_type 
                         = (uint8_t)psTransceiveInfo->cmd.JewelCmd;
-
-                    /* If Jewel command with address then save the address */
-                    if (psTransceiveInfo->cmd.JewelCmd == phHal_eJewel_Raw)
-                    {
-                        if ((psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_READ1) ||
-                            (psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_READ4) ||
-                            (psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_READ8) ||
-                            (psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_WRITE1E) ||
-                            (psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_WRITE4E) ||
-                            (psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_WRITE8E) ||
-                            (psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_WRITE1NE) ||
-                            (psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_WRITE4NE) ||
-                            (psTransceiveInfo->sSendData.buffer[0] == PH_HAL4NFC_JEWEL_WRITE8NE))
-                        {
-                            Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.params.tag_info.addr =
-                                psTransceiveInfo->sSendData.buffer[1];
-                        }
-                    }
                     break;      
                 case phHal_eISO14443_BPrime_PICC:
                     RetStatus = PHNFCSTVAL(CID_NFC_HAL ,
@@ -1351,8 +1319,6 @@ void phHal4Nfc_TransceiveComplete(
 {
     /*Copy status code*/
     NFCSTATUS TrcvStatus = ((phNfc_sCompletionInfo_t *)pInfo)->status;
-    uint32_t i;
-
     /*Update next state*/
     Hal4Ctxt->Hal4NextState = (eHal4StateTransaction
              == Hal4Ctxt->Hal4NextState?eHal4StateInvalid:Hal4Ctxt->Hal4NextState);
@@ -1372,35 +1338,6 @@ void phHal4Nfc_TransceiveComplete(
     }
     else if(TrcvStatus == NFCSTATUS_SUCCESS)
     {
-        /* If jewel command response include address then restore the address
-           in the received response */
-        if (Hal4Ctxt->sTgtConnectInfo.psConnectedDevice->RemDevType == phHal_eJewel_PICC)
-        {
-            if (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.params.tag_info.cmd_type == phHal_eJewel_Raw)
-            {
-                if ((Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_READ1) ||
-                    (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_READ4) ||
-                    (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_READ8) ||
-                    (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_WRITE1E) ||
-                    (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_WRITE4E) ||
-                    (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_WRITE8E) ||
-                    (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_WRITE1NE) ||
-                    (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_WRITE4NE) ||
-                    (Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.tx_buffer[0] == PH_HAL4NFC_JEWEL_WRITE8NE))
-                {
-                    /* Add address field in response */
-                    for (i = 0; i < ((phNfc_sTransactionInfo_t *)pInfo)->length; i++)
-                    {
-                        ((phNfc_sTransactionInfo_t *)pInfo)->buffer[i + 1] =
-                            ((phNfc_sTransactionInfo_t *)pInfo)->buffer[i];
-                    }
-                    ((phNfc_sTransactionInfo_t *)pInfo)->buffer[0] =
-                        Hal4Ctxt->psTrcvCtxtInfo->XchangeInfo.params.tag_info.addr;
-                    ((phNfc_sTransactionInfo_t *)pInfo)->length++;
-                }
-            }
-        }
-
         /*Check if recvdata buffer given by upper layer is big enough to 
         receive all response bytes.If it is not big enough ,copy number 
         of bytes requested by upper layer to the buffer.Remaining
