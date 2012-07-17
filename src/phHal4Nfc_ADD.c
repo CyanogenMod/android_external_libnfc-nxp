@@ -671,11 +671,14 @@ void phHal4Nfc_TargetDiscoveryComplete(
                     if(phHal_eNfcIP1_Target == 
                         Hal4Ctxt->rem_dev_list[Count-1]->RemDevType)
                     {
-                        (void)memcpy(
-                            (void *)Hal4Ctxt->rem_dev_list[0],
-                            (void *)Hal4Ctxt->rem_dev_list[Count-1],
-                                    sizeof(phHal_sRemoteDevInformation_t)
-                                    );      
+                        if (Count != 1)
+                        {
+                            (void)memcpy(
+                                (void *)Hal4Ctxt->rem_dev_list[0],
+                                (void *)Hal4Ctxt->rem_dev_list[Count-1],
+                                        sizeof(phHal_sRemoteDevInformation_t)
+                                        );
+                        }
                         NfcIpDeviceCount = 1;                       
                         break;
                     }
