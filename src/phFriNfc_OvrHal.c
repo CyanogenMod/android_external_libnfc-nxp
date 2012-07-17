@@ -323,7 +323,10 @@ static void phFriNfc_OvrHal_CB_Transceive(void *context,
         if(NULL != pRecvdata && OvrHal->TranceiveInfo.sRecvData.buffer != NULL && pRecvdata->buffer != NULL)
         {
            /* Work-around for the NFCIP Tranceive API */
-            memcpy(OvrHal->TranceiveInfo.sRecvData.buffer, pRecvdata->buffer, pRecvdata->length);
+            if (OvrHal->TranceiveInfo.sRecvData.buffer != pRecvdata->buffer)
+            {
+                memcpy(OvrHal->TranceiveInfo.sRecvData.buffer, pRecvdata->buffer, pRecvdata->length);
+            }
             if (OvrHal->pndef_recv_length != NULL)
             {
                *OvrHal->pndef_recv_length = (uint16_t) pRecvdata->length;
