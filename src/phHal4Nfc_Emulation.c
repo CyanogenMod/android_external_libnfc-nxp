@@ -52,7 +52,7 @@ void phHal4Nfc_HandleEmulationEvent(
     /*Pass on Event notification info from Hci to Upper layer*/
     uNotificationInfo.psEventInfo = psNotificationInfo->info;
     if(NULL != Hal4Ctxt->sUpperLayerInfo.pEventNotification)
-    {        
+    {
         Hal4Ctxt->sUpperLayerInfo.pEventNotification(
             Hal4Ctxt->sUpperLayerInfo.EventNotificationCtxt,
             psNotificationInfo->type,
@@ -60,7 +60,17 @@ void phHal4Nfc_HandleEmulationEvent(
             NFCSTATUS_SUCCESS
             );
     }
-    else/*No Event notification handler registered*/
+    if(NULL != Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification)
+    {
+       Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification(
+            Hal4Ctxt->sUpperLayerInfo.HCEEventNotificationCtxt,
+            psNotificationInfo->type,
+            uNotificationInfo,
+            NFCSTATUS_SUCCESS
+            );
+    }
+    if(NULL == Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification &&
+       NULL == Hal4Ctxt->sUpperLayerInfo.pEventNotification)
     {
         /*Use default handler to notify to the upper layer*/
         if(NULL != Hal4Ctxt->sUpperLayerInfo.pDefaultEventHandler)
@@ -78,7 +88,7 @@ void phHal4Nfc_HandleEmulationEvent(
 
 /*  Switch mode from Virtual to Wired or Vice Versa for SMX.
 */
-NFCSTATUS phHal4Nfc_Switch_SMX_Mode(                                    
+NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
                                     phHal_sHwReference_t      *psHwReference,
                                     phHal_eSmartMX_Mode_t      smx_mode,
                                     pphHal4Nfc_GenCallback_t   pSwitchModecb,
@@ -88,7 +98,7 @@ NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
     NFCSTATUS CfgStatus = NFCSTATUS_PENDING;
     phHal4Nfc_Hal4Ctxt_t *Hal4Ctxt = NULL;
     static phHal_sADD_Cfg_t sSmxCfg;
-    
+
     /*NULL  checks*/
     if((NULL == psHwReference) || (NULL == pSwitchModecb))
     {
@@ -98,10 +108,10 @@ NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
     /*Check Initialised state*/
     else if((NULL == psHwReference->hal_context)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4CurrentState 
+                                psHwReference->hal_context)->Hal4CurrentState
                                                < eHal4StateOpenAndReady)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4NextState 
+                                psHwReference->hal_context)->Hal4NextState
                                                == eHal4StateClosed))
     {
         phOsalNfc_RaiseException(phOsalNfc_e_PrecondFailed,1);
@@ -119,7 +129,7 @@ NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
         }
         else if(Hal4Ctxt->Hal4CurrentState >= eHal4StateOpenAndReady)
         {
-            /**If config discovery has not been called prior to this ,allocate 
+            /**If config discovery has not been called prior to this ,allocate
                ADD Context here*/
             if (NULL == Hal4Ctxt->psADDCtxtInfo)
             {
@@ -135,26 +145,26 @@ NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
             if(NULL == Hal4Ctxt->psADDCtxtInfo)
             {
                 phOsalNfc_RaiseException(phOsalNfc_e_NoMemory,0);
-                CfgStatus= PHNFCSTVAL(CID_NFC_HAL , 
+                CfgStatus= PHNFCSTVAL(CID_NFC_HAL ,
                                         NFCSTATUS_INSUFFICIENT_RESOURCES);
             }
             else
-            {   
+            {
                 /* Switch request to Wired mode */
                 if(eSmartMx_Wired == smx_mode)
                 {
-                    if(Hal4Ctxt->Hal4CurrentState 
+                    if(Hal4Ctxt->Hal4CurrentState
                                     == eHal4StateTargetConnected)
                     {
                         PHDBG_INFO("Hal4:In Connected state.Returning Busy");
                         CfgStatus= PHNFCSTVAL(CID_NFC_HAL , NFCSTATUS_BUSY);
                     }
-                    /*It is Mandatory to register a listener before switching 
+                    /*It is Mandatory to register a listener before switching
                       to wired mode*/
                     else if(NULL ==
                             Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification)
                     {
-                        CfgStatus = PHNFCSTVAL(CID_NFC_HAL , 
+                        CfgStatus = PHNFCSTVAL(CID_NFC_HAL ,
                             NFCSTATUS_FAILED);
                     }
                     else
@@ -192,7 +202,7 @@ NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
                     Hal4Ctxt->sUpperLayerInfo.pConfigCallback
                         = pSwitchModecb;
                 }
-            }           
+            }
         }
         else/*Return Status not initialised*/
         {
@@ -206,7 +216,7 @@ NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
 
 
 /*  Switch mode for Swp.*/
-NFCSTATUS phHal4Nfc_Switch_Swp_Mode(                                    
+NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
                                     phHal_sHwReference_t      *psHwReference,
                                     phHal_eSWP_Mode_t          swp_mode,
                                     pphHal4Nfc_GenCallback_t   pSwitchModecb,
@@ -214,9 +224,9 @@ NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
                                     )
 {
     NFCSTATUS CfgStatus = NFCSTATUS_PENDING;
-    phHal4Nfc_Hal4Ctxt_t *Hal4Ctxt = NULL; 
+    phHal4Nfc_Hal4Ctxt_t *Hal4Ctxt = NULL;
     /*NULL checks*/
-    if(NULL == psHwReference  
+    if(NULL == psHwReference
         || NULL == pSwitchModecb
         )
     {
@@ -226,10 +236,10 @@ NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
     /*Check Initialised state*/
     else if((NULL == psHwReference->hal_context)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4CurrentState 
+                                psHwReference->hal_context)->Hal4CurrentState
                                                < eHal4StateOpenAndReady)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4NextState 
+                                psHwReference->hal_context)->Hal4NextState
                                                == eHal4StateClosed))
     {
         phOsalNfc_RaiseException(phOsalNfc_e_PrecondFailed,1);
@@ -247,7 +257,7 @@ NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
         }
         else if(Hal4Ctxt->Hal4CurrentState >= eHal4StateOpenAndReady)
         {
-             /**If config discovery has not been called prior to this ,allocate 
+             /**If config discovery has not been called prior to this ,allocate
                ADD Context here*/
             if (NULL == Hal4Ctxt->psADDCtxtInfo)
             {
@@ -263,11 +273,11 @@ NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
             if(NULL == Hal4Ctxt->psADDCtxtInfo)
             {
                 phOsalNfc_RaiseException(phOsalNfc_e_NoMemory,0);
-                CfgStatus= PHNFCSTVAL(CID_NFC_HAL , 
+                CfgStatus= PHNFCSTVAL(CID_NFC_HAL ,
                                         NFCSTATUS_INSUFFICIENT_RESOURCES);
             }
             else
-            {   
+            {
                 /*Switch mode to On or off*/
                 CfgStatus = phHciNfc_Switch_SwpMode(
                                     Hal4Ctxt->psHciHandle,
@@ -283,7 +293,7 @@ NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
                     Hal4Ctxt->sUpperLayerInfo.pConfigCallback
                         = pSwitchModecb;
                 }
-            }           
+            }
         }
         else/*Return Status not initialised*/
         {
@@ -296,7 +306,7 @@ NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
 
 #ifdef FULL_HAL4_EMULATION_ENABLE
 /*  Switch Emulation mode ON or OFF.*/
-NFCSTATUS phHal4Nfc_Host_Emulation_Mode( 
+NFCSTATUS phHal4Nfc_Host_Emulation_Mode(
                                         phHal_sHwReference_t      *psHwReference,
                                         phNfc_eModeType_t          eModeType,
                                         pphHal4Nfc_GenCallback_t   pEmulationModecb,
@@ -306,7 +316,7 @@ NFCSTATUS phHal4Nfc_Host_Emulation_Mode(
     NFCSTATUS RetStatus = NFCSTATUS_PENDING;
     phHal4Nfc_Hal4Ctxt_t *Hal4Ctxt = NULL;
     /*NULL checks*/
-    if(NULL == psHwReference  
+    if(NULL == psHwReference
         || NULL == pEmulationModecb
         )
     {
@@ -316,15 +326,15 @@ NFCSTATUS phHal4Nfc_Host_Emulation_Mode(
     /*Check Initialised state*/
     else if((NULL == psHwReference->hal_context)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4CurrentState 
+                                psHwReference->hal_context)->Hal4CurrentState
                                                < eHal4StateOpenAndReady)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4NextState 
+                                psHwReference->hal_context)->Hal4NextState
                                                == eHal4StateClosed))
     {
         phOsalNfc_RaiseException(phOsalNfc_e_PrecondFailed,1);
         RetStatus = PHNFCSTVAL(CID_NFC_HAL , NFCSTATUS_NOT_INITIALISED);
-    }    
+    }
     else
     {
 

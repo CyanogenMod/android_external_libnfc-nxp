@@ -78,7 +78,7 @@ typedef enum phHciNfc_CE_B_Seq{
     HOST_CE_B_ATQB_SEQ,
     HOST_CE_B_ENABLE_SEQ,
     HOST_CE_B_DISABLE_SEQ,
-    HOST_CE_B_PIPE_CLOSE, 
+    HOST_CE_B_PIPE_CLOSE,
     HOST_CE_B_PIPE_DELETE
 }phHciNfc_CE_B_Seq_t;
 
@@ -89,7 +89,7 @@ typedef struct phHciNfc_CE_B_Info{
     /* Pointer to the card emulation B pipe information */
     phHciNfc_Pipe_Info_t        *p_pipe_info;
     uint8_t                     pipe_id;
-    
+
 } phHciNfc_CE_B_Info_t;
 
 /*
@@ -101,7 +101,7 @@ typedef struct phHciNfc_CE_B_Info{
  *
  * This function Allocates the resources of the card emulation B management
  * gate Information Structure.
- * 
+ *
  */
 extern
 NFCSTATUS
@@ -112,7 +112,7 @@ phHciNfc_CE_B_Init_Resources(
 /**
 * \ingroup grp_hci_nfc
 *
-*   The phHciNfc_CE_B_Get_PipeID function gives the pipe id of the card 
+*   The phHciNfc_CE_B_Get_PipeID function gives the pipe id of the card
 *   emulation B gate
 *
 *   \param[in]  psHciContext            psHciContext is the pointer to HCI Layer
@@ -135,13 +135,13 @@ phHciNfc_CE_B_Get_PipeID(
 /**
 * \ingroup grp_hci_nfc
 *
-*  The phHciNfc_CE_B_Update_PipeInfo function updates the pipe_id of the card 
+*  The phHciNfc_CE_B_Update_PipeInfo function updates the pipe_id of the card
 *  emulation B gate management Structure.
 *
 *  \param[in]  psHciContext            psHciContext is the pointer to HCI Layer
 *                                      context Structure.
 *  \param[in]  pipeID                  pipeID of the card emulation A gate
-*  \param[in]  pPipeInfo               Update the pipe Information of the reader 
+*  \param[in]  pPipeInfo               Update the pipe Information of the reader
 *                                      A gate
 *
 *  \retval NFCSTATUS_SUCCESS           Function execution is successful.
@@ -167,35 +167,6 @@ phHciNfc_CE_B_Update_PipeInfo(
 *                                      context Structure.
 *  \param[in]  pHwRef                  pHwRef is the Information of
 *                                      the Device Interface Link
-*  \param[in]  pipeID                  pipeID of the card emulation B gate
-*  \param[in]  pPipeInfo               Update the pipe Information of the card 
-*                                      emulation B gate
-*
-*  \retval NFCSTATUS_SUCCESS           Function execution is successful.
-*  \retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters
-*                                      could not be interpreted properly.
-*
-*/
-#ifdef CE_B_SEND_EVENT
-extern
-NFCSTATUS
-phHciNfc_CE_B_SendData_Event(
-                             void               *psContext,
-                             void               *pHwRef,
-                             uint8_t            *pEvent,
-                             uint8_t            length
-                       );
-#endif /* #ifdef CE_B_SEND_EVENT */
-
-/**
-* \ingroup grp_hci_nfc
-*
-*  The phHciNfc_CE_B_Mode function sends data to the set the card emulation mode
-*
-*  \param[in]  psHciContext            psHciContext is the pointer to HCI Layer
-*                                      context Structure.
-*  \param[in]  pHwRef                  pHwRef is the Information of
-*                                      the Device Interface Link
 *  \param[in]  enable_type             type to enable
 *
 *  \retval NFCSTATUS_SUCCESS           Function execution is successful.
@@ -203,6 +174,7 @@ phHciNfc_CE_B_SendData_Event(
 *                                      could not be interpreted properly.
 *
 */
+extern
 NFCSTATUS
 phHciNfc_CE_B_Mode(
                             void        *psHciHandle,
@@ -213,7 +185,7 @@ phHciNfc_CE_B_Mode(
 /**
 * \ingroup grp_hci_nfc
 *
-*  The phHciNfc_CE_B_Initialise function opens the CE B and set all the 
+*  The phHciNfc_CE_B_Initialise function opens the CE B and set all the
 *   required parameters for CE B
 *
 *  \param[in]  psHciContext            psHciContext is the pointer to HCI Layer
@@ -226,7 +198,7 @@ phHciNfc_CE_B_Mode(
 *                                      could not be interpreted properly.
 *
 */
-extern 
+extern
 NFCSTATUS
 phHciNfc_CE_B_Initialise(
                         phHciNfc_sContext_t     *psHciContext,
@@ -236,7 +208,7 @@ phHciNfc_CE_B_Initialise(
 /**
 * \ingroup grp_hci_nfc
 *
-*  The phHciNfc_CE_B_Initialise function close the CE B and reset all the 
+*  The phHciNfc_CE_B_Initialise function close the CE B and reset all the
 *   required parameters to default value of CE B
 *
 *  \param[in]  psHciContext            psHciContext is the pointer to HCI Layer
@@ -249,7 +221,7 @@ phHciNfc_CE_B_Initialise(
 *                                      could not be interpreted properly.
 *
 */
-extern 
+extern
 NFCSTATUS
 phHciNfc_CE_B_Release(
                         phHciNfc_sContext_t     *psHciContext,
@@ -259,12 +231,12 @@ phHciNfc_CE_B_Release(
 /**
 * \ingroup grp_hci_nfc
 *
-*  The phHciNfc_CE_B_Update_Seq function to update CE B sequence depending on the 
+*  The phHciNfc_CE_B_Update_Seq function to update CE B sequence depending on the
 *  specified \ref seq_type
 *
 *  \param[in]  psHciContext             psHciContext is the pointer to HCI Layer
 *                                       context Structure.
-*  \param[in]  seq_type                 sequence type specified in 
+*  \param[in]  seq_type                 sequence type specified in
 *                                       \ref phHciNfc_eSeqType_t
 *
 *  \retval NFCSTATUS_SUCCESS           Function execution is successful.
@@ -272,7 +244,7 @@ phHciNfc_CE_B_Release(
 *                                      could not be interpreted properly.
 *
 */
-extern 
+extern
 NFCSTATUS
 phHciNfc_CE_B_Update_Seq(
                         phHciNfc_sContext_t     *psHciContext,

@@ -27,7 +27,7 @@
 * $Date: Tue Aug 18 10:12:39 2009 $                                           *
 * $Author: ing04880 $                                                         *
 * $Revision: 1.42 $                                                           *
-* $Aliases: NFC_FRI1.1_WK934_R31_1,NFC_FRI1.1_WK941_PREP1,NFC_FRI1.1_WK941_PREP2,NFC_FRI1.1_WK941_1,NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $  
+* $Aliases: NFC_FRI1.1_WK934_R31_1,NFC_FRI1.1_WK941_PREP1,NFC_FRI1.1_WK941_PREP2,NFC_FRI1.1_WK941_1,NFC_FRI1.1_WK943_R32_1,NFC_FRI1.1_WK949_PREP1,NFC_FRI1.1_WK943_R32_10,NFC_FRI1.1_WK943_R32_13,NFC_FRI1.1_WK943_R32_14,NFC_FRI1.1_WK1007_R33_1,NFC_FRI1.1_WK1007_R33_4,NFC_FRI1.1_WK1017_PREP1,NFC_FRI1.1_WK1017_R34_1,NFC_FRI1.1_WK1017_R34_2,NFC_FRI1.1_WK1023_R35_1 $
 *                                                                             *
 * =========================================================================== *
 */
@@ -104,7 +104,7 @@ static phHciNfc_GateID_t host_gate_list[] = {
 #endif
         phHciNfc_NfcWIMgmtGate,
         phHciNfc_SwpMgmtGate,
-#if defined(HOST_EMULATION) && ( NXP_UICC_CE_RIGHTS < 0x01 )
+#if defined(HOST_EMULATION) /*&& ( NXP_UICC_CE_RIGHTS < 0x01 )*/
         phHciNfc_CETypeAGate,
         phHciNfc_CETypeBGate,
 #endif
@@ -158,11 +158,11 @@ phHciNfc_Create_Pipe(
         (*ppPipeHandle)->pipe.source.host_id    = (uint8_t) phHciNfc_TerminalHostID;
 
         /* The Source Gate is same as the Destination Gate */
-        (*ppPipeHandle)->pipe.source.gate_id    = 
+        (*ppPipeHandle)->pipe.source.gate_id    =
                                 ((phHciNfc_Gate_Info_t *)destination)->gate_id;
-        (*ppPipeHandle)->pipe.dest.host_id = 
+        (*ppPipeHandle)->pipe.dest.host_id =
                                 ((phHciNfc_Gate_Info_t *)destination)->host_id;
-        (*ppPipeHandle)->pipe.dest.gate_id  = 
+        (*ppPipeHandle)->pipe.dest.gate_id  =
                                 ((phHciNfc_Gate_Info_t *)destination)->gate_id;
 
         /* if( hciMode_Override == psHciContext->hci_mode ) */
@@ -195,7 +195,7 @@ phHciNfc_Update_Pipe(
     NFCSTATUS       status = NFCSTATUS_SUCCESS;
 
 
-    for (pipe_index = 0; 
+    for (pipe_index = 0;
             (pipe_index +  HCI_DYNAMIC_PIPE_ID) <=
                 (uint8_t)(sizeof(host_gate_list)/sizeof(phHciNfc_GateID_t) );
                     pipe_index++)
@@ -210,24 +210,24 @@ phHciNfc_Update_Pipe(
             p_pipe_info->pipe.source.host_id  = (uint8_t) phHciNfc_TerminalHostID;
 
             /* The Source Gate is same as the Destination Gate */
-            p_pipe_info->pipe.source.gate_id    = 
+            p_pipe_info->pipe.source.gate_id    =
                                     host_gate_list[pipe_index];
-            p_pipe_info->pipe.dest.host_id = 
+            p_pipe_info->pipe.dest.host_id =
                                     phHciNfc_HostControllerID;
-            p_pipe_info->pipe.dest.gate_id  = 
+            p_pipe_info->pipe.dest.gate_id  =
                                     host_gate_list[pipe_index];
             /* The Pipe ID is unknown until it is assigned */
             p_pipe_info->pipe.pipe_id   = (uint8_t) HCI_UNKNOWN_PIPE_ID;
 
             /* Initialise the Resources for the particular Gate */
 
-            status = phHciNfc_Create_All_Pipes(psHciContext, 
+            status = phHciNfc_Create_All_Pipes(psHciContext,
                                             pHwRef, p_pipe_seq );
 
             if( NFCSTATUS_SUCCESS == status )
             {
                 uint8_t pipe_id = (uint8_t)(pipe_index + HCI_DYNAMIC_PIPE_ID);
-                status = phHciNfc_Update_PipeInfo( psHciContext, p_pipe_seq , 
+                status = phHciNfc_Update_PipeInfo( psHciContext, p_pipe_seq ,
                                         pipe_id, p_pipe_info );
                 if( NFCSTATUS_SUCCESS == status )
                 {
@@ -287,9 +287,9 @@ phHciNfc_Delete_Pipe(
     NFCSTATUS       status=NFCSTATUS_SUCCESS;
     NFCSTATUS       cmd_status = NFCSTATUS_SUCCESS;
 
-    if( (NULL == psHciContext) 
-        || (NULL == pHwRef) 
-        || (NULL == pPipeHandle) 
+    if( (NULL == psHciContext)
+        || (NULL == pHwRef)
+        || (NULL == pPipeHandle)
      )
     {
       status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_INVALID_PARAMETER);
@@ -422,7 +422,7 @@ phHciNfc_CE_Pipes_OP(
 /*!
  * \brief Creates the Pipes of all the Supported Gates .
  *
- * This function Creates the pipes for all the supported gates 
+ * This function Creates the pipes for all the supported gates
  */
 
 NFCSTATUS
@@ -435,7 +435,7 @@ phHciNfc_Create_All_Pipes(
     NFCSTATUS                           status = NFCSTATUS_SUCCESS;
     phHciNfc_Pipe_Info_t                *p_pipe_info = NULL;
 
-    if( (NULL == psHciContext) || (NULL == pHwRef) 
+    if( (NULL == psHciContext) || (NULL == pHwRef)
         || (NULL == p_pipe_seq) )
     {
       status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_INVALID_PARAMETER);
@@ -709,11 +709,57 @@ phHciNfc_Create_All_Pipes(
                 {
                     status = phHciNfc_Create_Pipe( psHciContext, pHwRef,
                                 &id_dest, &p_pipe_info);
+#ifndef HOST_EMULATION
+                    status = ((NFCSTATUS_PENDING == status )?
+                                        NFCSTATUS_SUCCESS : status);
+#endif
+                }
+                break;
+            }
+#ifdef HOST_EMULATION
+            case PIPE_CARD_A_CREATE:
+            {
+                phHciNfc_Gate_Info_t        id_dest;
+
+                id_dest.host_id = (uint8_t)phHciNfc_HostControllerID;
+                id_dest.gate_id = (uint8_t)phHciNfc_CETypeAGate;
+
+                status = phHciNfc_CE_A_Init_Resources ( psHciContext );
+                if((status == NFCSTATUS_SUCCESS)
+#ifdef ESTABLISH_SESSION
+                    && (hciMode_Session != psHciContext->hci_mode)
+#endif
+                    )
+                {
+                    status = phHciNfc_Create_Pipe( psHciContext, pHwRef,
+                                &id_dest, &p_pipe_info);
+                    /*status = ((NFCSTATUS_PENDING == status )?
+                                        NFCSTATUS_SUCCESS : status);*/
+                }
+                break;
+            }
+            case PIPE_CARD_B_CREATE:
+            {
+                phHciNfc_Gate_Info_t        id_dest;
+
+                id_dest.host_id = (uint8_t)phHciNfc_HostControllerID;
+                id_dest.gate_id = (uint8_t)phHciNfc_CETypeBGate;
+
+                status = phHciNfc_CE_B_Init_Resources ( psHciContext );
+                if((status == NFCSTATUS_SUCCESS)
+#ifdef ESTABLISH_SESSION
+                    && (hciMode_Session != psHciContext->hci_mode)
+#endif
+                    )
+                {
+                    status = phHciNfc_Create_Pipe( psHciContext, pHwRef,
+                                &id_dest, &p_pipe_info);
                     status = ((NFCSTATUS_PENDING == status )?
                                         NFCSTATUS_SUCCESS : status);
                 }
                 break;
             }
+ #endif //HOST_EMULATION
             /* case PIPE_MGMT_END : */
             default:
             {
@@ -731,7 +777,7 @@ phHciNfc_Create_All_Pipes(
 /*!
  * \brief Deletes the Pipes of all the Supported Gates .
  *
- * This function Deletes the pipes for all the supported gates 
+ * This function Deletes the pipes for all the supported gates
  */
 
 NFCSTATUS
@@ -787,8 +833,8 @@ phHciNfc_Update_PipeInfo(
     phHciNfc_GateID_t           gate_id = phHciNfc_UnknownGate;
     NFCSTATUS                   status = NFCSTATUS_SUCCESS;
 
-    if( 
-        (NULL == psHciContext) || (NULL == pPipeSeq) 
+    if(
+        (NULL == psHciContext) || (NULL == pPipeSeq)
         || ( NULL == pPipeInfo )
       )
     {
@@ -806,7 +852,7 @@ phHciNfc_Update_PipeInfo(
                             pipe_id, pPipeInfo);
                 if(NFCSTATUS_SUCCESS == status)
                 {
-                    *pPipeSeq = PIPE_PN544MGMT_CREATE; 
+                    *pPipeSeq = PIPE_PN544MGMT_CREATE;
                 }
                 break;
             }
@@ -853,7 +899,7 @@ phHciNfc_Update_PipeInfo(
 #elif  defined(ENABLE_P2P)
                     *pPipeSeq = PIPE_NFC_INITIATOR_CREATE;
 /* #if defined(ENABLE_P2P) */
- /*lint -e{91} suppress "Line exceeds"*/ 
+ /*lint -e{91} suppress "Line exceeds"*/
 #elif !defined(TYPE_B) && !defined(TYPE_FELICA) && !defined(TYPE_JEWEL) && !defined(TYPE_ISO15693) && !defined(ENABLE_P2P)
                     *pPipeSeq = PIPE_WI_CREATE;
 #endif
@@ -879,7 +925,7 @@ phHciNfc_Update_PipeInfo(
 #elif  defined(ENABLE_P2P)
                     *pPipeSeq = PIPE_NFC_INITIATOR_CREATE;
 /* #if defined(ENABLE_P2P) */
- /*lint -e{91} suppress "Line exceeds"*/ 
+ /*lint -e{91} suppress "Line exceeds"*/
 #elif !defined(TYPE_FELICA) && !defined(TYPE_JEWEL) && !defined(TYPE_ISO15693) && !defined(ENABLE_P2P)
                     *pPipeSeq = PIPE_WI_CREATE;
 #endif
@@ -937,7 +983,7 @@ phHciNfc_Update_PipeInfo(
                             pipe_id, pPipeInfo);
                 if(NFCSTATUS_SUCCESS == status)
                 {
-                    
+
 #ifdef ENABLE_P2P
                     *pPipeSeq = PIPE_NFC_INITIATOR_CREATE;
 #else
@@ -987,7 +1033,11 @@ phHciNfc_Update_PipeInfo(
                             pipe_id, pPipeInfo);
                 if(NFCSTATUS_SUCCESS == status)
                 {
+#ifdef HOST_EMULATION
+                    *pPipeSeq = PIPE_CARD_A_CREATE;
+#else
                     *pPipeSeq = PIPE_DELETE_ALL;
+#endif
                 }
                 break;
             }
@@ -1024,7 +1074,7 @@ phHciNfc_Update_PipeInfo(
             {
                 status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_HCI_GATE_NOT_SUPPORTED );
                 break;
-            } 
+            }
             /*End of the default Switch Case */
 
         } /*End of the Index Switch */
@@ -1053,7 +1103,7 @@ phHciNfc_Open_Pipe(
     NFCSTATUS               status = NFCSTATUS_SUCCESS;
     NFCSTATUS               cmd_status = NFCSTATUS_SUCCESS;
 
-    if( (NULL == psHciContext) 
+    if( (NULL == psHciContext)
         || ( NULL == pHwRef )
         || ( NULL == pPipeHandle )
       )
@@ -1067,7 +1117,7 @@ phHciNfc_Open_Pipe(
 
         if ( pipe_id <= PHHCINFC_MAX_PIPE)
         {
-            cmd_status = phHciNfc_Send_Generic_Cmd( psHciContext,pHwRef, 
+            cmd_status = phHciNfc_Send_Generic_Cmd( psHciContext,pHwRef,
                                     pipe_id, ANY_OPEN_PIPE);
             status = ( (cmd_status == NFCSTATUS_PENDING)?
                                         NFCSTATUS_SUCCESS : cmd_status);
@@ -1096,7 +1146,7 @@ phHciNfc_Close_Pipe(
     NFCSTATUS               status = NFCSTATUS_SUCCESS;
     NFCSTATUS               cmd_status = NFCSTATUS_SUCCESS;
 
-    if( (NULL == psHciContext) 
+    if( (NULL == psHciContext)
         || ( NULL == pHwRef )
         || ( NULL == pPipeHandle )
       )
@@ -1111,7 +1161,7 @@ phHciNfc_Close_Pipe(
         if( (uint8_t)HCI_UNKNOWN_PIPE_ID > pipe_id)
         {
             cmd_status = phHciNfc_Send_Generic_Cmd(
-                                        psHciContext, pHwRef, pipe_id, 
+                                        psHciContext, pHwRef, pipe_id,
                                         ANY_CLOSE_PIPE );
 
             status = ((cmd_status == NFCSTATUS_PENDING)?

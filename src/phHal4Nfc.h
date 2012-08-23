@@ -87,7 +87,7 @@
     HAL functionality */
 #define PH_HAL4NFC_VERSION                              8
 #define PH_HAL4NFC_REVISION                            21
-#define PH_HAL4NFC_PATCH                                1 
+#define PH_HAL4NFC_PATCH                                1
 #define PH_HAL4NFC_BUILD                                0
 
 /** HAL Interface Version Macros : Updated for every external release of
@@ -273,7 +273,7 @@ typedef enum{
                                  firmware operation*/
     eInitTestModeOn,         /**<Limited Initialization used for running self
                                 tests */
-    eInitCustom              /**<Reserved for Future Use */                  
+    eInitCustom              /**<Reserved for Future Use */
 } phHal4Nfc_InitType_t;
 
 /**
@@ -587,8 +587,8 @@ extern NFCSTATUS phHal4Nfc_ConfigParameters(
  *                                             session has to be closed before
  *                                             (see\ref phHal4Nfc_Disconnect).
  *  \retval NFCSTATUS_NOT_INITIALIZED          Hal is not initialized.
- *  \retval NFCSTATUS_FEATURE_NOT_SUPPORTED    Reactivation is not supported for 
- *                                             NfcIp target and Jewel/Topaz 
+ *  \retval NFCSTATUS_FEATURE_NOT_SUPPORTED    Reactivation is not supported for
+ *                                             NfcIp target and Jewel/Topaz
  *                                             remote device types.
  *  \retval NFCSTATUS_INVALID_REMOTE_DEVICE    The Remote Device Identifier is
  *                                             not valid.
@@ -996,6 +996,334 @@ phHal4Nfc_Receive(
                  );
 
 
+
+/**
+*  \if hal
+*   \ingroup grp_hal_common
+*  \else
+*   \ingroup grp_mw_external_hal_funcs
+*  \endif
+*
+*  This function is called by the type A Peer to wait for receiving data from
+*  the other reader.It is used only by the NfcIP Target.
+*  \note NOTE: After this function is called, its mandatory to wait for the
+*  pphHal4Nfc_ReceiveCallback_t callback, before calling any other function.
+*  Only functions allowed are phHal4Nfc_Close() and phHal4Nfc_Hal4Reset().
+*
+*
+*  \param[in]     psHwReference         Hardware Reference, pre-initialized by
+*                                       upper layer. \n
+*
+*  \param[in]     psTransactInfo            information required for transferring the
+*                                       data
+*
+*  \param[in]     pReceiveCallback      Callback function called after receiving
+*                                       the data or in case an error has
+*                                       has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned
+*                                       in the callback.
+*
+*  \retval NFCSTATUS_PENDING            Receive is in progress.
+*  \retval NFCSTATUS_INVALID_DEVICE     The device has not been opened or has
+*                                       been disconnected meanwhile.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+*  \retval NFCSTATUS_NOT_INITIALIZED    Hal is not initialized.
+*  \retval Others                       Errors related to the lower layers
+*
+*/
+extern
+NFCSTATUS
+phHal4Nfc_CE_A_Receive(
+                  phHal_sHwReference_t                  *psHwReference,
+                  phHal4Nfc_TransactInfo_t              *psRecvInfo,
+                  pphHal4Nfc_TransceiveCallback_t       pReceiveCallback,
+                  void                                  *pContext
+                 );
+
+/**
+*  \if hal
+*   \ingroup grp_hal_common
+*  \else
+*   \ingroup grp_mw_external_hal_funcs
+*  \endif
+*
+*  The function is used by the type A Target to respond to packect received
+*  from reader. pSendCallback()
+*  is called , when all steps in the send sequence are completed.
+*
+*  \param[in]     psHwReference         Hardware Reference, pre-initialized by
+*                                       upper layer. \n
+*
+*  \param[in]     psTransactInfo        information required for transferring
+*                                       the data
+*
+*  \param[in]     sTransferData         Data and the length of the data to be
+*                                       transferred
+*
+*  \param[in]     pSendCallback         Callback function called on completion
+*                                       of the NfcIP sequence or in case an
+*                                       error has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned in
+*                                       the callback.
+*
+*  \retval NFCSTATUS_PENDING            Send is in progress.
+*  \retval NFCSTATUS_INVALID_DEVICE     The device has not been opened or has
+*                                       been disconnected meanwhile.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+*  \retval NFCSTATUS_NOT_INITIALIZED    Hal is not initialized.
+*  \retval Others                       Errors related to the lower layers.
+*
+*
+*/
+extern
+NFCSTATUS
+phHal4Nfc_CE_A_Send(
+                phHal_sHwReference_t                    *psHwReference,
+                phHal4Nfc_TransactInfo_t                *psTransferInfo,
+                phNfc_sData_t                            sTransferData,
+                pphHal4Nfc_SendCallback_t                pSendCallback,
+                void                                    *pContext
+                );
+
+
+/**
+ *  \if hal
+ *   \ingroup grp_hal_nfci
+ *  \else
+ *   \ingroup grp_mw_external_hal_funcs
+ *  \endif
+ *
+ *  The phHal4Nfc_CE_A_Transceive function allows to send data to and receive data
+ *  from the reader selected by the caller.
+ *  The caller has to provide the Remote Device Information structure and the
+ *  command in order to communicate with the selected remote device.For CE
+ *  transactions the command type will not be used.
+ *
+ *
+ *
+ *
+ *  \param[in]      psHwReference       Hardware Reference, pre-initialized by
+ *                                      upper layer. \n
+ *
+ *  \param[in,out]  psTransferInfo    Information required by transceive is
+ *                                      concealed in this structure.It contains
+ *                                      the send,receive buffers and their
+ *                                      lengths.
+ *
+ *  \param[in]      psRemoteDevInfo     Points to the Remote Device Information
+ *                                      structure which identifies the selected
+ *                                      Remote Device.
+ *
+ *  \param[in]      pReceiveCallback       Callback function for returning the
+ *                                      received response or error.
+ *
+ *  \param[in]      pContext            Upper layer context to be returned in
+ *                                      the callback.
+ *
+ *  \retval NFCSTATUS_PENDING                Transceive initiated.pTrcvCallback
+ *                                           will return the response or error.
+ *  \retval NFCSTATUS_NOT_INITIALIZED        Hal is not initialized.
+ *  \retval NFCSTATUS_SUCCESS                This status is used when send data
+ *                                           length is zero and HAL contains
+ *                                           previously more bytes from previous
+ *                                           receive. \n
+ *  \retval NFCSTATUS_INVALID_PARAMETER      One or more of the supplied
+ *                                           parameters could not be properly
+ *                                           interpreted or are invalid.
+ *  \retval NFCSTATUS_INVALID_DEVICE         The device has not been opened or
+ *                                           has been disconnected meanwhile.
+ *  \retval NFCSTATUS_FEATURE_NOT_SUPPORTED  Transaction on this Device type is
+ *                                           not supported.
+ *  \retval NFCSTATUS_BUSY                   Previous transaction is not
+ *                                           completed.
+ *  \retval NFCSTATUS_INSUFFICIENT_RESOURCES System resources are insufficient
+ *                                           to complete the request at that
+ *                                           point in time.
+ *  \retval NFCSTATUS_MORE_INFORMATION       Received number of bytes is greater
+ *                                           than receive buffer provided by the
+ *                                           upper layer.Extra bytes will be
+ *                                           retained by Hal and returned on next
+ *                                           call to transceive.
+ *  \retval Others                           Errors related to the lower layers.
+ *
+ */
+extern
+NFCSTATUS
+phHal4Nfc_CE_A_Transceive(
+                phHal_sHwReference_t                    *psHwReference,
+                phHal4Nfc_TransactInfo_t                *psTransferInfo,
+                phNfc_sData_t                            sTransferData,
+                pphHal4Nfc_TransceiveCallback_t          pReceiveCallback,
+                void                                    *pContext
+                );
+
+/**
+*  \if hal
+*   \ingroup grp_hal_common
+*  \else
+*   \ingroup grp_mw_external_hal_funcs
+*  \endif
+*
+*  This function is called by the type B Peer to wait for receiving data from
+*  the other reader.It is used only by the NfcIP Target.
+*  \note NOTE: After this function is called, its mandatory to wait for the
+*  pphHal4Nfc_ReceiveCallback_t callback, before calling any other function.
+*  Only functions allowed are phHal4Nfc_Close() and phHal4Nfc_Hal4Reset().
+*
+*
+*  \param[in]     psHwReference         Hardware Reference, pre-initialized by
+*                                       upper layer. \n
+*
+*  \param[in]     psTransactInfo            information required for transferring the
+*                                       data
+*
+*  \param[in]     pReceiveCallback      Callback function called after receiving
+*                                       the data or in case an error has
+*                                       has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned
+*                                       in the callback.
+*
+*  \retval NFCSTATUS_PENDING            Receive is in progress.
+*  \retval NFCSTATUS_INVALID_DEVICE     The device has not been opened or has
+*                                       been disconnected meanwhile.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+*  \retval NFCSTATUS_NOT_INITIALIZED    Hal is not initialized.
+*  \retval Others                       Errors related to the lower layers
+*
+*/
+extern
+NFCSTATUS
+phHal4Nfc_CE_B_Receive(
+                  phHal_sHwReference_t                  *psHwReference,
+                  phHal4Nfc_TransactInfo_t              *psRecvInfo,
+                  pphHal4Nfc_TransceiveCallback_t       pReceiveCallback,
+                  void                                  *pContext
+                 );
+
+/**
+*  \if hal
+*   \ingroup grp_hal_common
+*  \else
+*   \ingroup grp_mw_external_hal_funcs
+*  \endif
+*
+*  The function is used by the type B Target to respond to packect received
+*  from reader. pSendCallback()
+*  is called , when all steps in the send sequence are completed.
+*
+*  \param[in]     psHwReference         Hardware Reference, pre-initialized by
+*                                       upper layer. \n
+*
+*  \param[in]     psTransactInfo        information required for transferring
+*                                       the data
+*
+*  \param[in]     sTransferData         Data and the length of the data to be
+*                                       transferred
+*
+*  \param[in]     pSendCallback         Callback function called on completion
+*                                       of the NfcIP sequence or in case an
+*                                       error has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned in
+*                                       the callback.
+*
+*  \retval NFCSTATUS_PENDING            Send is in progress.
+*  \retval NFCSTATUS_INVALID_DEVICE     The device has not been opened or has
+*                                       been disconnected meanwhile.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+*  \retval NFCSTATUS_NOT_INITIALIZED    Hal is not initialized.
+*  \retval Others                       Errors related to the lower layers.
+*
+*
+*/
+extern
+NFCSTATUS
+phHal4Nfc_CE_B_Send(
+                phHal_sHwReference_t                    *psHwReference,
+                phHal4Nfc_TransactInfo_t                *psTransferInfo,
+                phNfc_sData_t                            sTransferData,
+                pphHal4Nfc_SendCallback_t                pSendCallback,
+                void                                    *pContext
+                );
+
+
+/**
+ *  \if hal
+ *   \ingroup grp_hal_nfci
+ *  \else
+ *   \ingroup grp_mw_external_hal_funcs
+ *  \endif
+ *
+ *  The phHal4Nfc_CE_B_Transceive function allows to send data to and receive data
+ *  from the reader selected by the caller.
+ *  The caller has to provide the Remote Device Information structure and the
+ *  command in order to communicate with the selected remote device.For CE
+ *  transactions the command type will not be used.
+ *
+ *
+ *
+ *
+ *  \param[in]      psHwReference       Hardware Reference, pre-initialized by
+ *                                      upper layer. \n
+ *
+ *  \param[in,out]  psTransferInfo    Information required by transceive is
+ *                                      concealed in this structure.It contains
+ *                                      the send,receive buffers and their
+ *                                      lengths.
+ *
+ *  \param[in]      psRemoteDevInfo     Points to the Remote Device Information
+ *                                      structure which identifies the selected
+ *                                      Remote Device.
+ *
+ *  \param[in]      pReceiveCallback       Callback function for returning the
+ *                                      received response or error.
+ *
+ *  \param[in]      pContext            Upper layer context to be returned in
+ *                                      the callback.
+ *
+ *  \retval NFCSTATUS_PENDING                Transceive initiated.pTrcvCallback
+ *                                           will return the response or error.
+ *  \retval NFCSTATUS_NOT_INITIALIZED        Hal is not initialized.
+ *  \retval NFCSTATUS_SUCCESS                This status is used when send data
+ *                                           length is zero and HAL contains
+ *                                           previously more bytes from previous
+ *                                           receive. \n
+ *  \retval NFCSTATUS_INVALID_PARAMETER      One or more of the supplied
+ *                                           parameters could not be properly
+ *                                           interpreted or are invalid.
+ *  \retval NFCSTATUS_INVALID_DEVICE         The device has not been opened or
+ *                                           has been disconnected meanwhile.
+ *  \retval NFCSTATUS_FEATURE_NOT_SUPPORTED  Transaction on this Device type is
+ *                                           not supported.
+ *  \retval NFCSTATUS_BUSY                   Previous transaction is not
+ *                                           completed.
+ *  \retval NFCSTATUS_INSUFFICIENT_RESOURCES System resources are insufficient
+ *                                           to complete the request at that
+ *                                           point in time.
+ *  \retval NFCSTATUS_MORE_INFORMATION       Received number of bytes is greater
+ *                                           than receive buffer provided by the
+ *                                           upper layer.Extra bytes will be
+ *                                           retained by Hal and returned on next
+ *                                           call to transceive.
+ *  \retval Others                           Errors related to the lower layers.
+ *
+ */
+extern
+NFCSTATUS
+phHal4Nfc_CE_B_Transceive(
+                phHal_sHwReference_t                    *psHwReference,
+                phHal4Nfc_TransactInfo_t                *psTransferInfo,
+                phNfc_sData_t                            sTransferData,
+                pphHal4Nfc_TransceiveCallback_t          pReceiveCallback,
+                void                                    *pContext
+                );
 /**
 *  \if hal
 *   \ingroup grp_hal_common
@@ -1127,13 +1455,13 @@ extern NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
 *   \ingroup grp_mw_external_hal_funcs
 *  \endif
 *
-*  This function is called to switch the UICC on or Off. 
+*  This function is called to switch the UICC on or Off.
 *
 *
-*  \param[in]  psHwReference            Hardware Reference, pre-initialized by 
+*  \param[in]  psHwReference            Hardware Reference, pre-initialized by
 *                                       upper layer. \n
 *
-*  \param[in]  smx_mode                 Mode to which the switch should be made. 
+*  \param[in]  smx_mode                 Mode to which the switch should be made.
 *
 *  \param[in]  pSwitchModecb            Callback for Switch mode complete
 *                                       with success/error notification.
@@ -1142,22 +1470,22 @@ extern NFCSTATUS phHal4Nfc_Switch_SMX_Mode(
 *
 *  \retval NFCSTATUS_PENDING                    Switch in progress.Status will be
 *                                               returned in pSwitchModecb.
-*  \retval NFCSTATUS_INVALID_PARAMETER          One or more of the supplied 
+*  \retval NFCSTATUS_INVALID_PARAMETER          One or more of the supplied
 *                                               parameters could not be properly
 *                                               interpreted.
 *  \retval NFCSTATUS_NOT_INITIALIZED            Hal is not initialized.
-*  \retval NFCSTATUS_BUSY                       Configuration in Progress or 
+*  \retval NFCSTATUS_BUSY                       Configuration in Progress or
 *                                               remote device is connected.
 *  \retval NFCSTATUS_INSUFFICIENT_RESOURCES     System resources are insufficient
 *                                               to complete the request at that
 *                                               point in time.
-* \retval NFCSTATUS_FAILED                      No listener has been registered 
+* \retval NFCSTATUS_FAILED                      No listener has been registered
 *                                               by the upper layer for Emulation
 *                                               before making this call.
-*  \retval Others                               Errors related to the lower 
+*  \retval Others                               Errors related to the lower
 *                                               layers.
 */
-extern NFCSTATUS phHal4Nfc_Switch_Swp_Mode(                                    
+extern NFCSTATUS phHal4Nfc_Switch_Swp_Mode(
                                     phHal_sHwReference_t      *psHwReference,
                                     phHal_eSWP_Mode_t          swp_mode,
                                     pphHal4Nfc_GenCallback_t   pSwitchModecb,
