@@ -33,12 +33,12 @@
 #include <phOsalNfc.h>
 
 /* ------------------------------- Macros ------------------------------------*/
-#define     NFCIP_ACTIVE_SHIFT      0x03U       
+#define     NFCIP_ACTIVE_SHIFT      0x03U
 #define     NXP_UID                 0x04U
 #define     NXP_MIN_UID_LEN         0x07U
 /* --------------------Structures and enumerations --------------------------*/
 
-NFCSTATUS phHal4Nfc_ConfigParameters(                       
+NFCSTATUS phHal4Nfc_ConfigParameters(
                         phHal_sHwReference_t     *psHwReference,
                         phHal_eConfigType_t       CfgType,
                         phHal_uConfig_t          *puConfig,
@@ -49,7 +49,7 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
     NFCSTATUS CfgStatus = NFCSTATUS_SUCCESS;
     phHal4Nfc_Hal4Ctxt_t *Hal4Ctxt = NULL;
     /*NULL checks*/
-    if(NULL == psHwReference  
+    if(NULL == psHwReference
         || NULL == pConfigCallback
         || NULL == puConfig
         )
@@ -60,10 +60,10 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
     /*Check if initialised*/
     else if((NULL == psHwReference->hal_context)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4CurrentState 
+                                psHwReference->hal_context)->Hal4CurrentState
                                                < eHal4StateOpenAndReady)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4NextState 
+                                psHwReference->hal_context)->Hal4NextState
                                                == eHal4StateClosed))
     {
         phOsalNfc_RaiseException(phOsalNfc_e_PrecondFailed,1);
@@ -72,7 +72,7 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
     else
     {
         Hal4Ctxt = psHwReference->hal_context;
-        /*If previous Configuration request has not completed,do not allow new 
+        /*If previous Configuration request has not completed,do not allow new
           configuration*/
         if(Hal4Ctxt->Hal4NextState == eHal4StateConfiguring)
         {
@@ -116,12 +116,12 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
                     (void)memcpy((void *)&Hal4Ctxt->uConfig,
                         (void *)puConfig,
                         sizeof(phHal_uConfig_t)
-                        );                    
+                        );
                     break;
                 }
                 /*P2P Configuration*/
                 case NFC_P2P_CONFIG:
-                { 
+                {
                     /*If general bytes are not provided by above layer copy zeros
                       in general bytes*/
                     if(puConfig->nfcIPConfig.generalBytesLength == 0)
@@ -139,7 +139,7 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
                             );
                     }
                     break;
-                }     
+                }
                 /*Protection config*/
                 case NFC_SE_PROTECTION_CONFIG:
                 {
@@ -158,13 +158,13 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
                 }
                 if ( NFCSTATUS_SUCCESS == CfgStatus )
                 {
-                    /*Issue configure with given configuration*/ 
+                    /*Issue configure with given configuration*/
                     CfgStatus = phHciNfc_Configure(
                                     (void *)Hal4Ctxt->psHciHandle,
                                     (void *)psHwReference,
                                     CfgType,
                                     &Hal4Ctxt->uConfig
-                                    );    
+                                    );
                     /* Change the State of the HAL only if status is Pending */
                     if ( NFCSTATUS_PENDING == CfgStatus )
                     {
@@ -186,9 +186,9 @@ NFCSTATUS phHal4Nfc_ConfigParameters(
 
 
 /**Configure the discovery*/
-NFCSTATUS phHal4Nfc_ConfigureDiscovery(                       
+NFCSTATUS phHal4Nfc_ConfigureDiscovery(
                         phHal_sHwReference_t          *psHwReference,
-                        phHal_eDiscoveryConfigMode_t   discoveryMode,  
+                        phHal_eDiscoveryConfigMode_t   discoveryMode,
                         phHal_sADD_Cfg_t              *discoveryCfg,
                         pphHal4Nfc_GenCallback_t       pConfigCallback,
                         void                          *pContext
@@ -196,7 +196,7 @@ NFCSTATUS phHal4Nfc_ConfigureDiscovery(
 {
     NFCSTATUS CfgStatus = NFCSTATUS_SUCCESS;
     phHal4Nfc_Hal4Ctxt_t *Hal4Ctxt = NULL;
-    if(NULL == psHwReference  
+    if(NULL == psHwReference
         || NULL == pConfigCallback
         || NULL == discoveryCfg
         )
@@ -206,10 +206,10 @@ NFCSTATUS phHal4Nfc_ConfigureDiscovery(
     }
     else if((NULL == psHwReference->hal_context)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4CurrentState 
+                                psHwReference->hal_context)->Hal4CurrentState
                                                < eHal4StateOpenAndReady)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4NextState 
+                                psHwReference->hal_context)->Hal4NextState
                                                == eHal4StateClosed))
     {
         phOsalNfc_RaiseException(phOsalNfc_e_PrecondFailed,1);
@@ -218,7 +218,7 @@ NFCSTATUS phHal4Nfc_ConfigureDiscovery(
     else
     {
         Hal4Ctxt = psHwReference->hal_context;
-        /*If previous Configuration request has not completed ,do not allow 
+        /*If previous Configuration request has not completed ,do not allow
           new configuration*/
         if(Hal4Ctxt->Hal4NextState == eHal4StateConfiguring)
         {
@@ -260,23 +260,23 @@ NFCSTATUS phHal4Nfc_ConfigureDiscovery(
                     break;
                 case NFC_DISCOVERY_CONFIG:
                     PHDBG_INFO("Hal4:Call to NFC_DISCOVERY_CONFIG");
-                    /*Since sADDCfg is allocated in stack ,copy the ADD 
+                    /*Since sADDCfg is allocated in stack ,copy the ADD
                       configuration structure to HAL4 context*/
                     (void)memcpy((void *)
                         &(Hal4Ctxt->psADDCtxtInfo->sADDCfg),
                         (void *)discoveryCfg,
                         sizeof(phHal_sADD_Cfg_t)
-                        );    
-                    PHDBG_INFO("Hal4:Finished copying sADDCfg");                    
+                        );
+                    PHDBG_INFO("Hal4:Finished copying sADDCfg");
                     Hal4Ctxt->psADDCtxtInfo->smx_discovery = FALSE;
 #ifdef UPDATE_NFC_ACTIVE
                     Hal4Ctxt->psADDCtxtInfo->sADDCfg.PollDevInfo.PollCfgInfo.EnableNfcActive
                         = ( 0 == Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode?
                            Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode:
                            NXP_NFCIP_ACTIVE_DEFAULT);
-                    Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode = (( 
+                    Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode = ((
                     Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode <<
-                    (NXP_NFCIP_ACTIVE_DEFAULT * NFCIP_ACTIVE_SHIFT)) 
+                    (NXP_NFCIP_ACTIVE_DEFAULT * NFCIP_ACTIVE_SHIFT))
                     | Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode);
 #endif/*#ifdef UPDATE_NFC_ACTIVE*/
                     /* information system_code(Felica) and
@@ -286,24 +286,24 @@ NFCSTATUS phHal4Nfc_ConfigureDiscovery(
                         (void *)Hal4Ctxt->psHciHandle,
                         (void *)psHwReference,
                         &(Hal4Ctxt->psADDCtxtInfo->sADDCfg)
-                        );/*Configure HCI Discovery*/                    
+                        );/*Configure HCI Discovery*/
                     break;
                 case NFC_DISCOVERY_STOP:
                     break;
-                /*Restart Discovery wheel*/ 
+                /*Restart Discovery wheel*/
                 case NFC_DISCOVERY_RESUME:
                     PHDBG_INFO("Hal4:Call to NFC_DISCOVERY_RESUME");
                     Hal4Ctxt->psADDCtxtInfo->nbr_of_devices = 0;
                     CfgStatus = phHciNfc_Restart_Discovery (
                                     (void *)Hal4Ctxt->psHciHandle,
-                                    (void *)psHwReference,      
+                                    (void *)psHwReference,
                                     FALSE
                                     );
                     break;
                 default:
                     break;
                 }
-                /* Change the State of the HAL only if HCI Configure 
+                /* Change the State of the HAL only if HCI Configure
                    Returns status as Pending */
                 if ( NFCSTATUS_PENDING == CfgStatus )
                 {
@@ -311,7 +311,7 @@ NFCSTATUS phHal4Nfc_ConfigureDiscovery(
                         &(Hal4Ctxt->psADDCtxtInfo->sCurrentPollConfig),
                         (void *)&(discoveryCfg->PollDevInfo.PollCfgInfo),
                         sizeof(phHal_sPollDevInfo_t)
-                        );  
+                        );
                     PHDBG_INFO("Hal4:Finished copying PollCfgInfo");
                     PHDBG_INFO("Hal4:Configure returned NFCSTATUS_PENDING");
                     Hal4Ctxt->Hal4NextState = eHal4StateConfiguring;
@@ -324,7 +324,7 @@ NFCSTATUS phHal4Nfc_ConfigureDiscovery(
                         &(Hal4Ctxt->psADDCtxtInfo->sADDCfg.PollDevInfo.PollCfgInfo),
                         (void *)&(Hal4Ctxt->psADDCtxtInfo->sCurrentPollConfig),
                         sizeof(phHal_sPollDevInfo_t)
-                        );  
+                        );
                 }
             }
         }
@@ -346,8 +346,8 @@ void phHal4Nfc_ConfigureComplete(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,
 {
     pphHal4Nfc_GenCallback_t    pConfigCallback
                                 = Hal4Ctxt->sUpperLayerInfo.pConfigCallback;
-    pphHal4Nfc_ConnectCallback_t pUpperConnectCb 
-                    = Hal4Ctxt->sTgtConnectInfo.pUpperConnectCb;    
+    pphHal4Nfc_ConnectCallback_t pUpperConnectCb
+                    = Hal4Ctxt->sTgtConnectInfo.pUpperConnectCb;
     NFCSTATUS Status = ((phNfc_sCompletionInfo_t *)pInfo)->status;
     if((type == NFC_NOTIFY_POLL_ENABLED) ||(type == NFC_NOTIFY_POLL_RESTARTED))
     {
@@ -360,7 +360,7 @@ void phHal4Nfc_ConfigureComplete(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,
         PHDBG_WARNING("Hal4:Poll disabled,config success or config error");
     }
     if(NULL != Hal4Ctxt->sUpperLayerInfo.pConfigCallback)
-    { 
+    {
 #ifdef MERGE_SAK_SW2
         if((NFC_UICC_EMULATION == Hal4Ctxt->uConfig.emuConfig.emuType)&&
            (FALSE ==
@@ -421,18 +421,18 @@ void phHal4Nfc_TargetDiscoveryComplete(
                                        void                  *pInfo
                                        )
 {
-    static phHal4Nfc_DiscoveryInfo_t sDiscoveryInfo; 
+    static phHal4Nfc_DiscoveryInfo_t sDiscoveryInfo;
     NFCSTATUS status = NFCSTATUS_SUCCESS;
     /**SAK byte*/
     uint8_t Sak = 0;
     /*Union type to encapsulate and return the discovery info*/
     phHal4Nfc_NotificationInfo_t uNotificationInfo;
-    /*All the following types will be discovered as type A ,and differentiation 
+    /*All the following types will be discovered as type A ,and differentiation
       will have to be done within this module based on SAK byte and UID info*/
     phHal_eRemDevType_t  aRemoteDevTypes[3] = {
                                                phHal_eISO14443_A_PICC,
                                                phHal_eNfcIP1_Target,
-                                               phHal_eMifare_PICC                                                 
+                                               phHal_eMifare_PICC
                                               };
     /*Count is used to add multiple info into remote dvice list for devices that
       support multiple protocols*/
@@ -445,7 +445,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
     /*Update Hal4 state*/
     Hal4Ctxt->Hal4CurrentState = eHal4StateTargetDiscovered;
     Hal4Ctxt->Hal4NextState  = eHal4StateInvalid;
-     PHDBG_INFO("Hal4:Remotedevice Discovered"); 
+     PHDBG_INFO("Hal4:Remotedevice Discovered");
     if(NULL != ((phNfc_sCompletionInfo_t *)pInfo)->info)
     {
         /*Extract Remote device Info*/
@@ -484,9 +484,9 @@ void phHal4Nfc_TargetDiscoveryComplete(
                     if((0 == Sak)&& (0 == Count))
                     {
                         /*Mifare check*/
-                        if((NXP_UID == 
+                        if((NXP_UID ==
                         psRemoteDevInfo->RemoteDevInfo.Iso14443A_Info.Uid[0])
-                        &&(NXP_MIN_UID_LEN <= 
+                        &&(NXP_MIN_UID_LEN <=
                         psRemoteDevInfo->RemoteDevInfo.Iso14443A_Info.UidLength))
                         {
                             aRemoteDevTypes[Count] = phHal_eMifare_PICC;
@@ -499,9 +499,9 @@ void phHal4Nfc_TargetDiscoveryComplete(
                     Count++;
                 }
                 /*Check for P2P target passive*/
-                if((Sak & NFCIP_BITMASK) && 
+                if((Sak & NFCIP_BITMASK) &&
                     (NULL != Hal4Ctxt->sUpperLayerInfo.pP2PNotification)&&
-                    (Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode 
+                    (Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode
                     & phHal_ePassive106))
                 {
                   if( Sak == 0x53 // Fudan card incompatible to ISO18092
@@ -516,7 +516,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
                   {
                     aRemoteDevTypes[Count] = phHal_eNfcIP1_Target;
                     Count++;
-									}
+                  }
                 }
             }/*case phHal_eISO14443_A_PICC:*/
                 break;
@@ -524,7 +524,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
                 aRemoteDevTypes[Count] = phHal_eNfcIP1_Target;
                 Count++;
                 break;
-             case phHal_eISO14443_B_PICC: /*TYPE_B*/  
+             case phHal_eISO14443_B_PICC: /*TYPE_B*/
 #ifdef TYPE_B
                 aRemoteDevTypes[Count] = phHal_eISO14443_B_PICC;
                 Count++;
@@ -536,14 +536,14 @@ void phHal4Nfc_TargetDiscoveryComplete(
                 /*nfc_id is used to differentiate between Felica and NfcIp target
                   discovered in Type F*/
                 nfc_id = (((uint16_t)psRemoteDevInfo->RemoteDevInfo.Felica_Info.IDm[0])
-                    << BYTE_SIZE) | 
+                    << BYTE_SIZE) |
                     psRemoteDevInfo->RemoteDevInfo.Felica_Info.IDm[1];
                 /*check  for NfcIp target*/
                 if(NXP_NFCIP_NFCID2_ID  == nfc_id)
                 {
                     if((NULL != Hal4Ctxt->sUpperLayerInfo.pP2PNotification)
-                        &&((Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode 
-                             & phHal_ePassive212) || 
+                        &&((Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode
+                             & phHal_ePassive212) ||
                             (Hal4Ctxt->psADDCtxtInfo->sADDCfg.NfcIP_Mode
                              & phHal_ePassive424)))
                     {
@@ -557,12 +557,12 @@ void phHal4Nfc_TargetDiscoveryComplete(
                     || Hal4Ctxt->psADDCtxtInfo->sCurrentPollConfig.EnableFelica424)
                     {
                         aRemoteDevTypes[Count] = phHal_eFelica_PICC;
-                        Count++;                    
+                        Count++;
                     }
                 }
                 break;
             }
-#endif             
+#endif
             case phHal_eJewel_PICC: /*Jewel*/
 #ifdef TYPE_JEWEL
             {
@@ -570,10 +570,10 @@ void phHal4Nfc_TargetDiscoveryComplete(
                 if(Hal4Ctxt->psADDCtxtInfo->sCurrentPollConfig.EnableIso14443A)
                 {
                     aRemoteDevTypes[Count] = phHal_eJewel_PICC;
-                    Count++;                    
+                    Count++;
                 }
                 break;
-            }               
+            }
 #endif
 #ifdef  TYPE_ISO15693
             case phHal_eISO15693_PICC: /*ISO15693*/
@@ -581,10 +581,10 @@ void phHal4Nfc_TargetDiscoveryComplete(
                 if(Hal4Ctxt->psADDCtxtInfo->sCurrentPollConfig.EnableIso15693)
                 {
                     aRemoteDevTypes[Count] = phHal_eISO15693_PICC;
-                    Count++;                    
+                    Count++;
                 }
                 break;
-            }               
+            }
 #endif /* #ifdef    TYPE_ISO15693 */
             /*Types currently not supported*/
             case phHal_eISO14443_BPrime_PICC:
@@ -593,11 +593,11 @@ void phHal4Nfc_TargetDiscoveryComplete(
                 break;
         }/*End of switch*/
         /*Update status code to success if atleast one device info is available*/
-        status = (((NFCSTATUS_SUCCESS != status) 
+        status = (((NFCSTATUS_SUCCESS != status)
                   && (NFCSTATUS_MULTIPLE_TAGS != status))
                    &&(Hal4Ctxt->psADDCtxtInfo->nbr_of_devices != 0))?
                     NFCSTATUS_SUCCESS:status;
-        
+
         /*Update status to NFCSTATUS_MULTIPLE_PROTOCOLS if count > 1 ,and this
           is first discovery notification from Hci*/
         status = ((NFCSTATUS_SUCCESS == status)
@@ -608,15 +608,15 @@ void phHal4Nfc_TargetDiscoveryComplete(
         /*Allocate and copy Remote device info into Hal4 Context*/
         while(Count)
         {
-            PHDBG_INFO("Hal4:Count is not zero"); 
+            PHDBG_INFO("Hal4:Count is not zero");
             --Count;
-            /*Allocate memory for each of Count number of 
+            /*Allocate memory for each of Count number of
               devices*/
             if(NULL == Hal4Ctxt->rem_dev_list[
                 Hal4Ctxt->psADDCtxtInfo->nbr_of_devices])
             {
                 Hal4Ctxt->rem_dev_list[
-                    Hal4Ctxt->psADDCtxtInfo->nbr_of_devices] 
+                    Hal4Ctxt->psADDCtxtInfo->nbr_of_devices]
                 = (phHal_sRemoteDevInformation_t *)
                     phOsalNfc_GetMemory(
                     (uint32_t)(
@@ -641,13 +641,13 @@ void phHal4Nfc_TargetDiscoveryComplete(
                         );
                 /*Now copy appropriate device type from aRemoteDevTypes array*/
                 Hal4Ctxt->rem_dev_list[
-                        Hal4Ctxt->psADDCtxtInfo->nbr_of_devices]->RemDevType 
+                        Hal4Ctxt->psADDCtxtInfo->nbr_of_devices]->RemDevType
                             =   aRemoteDevTypes[Count];
                 /*Increment number of devices*/
-                Hal4Ctxt->psADDCtxtInfo->nbr_of_devices++;                            
+                Hal4Ctxt->psADDCtxtInfo->nbr_of_devices++;
             }/*End of else*/
         }/*End of while*/
-        
+
         /*If Upper layer is interested only in P2P notifications*/
         if((NULL != Hal4Ctxt->sUpperLayerInfo.pP2PNotification)
            &&(((Hal4Ctxt->psADDCtxtInfo->nbr_of_devices == 1)
@@ -655,9 +655,9 @@ void phHal4Nfc_TargetDiscoveryComplete(
               ||(NULL == Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification))
             )
         {
-            PHDBG_INFO("Hal4:Trying to notify P2P Listener"); 
+            PHDBG_INFO("Hal4:Trying to notify P2P Listener");
             /*NFCSTATUS_SUCCESS or NFCSTATUS_MULTIPLE_PROTOCOLS*/
-            if((NFCSTATUS_SUCCESS == status) 
+            if((NFCSTATUS_SUCCESS == status)
                 ||(NFCSTATUS_MULTIPLE_PROTOCOLS == status))
             {
                 /*Pick only the P2P target device info from the list*/
@@ -665,7 +665,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
                     Count > 0;--Count)
                 {
                     /*Only one P2P target can be detected in one discovery*/
-                    if(phHal_eNfcIP1_Target == 
+                    if(phHal_eNfcIP1_Target ==
                         Hal4Ctxt->rem_dev_list[Count-1]->RemDevType)
                     {
                         if (Count != 1)
@@ -676,7 +676,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
                                         sizeof(phHal_sRemoteDevInformation_t)
                                         );
                         }
-                        NfcIpDeviceCount = 1;                       
+                        NfcIpDeviceCount = 1;
                         break;
                     }
                 }
@@ -691,7 +691,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
                 /*Issue P2P notification*/
                 if(NfcIpDeviceCount == 1)
                 {
-                    sDiscoveryInfo.NumberOfDevices 
+                    sDiscoveryInfo.NumberOfDevices
                         = Hal4Ctxt->psADDCtxtInfo->nbr_of_devices;
                     sDiscoveryInfo.ppRemoteDevInfo = Hal4Ctxt->rem_dev_list;
                     uNotificationInfo.psDiscoveryInfo = &sDiscoveryInfo;
@@ -703,14 +703,14 @@ void phHal4Nfc_TargetDiscoveryComplete(
                             NFCSTATUS_SUCCESS
                             );
                 }
-                else/*Restart Discovery wheel*/ 
+                else/*Restart Discovery wheel*/
                 {
-                    PHDBG_INFO("Hal4:No P2P device in list");  
+                    PHDBG_INFO("Hal4:No P2P device in list");
                     Hal4Ctxt->psADDCtxtInfo->nbr_of_devices = 0;
-                    PHDBG_INFO("Hal4:Restart discovery1"); 
+                    PHDBG_INFO("Hal4:Restart discovery1");
                     status = phHciNfc_Restart_Discovery (
                                         (void *)Hal4Ctxt->psHciHandle,
-                                        (void *)gpphHal4Nfc_Hwref,      
+                                        (void *)gpphHal4Nfc_Hwref,
                                         FALSE
                                         );
                     Hal4Ctxt->Hal4NextState = (NFCSTATUS_PENDING == status?
@@ -720,7 +720,7 @@ void phHal4Nfc_TargetDiscoveryComplete(
             }
             /*More discovery info available ,get next info from HCI*/
             else if((NFCSTATUS_MULTIPLE_TAGS == status)
-                &&(Hal4Ctxt->psADDCtxtInfo->nbr_of_devices 
+                &&(Hal4Ctxt->psADDCtxtInfo->nbr_of_devices
                      < MAX_REMOTE_DEVICES))
             {
                 status = phHciNfc_Select_Next_Target (
@@ -731,12 +731,12 @@ void phHal4Nfc_TargetDiscoveryComplete(
             else/*Failed discovery ,restart discovery*/
             {
                 Hal4Ctxt->psADDCtxtInfo->nbr_of_devices = 0;
-                PHDBG_INFO("Hal4:Restart discovery2"); 
+                PHDBG_INFO("Hal4:Restart discovery2");
                 status = phHciNfc_Restart_Discovery (
                                         (void *)Hal4Ctxt->psHciHandle,
-                                        (void *)gpphHal4Nfc_Hwref,      
+                                        (void *)gpphHal4Nfc_Hwref,
                                         FALSE
-                                        );/*Restart Discovery wheel*/   
+                                        );/*Restart Discovery wheel*/
                 Hal4Ctxt->Hal4NextState = (NFCSTATUS_PENDING == status?
                                                 eHal4StateConfiguring:
                                                 Hal4Ctxt->Hal4NextState);
@@ -747,23 +747,23 @@ void phHal4Nfc_TargetDiscoveryComplete(
         else if(NULL != Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification)
         {
             PHDBG_INFO("Hal4:Trying to notify Tag notification");
-            /*Multiple tags in field, get discovery info a second time for the 
+            /*Multiple tags in field, get discovery info a second time for the
               other devices*/
             if((NFCSTATUS_MULTIPLE_TAGS == status)
                 &&(Hal4Ctxt->psADDCtxtInfo->nbr_of_devices < MAX_REMOTE_DEVICES))
             {
-                PHDBG_INFO("Hal4:select next target1"); 
+                PHDBG_INFO("Hal4:select next target1");
                 status = phHciNfc_Select_Next_Target (
                                                     Hal4Ctxt->psHciHandle,
                                                     (void *)gpphHal4Nfc_Hwref
                                                     );
             }
-            /*Single tag multiple protocols scenario,Notify Multiple Protocols 
+            /*Single tag multiple protocols scenario,Notify Multiple Protocols
               status to upper layer*/
-            else if(status == NFCSTATUS_MULTIPLE_PROTOCOLS) 
+            else if(status == NFCSTATUS_MULTIPLE_PROTOCOLS)
             {
                 PHDBG_INFO("Hal4:Multiple Tags or protocols");
-                sDiscoveryInfo.NumberOfDevices 
+                sDiscoveryInfo.NumberOfDevices
                     = Hal4Ctxt->psADDCtxtInfo->nbr_of_devices;
                 sDiscoveryInfo.ppRemoteDevInfo = Hal4Ctxt->rem_dev_list;
                 uNotificationInfo.psDiscoveryInfo = &sDiscoveryInfo;
@@ -775,13 +775,13 @@ void phHal4Nfc_TargetDiscoveryComplete(
                             );
             }
             else /*NFCSTATUS_SUCCESS*/
-            {                
+            {
                 if(((Hal4Ctxt->psADDCtxtInfo->nbr_of_devices == 1)
-                     &&(phHal_eNfcIP1_Target 
+                     &&(phHal_eNfcIP1_Target
                      == Hal4Ctxt->rem_dev_list[0]->RemDevType))
                      ||(NFCSTATUS_SUCCESS != status)
                      || (Hal4Ctxt->psADDCtxtInfo->nbr_of_devices == 0)
-                     )/*device detected but upper layer is not interested 
+                     )/*device detected but upper layer is not interested
                        in the type(P2P) or activate next failed*/
                 {
                     while(Hal4Ctxt->psADDCtxtInfo->nbr_of_devices > 0)
@@ -791,12 +791,12 @@ void phHal4Nfc_TargetDiscoveryComplete(
                         Hal4Ctxt->rem_dev_list[
                             Hal4Ctxt->psADDCtxtInfo->nbr_of_devices] = NULL;
                     }
-                    PHDBG_INFO("Hal4:Restart discovery3"); 
+                    PHDBG_INFO("Hal4:Restart discovery3");
                     status = phHciNfc_Restart_Discovery (
                         (void *)Hal4Ctxt->psHciHandle,
-                        (void *)gpphHal4Nfc_Hwref,      
+                        (void *)gpphHal4Nfc_Hwref,
                         FALSE
-                        );/*Restart Discovery wheel*/ 
+                        );/*Restart Discovery wheel*/
                     Hal4Ctxt->Hal4NextState = (
                         NFCSTATUS_PENDING == status?eHal4StateConfiguring
                                                     :Hal4Ctxt->Hal4NextState
@@ -806,13 +806,13 @@ void phHal4Nfc_TargetDiscoveryComplete(
                 {
                     /*Update status for MULTIPLE_TAGS here*/
                     status = (Hal4Ctxt->psADDCtxtInfo->nbr_of_devices > 1?
-                                NFCSTATUS_MULTIPLE_TAGS:status);    
+                                NFCSTATUS_MULTIPLE_TAGS:status);
                     /*If listener is registered ,call it*/
-                    sDiscoveryInfo.NumberOfDevices 
+                    sDiscoveryInfo.NumberOfDevices
                         = Hal4Ctxt->psADDCtxtInfo->nbr_of_devices;
                     sDiscoveryInfo.ppRemoteDevInfo
                         = Hal4Ctxt->rem_dev_list;
-                    uNotificationInfo.psDiscoveryInfo = &sDiscoveryInfo;                    
+                    uNotificationInfo.psDiscoveryInfo = &sDiscoveryInfo;
                     PHDBG_INFO("Hal4:Calling Discovery Handler1");
                     (*Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification)(
                         (void *)(Hal4Ctxt->sUpperLayerInfo.DiscoveryCtxt),
@@ -821,17 +821,17 @@ void phHal4Nfc_TargetDiscoveryComplete(
                         status
                         );
                 }
-            }       
-        } /*else if(NULL != Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification)*/      
-        else/*listener not registered ,Restart Discovery wheel*/ 
-        {   
+            }
+        } /*else if(NULL != Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification)*/
+        else/*listener not registered ,Restart Discovery wheel*/
+        {
             PHDBG_INFO("Hal4:No listener registered.Ignoring Discovery  \
-                        Notification");  
+                        Notification");
             Hal4Ctxt->psADDCtxtInfo->nbr_of_devices = 0;
-            PHDBG_INFO("Hal4:Restart discovery4"); 
+            PHDBG_INFO("Hal4:Restart discovery4");
             status = phHciNfc_Restart_Discovery (
                                 (void *)Hal4Ctxt->psHciHandle,
-                                (void *)gpphHal4Nfc_Hwref,      
+                                (void *)gpphHal4Nfc_Hwref,
                                 FALSE
                                 );
             Hal4Ctxt->Hal4NextState = (NFCSTATUS_PENDING == status?
@@ -841,40 +841,40 @@ void phHal4Nfc_TargetDiscoveryComplete(
     }/*if(NULL != ((phNfc_sCompletionInfo_t *)pInfo)->info)*/
     else/*NULL info received*/
     {
-        sDiscoveryInfo.NumberOfDevices 
+        sDiscoveryInfo.NumberOfDevices
             = Hal4Ctxt->psADDCtxtInfo->nbr_of_devices;
         sDiscoveryInfo.ppRemoteDevInfo = Hal4Ctxt->rem_dev_list;
         uNotificationInfo.psDiscoveryInfo = &sDiscoveryInfo;
-        /*If Discovery info is available from previous notifications try to 
+        /*If Discovery info is available from previous notifications try to
           notify that to the upper layer*/
         if((NULL != Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification)
 #ifdef NFC_RF_NOISE_SW
-          &&((NFCSTATUS_SUCCESS == status) 
+          &&((NFCSTATUS_SUCCESS == status)
             || (NFCSTATUS_MULTIPLE_TAGS == status))
 #endif /* #ifdef NFC_RF_NOISE_SW */
             )
         {
-#ifndef NFC_RF_NOISE_SW           
-            status = (((NFCSTATUS_SUCCESS != status) 
+#ifndef NFC_RF_NOISE_SW
+            status = (((NFCSTATUS_SUCCESS != status)
                   && (NFCSTATUS_MULTIPLE_TAGS != status))
                    &&(Hal4Ctxt->psADDCtxtInfo->nbr_of_devices != 0))?
                     NFCSTATUS_SUCCESS:status;
 #endif/*#ifndef NFC_RF_NOISE_SW*/
             PHDBG_INFO("Hal4:Calling Discovery Handler2");
             (*Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification)(
-                (void *)(Hal4Ctxt->sUpperLayerInfo.DiscoveryCtxt),              
+                (void *)(Hal4Ctxt->sUpperLayerInfo.DiscoveryCtxt),
                 NFC_DISCOVERY_NOTIFICATION,
                 uNotificationInfo,
                 status
                 );
         }
-        else/*Restart Discovery wheel*/   
+        else/*Restart Discovery wheel*/
         {
             Hal4Ctxt->psADDCtxtInfo->nbr_of_devices = 0;
-            PHDBG_INFO("Hal4:Restart discovery5"); 
+            PHDBG_INFO("Hal4:Restart discovery5");
             status = phHciNfc_Restart_Discovery (
                 (void *)Hal4Ctxt->psHciHandle,
-                (void *)gpphHal4Nfc_Hwref,      
+                (void *)gpphHal4Nfc_Hwref,
                 FALSE
                 );
             Hal4Ctxt->Hal4NextState = (NFCSTATUS_PENDING == status?
@@ -886,9 +886,9 @@ void phHal4Nfc_TargetDiscoveryComplete(
 
 
 /**Register Notification handlers*/
-NFCSTATUS phHal4Nfc_RegisterNotification(                       
+NFCSTATUS phHal4Nfc_RegisterNotification(
                         phHal_sHwReference_t         *psHwReference,
-                        phHal4Nfc_RegisterType_t      eRegisterType, 
+                        phHal4Nfc_RegisterType_t      eRegisterType,
                         pphHal4Nfc_Notification_t     pNotificationHandler,
                         void                         *Context
                         )
@@ -902,10 +902,10 @@ NFCSTATUS phHal4Nfc_RegisterNotification(
     }
     else if((NULL == psHwReference->hal_context)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4CurrentState 
+                                psHwReference->hal_context)->Hal4CurrentState
                                                < eHal4StateOpenAndReady)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4NextState 
+                                psHwReference->hal_context)->Hal4NextState
                                                == eHal4StateClosed))
     {
         phOsalNfc_RaiseException(phOsalNfc_e_PrecondFailed,1);
@@ -928,11 +928,13 @@ NFCSTATUS phHal4Nfc_RegisterNotification(
                     = pNotificationHandler;  /*Register the P2P Notification*/
                 break;
             case eRegisterHostCardEmulation:
-                RetStatus = NFCSTATUS_FEATURE_NOT_SUPPORTED;
+                Hal4Ctxt->sUpperLayerInfo.HCEEventNotificationCtxt = Context;
+                Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification
+                       = pNotificationHandler; /*Register the CE Notification*/
                 break;
             case eRegisterSecureElement:
                 Hal4Ctxt->sUpperLayerInfo.EventNotificationCtxt = Context;
-                Hal4Ctxt->sUpperLayerInfo.pEventNotification 
+                Hal4Ctxt->sUpperLayerInfo.pEventNotification
                        = pNotificationHandler; /*Register the Se Notification*/
                 break;
             default:
@@ -948,7 +950,7 @@ NFCSTATUS phHal4Nfc_RegisterNotification(
 
 
 /**Unregister Notification handlers*/
-NFCSTATUS phHal4Nfc_UnregisterNotification(                               
+NFCSTATUS phHal4Nfc_UnregisterNotification(
                                   phHal_sHwReference_t     *psHwReference,
                                   phHal4Nfc_RegisterType_t  eRegisterType,
                                   void                     *Context
@@ -963,10 +965,10 @@ NFCSTATUS phHal4Nfc_UnregisterNotification(
     }
     else if((NULL == psHwReference->hal_context)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4CurrentState 
+                                psHwReference->hal_context)->Hal4CurrentState
                                                < eHal4StateOpenAndReady)
                         || (((phHal4Nfc_Hal4Ctxt_t *)
-                                psHwReference->hal_context)->Hal4NextState 
+                                psHwReference->hal_context)->Hal4NextState
                                                == eHal4StateClosed))
     {
         phOsalNfc_RaiseException(phOsalNfc_e_PrecondFailed,1);
@@ -982,17 +984,19 @@ NFCSTATUS phHal4Nfc_UnregisterNotification(
             Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = Context;
             Hal4Ctxt->sUpperLayerInfo.DiscoveryCtxt = NULL;
             /*UnRegister the tag Notification*/
-            Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification = NULL;  
+            Hal4Ctxt->sUpperLayerInfo.pTagDiscoveryNotification = NULL;
             PHDBG_INFO("Hal4:Tag Discovery Listener Unregistered");
             break;
         case eRegisterP2PDiscovery:
             Hal4Ctxt->sUpperLayerInfo.P2PDiscoveryCtxt = NULL;
             /*UnRegister the p2p Notification*/
-            Hal4Ctxt->sUpperLayerInfo.pP2PNotification = NULL;  
+            Hal4Ctxt->sUpperLayerInfo.pP2PNotification = NULL;
             PHDBG_INFO("Hal4:P2P Discovery Listener Unregistered");
-            break;            
-        case eRegisterHostCardEmulation:/*RFU*/
-            RetStatus = NFCSTATUS_FEATURE_NOT_SUPPORTED;
+            break;
+        case eRegisterHostCardEmulation:
+            Hal4Ctxt->sUpperLayerInfo.HCEEventNotificationCtxt = NULL;
+            Hal4Ctxt->sUpperLayerInfo.pHCEEventNotification = NULL;
+            PHDBG_INFO("Hal4:SE Listener Unregistered");
             break;
             /*UnRegister the Se Notification*/
         case eRegisterSecureElement:
@@ -1003,7 +1007,7 @@ NFCSTATUS phHal4Nfc_UnregisterNotification(
         default:
             Hal4Ctxt->sUpperLayerInfo.DefaultListenerCtxt = NULL;
             /*UnRegister the default Notification*/
-            Hal4Ctxt->sUpperLayerInfo.pDefaultEventHandler = NULL;  
+            Hal4Ctxt->sUpperLayerInfo.pDefaultEventHandler = NULL;
             PHDBG_INFO("Hal4:Default Listener Unregistered");
             break;
         }

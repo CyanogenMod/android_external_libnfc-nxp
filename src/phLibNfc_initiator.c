@@ -62,7 +62,7 @@
 */
 
 /* Target discvovery notification callback */
-STATIC void phLibNfc_NotificationRegister_Resp_Cb ( 
+STATIC void phLibNfc_NotificationRegister_Resp_Cb (
                                 void                             *context,
                                 phHal_eNotificationType_t        type,
                                 phHal4Nfc_NotificationInfo_t     info,
@@ -71,21 +71,21 @@ STATIC void phLibNfc_NotificationRegister_Resp_Cb (
 
 /*Remote device connect response callback*/
 STATIC void phLibNfc_RemoteDev_Connect_Cb(
-                           void        *pContext,                           
+                           void        *pContext,
                            phHal_sRemoteDevInformation_t *pRmtdev_info,
                            NFCSTATUS    status
                            );
 
 #ifdef RECONNECT_SUPPORT
-STATIC 
-void 
+STATIC
+void
 phLibNfc_config_discovery_con_failure_cb (
     void                *context,
     NFCSTATUS           status);
 #endif /* #ifdef RECONNECT_SUPPORT */
 
 /*Remote device disconnect response callback*/
-STATIC void phLibNfc_RemoteDev_Disconnect_cb(                        
+STATIC void phLibNfc_RemoteDev_Disconnect_cb(
                                 void                          *context,
                                 phHal_sRemoteDevInformation_t *reg_handle,
                                 NFCSTATUS                      status
@@ -111,7 +111,7 @@ STATIC void phLibNfc_Mgt_SetP2P_ConfigParams_Cb(
 * Response to target discovery.
 */
 STATIC
-void phLibNfc_NotificationRegister_Resp_Cb ( 
+void phLibNfc_NotificationRegister_Resp_Cb (
                                 void                            *context,
                                 phHal_eNotificationType_t       type,
                                 phHal4Nfc_NotificationInfo_t    info,
@@ -125,8 +125,8 @@ void phLibNfc_NotificationRegister_Resp_Cb (
     uint8_t tag_disc_flg = 0;
     phLibNfc_NtfRegister_RspCb_t pClientCb=NULL;
     pClientCb =gpphLibContext->CBInfo.pClientNtfRegRespCB;
-	PHNFC_UNUSED_VARIABLE(context);
-    
+  PHNFC_UNUSED_VARIABLE(context);
+
 
     if(( type != NFC_DISCOVERY_NOTIFICATION )
         &&(PHNFCSTATUS(status)!=NFCSTATUS_DESELECTED))
@@ -336,10 +336,10 @@ void phLibNfc_NotificationRegister_Resp_Cb (
         if (NULL != pClientCb)
         {
             pClientCb(
-					(void*)gpphLibContext->CBInfo.pClientNtfRegRespCntx,
+          (void*)gpphLibContext->CBInfo.pClientNtfRegRespCntx,
                     gpphLibContext->psRemoteDevList,
                     gpphLibContext->dev_cnt,
-					status
+          status
                     );
         }
 
@@ -387,19 +387,19 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 /**
 * This interface registers notification handler for target discovery.
 */
-NFCSTATUS   
-phLibNfc_RemoteDev_NtfRegister( 
+NFCSTATUS
+phLibNfc_RemoteDev_NtfRegister(
                         phLibNfc_Registry_Info_t*       pRegistryInfo,
                         phLibNfc_NtfRegister_RspCb_t    pNotificationHandler,
                         void                            *pContext
                         )
 {
     NFCSTATUS RetVal = NFCSTATUS_SUCCESS;
-    
+
 
     /*Check for valid parameters*/
     if((NULL == pNotificationHandler)
-        || (NULL == pContext) 
+        || (NULL == pContext)
         ||(NULL== pRegistryInfo))
     {
         RetVal= NFCSTATUS_INVALID_PARAMETER;
@@ -418,32 +418,32 @@ phLibNfc_RemoteDev_NtfRegister(
     }
     else
     {
-        
+
         PHDBG_INFO("LibNfc:Registering Notification Handler");
-                
-      
+
+
         (void) memcpy(&(gpphLibContext->RegNtfType),pRegistryInfo,
                         sizeof(phLibNfc_Registry_Info_t));
-        /* Register Discovery Notification Handler*/     
-       
-		/*Register for NFCIP1 target type*/        
-		RetVal = phHal4Nfc_RegisterNotification(
+        /* Register Discovery Notification Handler*/
+
+    /*Register for NFCIP1 target type*/
+    RetVal = phHal4Nfc_RegisterNotification(
                                 gpphLibContext->psHwReference,
                                 eRegisterP2PDiscovery,
                                 phLibNfc_NotificationRegister_Resp_Cb,
                                 (void*)gpphLibContext
                                 );
-        /*Register for Tag discovery*/        
-		RetVal = phHal4Nfc_RegisterNotification(
+        /*Register for Tag discovery*/
+    RetVal = phHal4Nfc_RegisterNotification(
                             gpphLibContext->psHwReference,
                             eRegisterTagDiscovery,
                             phLibNfc_NotificationRegister_Resp_Cb,
                             (void*)gpphLibContext
-                            );   
+                            );
         gpphLibContext->CBInfo.pClientNtfRegRespCB = pNotificationHandler;
         gpphLibContext->CBInfo.pClientNtfRegRespCntx = pContext;
         /*Register notification handler with below layer*/
-        
+
     }
     return RetVal;
 }
@@ -474,7 +474,7 @@ NFCSTATUS phLibNfc_RemoteDev_NtfUnregister(void)
                                     eRegisterP2PDiscovery,
                                     gpphLibContext);
 
-		RetVal = phHal4Nfc_UnregisterNotification(
+    RetVal = phHal4Nfc_UnregisterNotification(
                                     gpphLibContext->psHwReference,
                                     eRegisterTagDiscovery,
                                     gpphLibContext);
@@ -488,7 +488,7 @@ NFCSTATUS phLibNfc_RemoteDev_NtfUnregister(void)
 
 #ifdef RECONNECT_SUPPORT
 
-NFCSTATUS 
+NFCSTATUS
 phLibNfc_RemoteDev_ReConnect (
     phLibNfc_Handle                 hRemoteDevice,
     pphLibNfc_ConnectCallback_t     pNotifyReConnect_RspCb,
@@ -498,11 +498,11 @@ phLibNfc_RemoteDev_ReConnect (
     NFCSTATUS                           ret_val = NFCSTATUS_FAILED;
     phLibNfc_sRemoteDevInformation_t    *psRemoteDevInfo = NULL;
 
-    if ((NULL == gpphLibContext) 
-      || (eLibNfcHalStateShutdown == 
+    if ((NULL == gpphLibContext)
+      || (eLibNfcHalStateShutdown ==
         gpphLibContext->LibNfcState.cur_state))
     {
-         ret_val = NFCSTATUS_NOT_INITIALISED;        
+         ret_val = NFCSTATUS_NOT_INITIALISED;
     }
     else if ((NULL == pContext)
         || (NULL == pNotifyReConnect_RspCb)
@@ -510,7 +510,7 @@ phLibNfc_RemoteDev_ReConnect (
     {
         /* Check valid parameters */
         ret_val = NFCSTATUS_INVALID_PARAMETER;
-    }   
+    }
     /* Check valid lib nfc State */
     else if (gpphLibContext->LibNfcState.next_state
              == eLibNfcHalStateShutdown)
@@ -522,22 +522,22 @@ phLibNfc_RemoteDev_ReConnect (
         ret_val = NFCSTATUS_TARGET_NOT_CONNECTED;
     }
     else if ((gpphLibContext->Discov_handle[0] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[1] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[2] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[3] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[4] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[5] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[6] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[7] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[8] != hRemoteDevice)
-		&& (gpphLibContext->Discov_handle[9] != hRemoteDevice))
+    && (gpphLibContext->Discov_handle[1] != hRemoteDevice)
+    && (gpphLibContext->Discov_handle[2] != hRemoteDevice)
+    && (gpphLibContext->Discov_handle[3] != hRemoteDevice)
+    && (gpphLibContext->Discov_handle[4] != hRemoteDevice)
+    && (gpphLibContext->Discov_handle[5] != hRemoteDevice)
+    && (gpphLibContext->Discov_handle[6] != hRemoteDevice)
+    && (gpphLibContext->Discov_handle[7] != hRemoteDevice)
+    && (gpphLibContext->Discov_handle[8] != hRemoteDevice)
+    && (gpphLibContext->Discov_handle[9] != hRemoteDevice))
     {
         ret_val = NFCSTATUS_INVALID_HANDLE;
     }
     else
     {
         psRemoteDevInfo = (phLibNfc_sRemoteDevInformation_t *)hRemoteDevice;
-       
+
         /* Call the HAL connect*/
         ret_val = phHal4Nfc_Connect (gpphLibContext->psHwReference,
                                psRemoteDevInfo,
@@ -546,17 +546,17 @@ phLibNfc_RemoteDev_ReConnect (
 
         if (NFCSTATUS_PENDING == ret_val)
         {
-            /* If HAL Connect is pending update the LibNFC state machine 
+            /* If HAL Connect is pending update the LibNFC state machine
                 and store the CB pointer and Context,
                 mark the General CB pending status is TRUE */
             gpphLibContext->CBInfo.pClientConnectCb = pNotifyReConnect_RspCb;
             gpphLibContext->CBInfo.pClientConCntx = pContext;
             gpphLibContext->status.GenCb_pending_status = TRUE;
-			gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;            
+      gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;
 
             gpphLibContext->Prev_Connected_handle = gpphLibContext->Connected_handle;
 
-			gpphLibContext->Connected_handle = hRemoteDevice;
+      gpphLibContext->Connected_handle = hRemoteDevice;
          }
          else if (NFCSTATUS_INVALID_REMOTE_DEVICE == PHNFCSTATUS(ret_val))
          {
@@ -567,7 +567,7 @@ phLibNfc_RemoteDev_ReConnect (
          {
             /* Lower layer returns internal error code return NFCSTATUS_FAILED*/
             ret_val = NFCSTATUS_FAILED;
-         }        
+         }
     }
 
     return ret_val;
@@ -576,7 +576,7 @@ phLibNfc_RemoteDev_ReConnect (
 
 
 /**
-* Connect to a single Remote Device 
+* Connect to a single Remote Device
 */
 NFCSTATUS phLibNfc_RemoteDev_Connect(
                     phLibNfc_Handle             hRemoteDevice,
@@ -587,18 +587,18 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(
 
     NFCSTATUS RetVal = NFCSTATUS_FAILED;
     phLibNfc_sRemoteDevInformation_t *psRemoteDevInfo;
-    
+
     if((NULL == gpphLibContext) ||
-      (gpphLibContext->LibNfcState.cur_state == eLibNfcHalStateShutdown))   
+      (gpphLibContext->LibNfcState.cur_state == eLibNfcHalStateShutdown))
     {
-         RetVal = NFCSTATUS_NOT_INITIALISED;        
+         RetVal = NFCSTATUS_NOT_INITIALISED;
     }/* Check valid parameters*/
     else if((NULL == pContext)
         || (NULL == pNotifyConnect_RspCb)
         || (NULL == (void*)hRemoteDevice))
     {
        RetVal= NFCSTATUS_INVALID_PARAMETER;
-    }   
+    }
     /* Check valid lib nfc State*/
     else if(gpphLibContext->LibNfcState.next_state
                             == eLibNfcHalStateShutdown)
@@ -606,19 +606,19 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(
         RetVal= NFCSTATUS_SHUTDOWN;
     }
     else if((gpphLibContext->Discov_handle[0] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[1] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[2] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[3] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[4] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[5] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[6] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[7] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[8] != hRemoteDevice)&&
-		(gpphLibContext->Discov_handle[9] != hRemoteDevice))
+    (gpphLibContext->Discov_handle[1] != hRemoteDevice)&&
+    (gpphLibContext->Discov_handle[2] != hRemoteDevice)&&
+    (gpphLibContext->Discov_handle[3] != hRemoteDevice)&&
+    (gpphLibContext->Discov_handle[4] != hRemoteDevice)&&
+    (gpphLibContext->Discov_handle[5] != hRemoteDevice)&&
+    (gpphLibContext->Discov_handle[6] != hRemoteDevice)&&
+    (gpphLibContext->Discov_handle[7] != hRemoteDevice)&&
+    (gpphLibContext->Discov_handle[8] != hRemoteDevice)&&
+    (gpphLibContext->Discov_handle[9] != hRemoteDevice))
     {
         RetVal= NFCSTATUS_INVALID_HANDLE;
     }
-    else if ((hRemoteDevice != gpphLibContext->Connected_handle) 
+    else if ((hRemoteDevice != gpphLibContext->Connected_handle)
         && (0 != gpphLibContext->Connected_handle))
     {
         RetVal = NFCSTATUS_FAILED;
@@ -626,7 +626,7 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(
     else
     {
         psRemoteDevInfo = (phLibNfc_sRemoteDevInformation_t*)hRemoteDevice;
-       
+
         /* Call the HAL connect*/
         RetVal = phHal4Nfc_Connect(gpphLibContext->psHwReference,
                                psRemoteDevInfo,
@@ -634,15 +634,15 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(
                                (void* )gpphLibContext);
         if(RetVal== NFCSTATUS_PENDING)
         {
-            /* If HAL Connect is pending update the LibNFC state machine 
+            /* If HAL Connect is pending update the LibNFC state machine
                 and store the CB pointer and Context,
                 mark the General CB pending status is TRUE*/
             gpphLibContext->CBInfo.pClientConnectCb = pNotifyConnect_RspCb;
             gpphLibContext->CBInfo.pClientConCntx = pContext;
             gpphLibContext->status.GenCb_pending_status=TRUE;
-			gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;            
+      gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;
             gpphLibContext->Prev_Connected_handle = gpphLibContext->Connected_handle;
-			gpphLibContext->Connected_handle = hRemoteDevice;
+      gpphLibContext->Connected_handle = hRemoteDevice;
          }
          else if(PHNFCSTATUS(RetVal) == NFCSTATUS_INVALID_REMOTE_DEVICE)
          {
@@ -653,21 +653,21 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(
          {
             /* Lower layer returns internal error code return NFCSTATUS_FAILED*/
             RetVal = NFCSTATUS_FAILED;
-         }        
+         }
     }
     return RetVal;
 }
 
 #ifdef RECONNECT_SUPPORT
-STATIC 
-void 
+STATIC
+void
 phLibNfc_config_discovery_con_failure_cb (
     void                *context,
     NFCSTATUS           status)
 {
-    if((phLibNfc_LibContext_t *)context == gpphLibContext)      
+    if((phLibNfc_LibContext_t *)context == gpphLibContext)
     {   /*check for same context*/
-        pphLibNfc_ConnectCallback_t    ps_client_con_cb = 
+        pphLibNfc_ConnectCallback_t    ps_client_con_cb =
                                     gpphLibContext->CBInfo.pClientConnectCb;
 
         if(eLibNfcHalStateShutdown == gpphLibContext->LibNfcState.next_state)
@@ -713,7 +713,7 @@ phLibNfc_config_discovery_con_failure_cb (
         if (NULL != ps_client_con_cb)
         {
             gpphLibContext->CBInfo.pClientConnectCb = NULL;
-            /* Call the upper layer callback*/      
+            /* Call the upper layer callback*/
             ps_client_con_cb (gpphLibContext->CBInfo.pClientConCntx,
                             0, NULL, status);
         }
@@ -724,7 +724,7 @@ phLibNfc_config_discovery_con_failure_cb (
         status = NFCSTATUS_FAILED;
     }
 
-    
+
 }
 #endif /* #ifdef RECONNECT_SUPPORT */
 /**
@@ -744,14 +744,14 @@ STATIC void phLibNfc_RemoteDev_Connect_Cb(
 
         /* Mark General Callback pending status as false*/
         gpphLibContext->status.GenCb_pending_status = FALSE;
-        
+
         /* Check the shutdown is called during the lower layer Connect in process,
            If yes call shutdown call and return NFCSTATUS_SHUTDOWN */
         if((eLibNfcHalStateShutdown == gpphLibContext->LibNfcState.next_state))
-        {   
+        {
             phLibNfc_Pending_Shutdown();
-            Connect_status = NFCSTATUS_SHUTDOWN;    
-    
+            Connect_status = NFCSTATUS_SHUTDOWN;
+
         }
         else if(PHNFCSTATUS(status)==NFCSTATUS_SUCCESS)
         {
@@ -761,7 +761,7 @@ STATIC void phLibNfc_RemoteDev_Connect_Cb(
             gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;
             Connect_status = NFCSTATUS_SUCCESS;
         }
-        else 
+        else
         {  /* if(PHNFCSTATUS(status)==NFCSTATUS_INVALID_REMOTE_DEVICE) */
             /* If remote device is invalid return as TARGET LOST to upper layer*/
             /* If error code is other than SUCCESS return NFCSTATUS_TARGET_LOST */
@@ -771,7 +771,7 @@ STATIC void phLibNfc_RemoteDev_Connect_Cb(
         gpphLibContext->ndef_cntx.is_ndef = CHK_NDEF_NOT_DONE;
         /* Update the Current Sate*/
         phLibNfc_UpdateCurState(Connect_status,(phLibNfc_LibContext_t *)pContext);
-        /* Call the upper layer callback*/      
+        /* Call the upper layer callback*/
         gpphLibContext->CBInfo.pClientConnectCb(
                     gpphLibContext->CBInfo.pClientConCntx,
                     (phLibNfc_Handle)pRmtdev_info,
@@ -802,7 +802,7 @@ NFCSTATUS phLibNfc_RemoteDev_Disconnect( phLibNfc_Handle                 hRemote
         (gpphLibContext->LibNfcState.cur_state
                             == eLibNfcHalStateShutdown))
     {
-        RetVal = NFCSTATUS_NOT_INITIALISED;        
+        RetVal = NFCSTATUS_NOT_INITIALISED;
     }
     else if((NULL == pContext) ||
         (NULL == pDscntCallback)||(hRemoteDevice == 0))
@@ -833,17 +833,17 @@ NFCSTATUS phLibNfc_RemoteDev_Disconnect( phLibNfc_Handle                 hRemote
                     ||((gpphLibContext->sSeContext.eActivatedMode != phLibNfc_SE_ActModeWired)&&
                             (ReleaseType == NFC_SMARTMX_RELEASE)))
         {   /* Previous disconnect callback is pending */
-            RetVal = NFCSTATUS_REJECTED;            
+            RetVal = NFCSTATUS_REJECTED;
         }
 #ifndef LLCP_CHANGES
         else if(eLibNfcHalStateTransaction == gpphLibContext->LibNfcState.next_state)
         {   /* Previous  Transaction is Pending*/
-            RetVal = NFCSTATUS_BUSY;            
+            RetVal = NFCSTATUS_BUSY;
             PHDBG_INFO("LibNfc:Transaction is Pending");
         }
 #endif /* #ifdef LLCP_CHANGES */
         else
-        {           
+        {
             gpphLibContext->ReleaseType = ReleaseType;
             psRemoteDevInfo = (phLibNfc_sRemoteDevInformation_t*)hRemoteDevice;
             RetVal = phHal4Nfc_Disconnect(gpphLibContext->psHwReference,
@@ -859,15 +859,15 @@ NFCSTATUS phLibNfc_RemoteDev_Disconnect( phLibNfc_Handle                 hRemote
                 gpphLibContext->CBInfo.pClientDConCntx = pContext;
                 /* Mark general callback pending status as TRUE and update the state*/
                 gpphLibContext->status.GenCb_pending_status=TRUE;
-				gpphLibContext->LibNfcState.next_state = eLibNfcHalStateRelease; 
-                
+        gpphLibContext->LibNfcState.next_state = eLibNfcHalStateRelease;
+
             }
             else
             {
-                /*If lower layer returns other than pending 
+                /*If lower layer returns other than pending
                 (internal error codes) return NFCSTATUS_FAILED */
                 RetVal = NFCSTATUS_FAILED;
-            }    
+            }
         }
     }
     return RetVal;
@@ -884,7 +884,7 @@ STATIC void phLibNfc_RemoteDev_Disconnect_cb(
     NFCSTATUS             DisCnct_status = NFCSTATUS_SUCCESS;
     pphLibNfc_DisconnectCallback_t pUpper_NtfCb = NULL;
         void  *pUpper_Context = NULL;
-    
+
     /* Copy the upper layer Callback and context*/
     pUpper_NtfCb = gpphLibContext->CBInfo.pClientDisConnectCb;
     pUpper_Context = gpphLibContext->CBInfo.pClientDConCntx;
@@ -898,10 +898,10 @@ STATIC void phLibNfc_RemoteDev_Disconnect_cb(
     else
     {
         /* Mark the General callback pending status FALSE   */
-        gpphLibContext->status.GenCb_pending_status = FALSE;        
+        gpphLibContext->status.GenCb_pending_status = FALSE;
         gpphLibContext->CBInfo.pClientDisConnectCb = NULL;
         gpphLibContext->CBInfo.pClientDConCntx = NULL;
-        
+
         gpphLibContext->ndef_cntx.is_ndef = CHK_NDEF_NOT_DONE;
         gpphLibContext->LastTrancvSuccess = FALSE;
         /*Reset Connected handle */
@@ -928,21 +928,21 @@ STATIC void phLibNfc_RemoteDev_Disconnect_cb(
             phOsalNfc_FreeMemory(gpphLibContext->psBufferedAuth);
             gpphLibContext->psBufferedAuth = NULL;
         }
-    }   
+    }
     /* Check DeInit is called or not */
     if(eLibNfcHalStateShutdown == gpphLibContext->LibNfcState.next_state)
     {
-        /*call shutdown and return  status as NFCSTATUS_SHUTDOWN */ 
+        /*call shutdown and return  status as NFCSTATUS_SHUTDOWN */
         phLibNfc_Pending_Shutdown();
-        DisCnct_status = NFCSTATUS_SHUTDOWN;    
+        DisCnct_status = NFCSTATUS_SHUTDOWN;
     }
     else if(NFCSTATUS_SUCCESS == status)
     {
-        DisCnct_status = NFCSTATUS_SUCCESS;     
-		gpphLibContext->LibNfcState.next_state = eLibNfcHalStateRelease;         
+        DisCnct_status = NFCSTATUS_SUCCESS;
+    gpphLibContext->LibNfcState.next_state = eLibNfcHalStateRelease;
     }
     else
-    {           
+    {
         DisCnct_status = NFCSTATUS_FAILED;
         phLibNfc_UpdateCurState(DisCnct_status,(phLibNfc_LibContext_t *)context);
     }
@@ -964,9 +964,9 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
                               )
 {
     NFCSTATUS RetVal = NFCSTATUS_SUCCESS;
-    
+
     /*Check for valid parameter */
-    
+
     if((NULL == gpphLibContext) ||
         (gpphLibContext->LibNfcState.cur_state
                             == eLibNfcHalStateShutdown))
@@ -980,19 +980,19 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
         || (NULL == psTransceiveInfo->sSendData.buffer)
         || (NULL == pContext))
     {
-        RetVal= NFCSTATUS_INVALID_PARAMETER;        
+        RetVal= NFCSTATUS_INVALID_PARAMETER;
     }
     /* Check the state for DeInit is called or not,if yes return NFCSTATUS_SHUTDOWN*/
     else if(gpphLibContext->LibNfcState.next_state
                             == eLibNfcHalStateShutdown)
-    {       
+    {
         RetVal= NFCSTATUS_SHUTDOWN;
     }/* If there is no handle connected return NFCSTATUS_TARGET_NOT_CONNECTED*/
     else if(gpphLibContext->Connected_handle==0)
     {
         RetVal=NFCSTATUS_TARGET_NOT_CONNECTED;
     }/* If the given handle is not the connected handle return NFCSTATUS_INVALID_HANDLE */
-	else if(gpphLibContext->Connected_handle!= hRemoteDevice )
+  else if(gpphLibContext->Connected_handle!= hRemoteDevice )
     {
         RetVal=NFCSTATUS_INVALID_HANDLE;
     } /*If the transceive is called before finishing the previous transceive function
@@ -1003,7 +1003,7 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
         ((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType))
     {
         RetVal = NFCSTATUS_REJECTED;
-    }         
+    }
 #ifdef LLCP_TRANSACT_CHANGES
     else if ((LLCP_STATE_RESET_INIT != gpphLibContext->llcp_cntx.sLlcpContext.state)
             && (LLCP_STATE_CHECKED != gpphLibContext->llcp_cntx.sLlcpContext.state))
@@ -1011,15 +1011,25 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
         RetVal= NFCSTATUS_BUSY;
     }
 #endif /* #ifdef LLCP_TRANSACT_CHANGES */
+#if defined (HOST_EMULATION)
+    else if(((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType == phHal_eISO14443_A_PCD)
+    {
+        RetVal = phLibNfc_RemoteDev_CE_A_Transceive(&psTransceiveInfo->sSendData,pTransceive_RspCb,pContext);
+    }
+    else if(((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType == phHal_eISO14443_B_PCD)
+    {
+        RetVal = phLibNfc_RemoteDev_CE_B_Transceive(&psTransceiveInfo->sSendData,pTransceive_RspCb,pContext);
+    }
+#endif //HOST_EMULATION
     else
     {
         gpphLibContext->ndef_cntx.eLast_Call = RawTrans;
-        (void)memcpy((void *)(gpphLibContext->psTransInfo), 
-                    (void *)psTransceiveInfo, 
+        (void)memcpy((void *)(gpphLibContext->psTransInfo),
+                    (void *)psTransceiveInfo,
                     sizeof(phLibNfc_sTransceiveInfo_t));
-        /* Check the given Mifare command is supported or not , 
+        /* Check the given Mifare command is supported or not ,
                             If not return NFCSTATUS_COMMAND_NOT_SUPPORTED */
-        if( (((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType == 
+        if( (((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType ==
                phHal_eMifare_PICC)&&
             ( gpphLibContext->psTransInfo->cmd.MfCmd != phHal_eMifareRaw ) &&
             ( gpphLibContext->psTransInfo->cmd.MfCmd != phHal_eMifareAuthentA ) &&
@@ -1035,12 +1045,12 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
             ( gpphLibContext->psTransInfo->cmd.MfCmd != phHal_eMifareWriteSector ))
         {
             RetVal = NFCSTATUS_COMMAND_NOT_SUPPORTED;
-        }           
+        }
         if(eLibNfcHalStatePresenceChk !=
                      gpphLibContext->LibNfcState.next_state)
         {
             PHDBG_INFO("LibNfc:Transceive In Progress");
-            if((((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType == 
+            if((((phHal_sRemoteDevInformation_t*)hRemoteDevice)->RemDevType ==
                phHal_eMifare_PICC) && (((phHal_sRemoteDevInformation_t*)
                hRemoteDevice)->RemoteDevInfo.Iso14443A_Info.Sak != 0)&&
                (phHal_eMifareAuthentA == gpphLibContext->psTransInfo->cmd.MfCmd))
@@ -1060,28 +1070,28 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
                     phOsalNfc_FreeMemory(gpphLibContext->psBufferedAuth);
                 }
                 gpphLibContext->psBufferedAuth
-                    =(phLibNfc_sTransceiveInfo_t *) 
+                    =(phLibNfc_sTransceiveInfo_t *)
                     phOsalNfc_GetMemory(sizeof(phLibNfc_sTransceiveInfo_t));
                 gpphLibContext->psBufferedAuth->addr = psTransceiveInfo->addr;
                 gpphLibContext->psBufferedAuth->cmd = psTransceiveInfo->cmd;
-                gpphLibContext->psBufferedAuth->sSendData.length 
+                gpphLibContext->psBufferedAuth->sSendData.length
                     = psTransceiveInfo->sSendData.length;
-                gpphLibContext->psBufferedAuth->sRecvData.length 
-                    = psTransceiveInfo->sRecvData.length;                
+                gpphLibContext->psBufferedAuth->sRecvData.length
+                    = psTransceiveInfo->sRecvData.length;
                 gpphLibContext->psBufferedAuth->sSendData.buffer
                   = (uint8_t *)
                       phOsalNfc_GetMemory(
                       gpphLibContext->psTransInfo->sSendData.length);
-                
+
                 (void)memcpy((void *)
-                        (gpphLibContext->psBufferedAuth->sSendData.buffer), 
-                        (void *)psTransceiveInfo->sSendData.buffer, 
+                        (gpphLibContext->psBufferedAuth->sSendData.buffer),
+                        (void *)psTransceiveInfo->sSendData.buffer,
                         psTransceiveInfo->sSendData.length);
-               
+
                 gpphLibContext->psBufferedAuth->sRecvData.buffer
                   = (uint8_t *)
                       phOsalNfc_GetMemory(
-                        gpphLibContext->psTransInfo->sRecvData.length);             
+                        gpphLibContext->psTransInfo->sRecvData.length);
             }
             /*Call the lower layer Transceive function */
             RetVal = phHal4Nfc_Transceive( gpphLibContext->psHwReference,
@@ -1102,19 +1112,19 @@ phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                   hRemoteDevice,
                 /*Update the state machine*/
                 gpphLibContext->LibNfcState.next_state = eLibNfcHalStateTransaction;
             }
-        }       
+        }
         else
         {
             gpphLibContext->status.GenCb_pending_status = FALSE;
             RetVal = NFCSTATUS_FAILED;
-        }       
+        }
     }
     return RetVal;
 }
 /**
 * Response for Remote device transceive.
 */
-STATIC 
+STATIC
 void phLibNfc_RemoteDev_Transceive_Cb(void *context,
                                     phHal_sRemoteDevInformation_t *pRmtdev_info,
                                     phNfc_sData_t *response,
@@ -1144,7 +1154,7 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
             trans_status = NFCSTATUS_SHUTDOWN;
         }
          /* If Disconnect is called return NFCSTATUS_ABORTED */
-        else if(eLibNfcHalStateRelease == 
+        else if(eLibNfcHalStateRelease ==
                 gpphLibContext->LibNfcState.next_state)
         {
             trans_status = NFCSTATUS_ABORTED;
@@ -1153,15 +1163,15 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
         else if( NFCSTATUS_SUCCESS == status)
         {
             trans_status = NFCSTATUS_SUCCESS;
-        }        
+        }
         else if((PHNFCSTATUS(status) != NFCSTATUS_SUCCESS) &&
-                (phHal_eMifare_PICC == pRmtdev_info->RemDevType) && 
+                (phHal_eMifare_PICC == pRmtdev_info->RemDevType) &&
                 (0x00 != pRmtdev_info->RemoteDevInfo.Iso14443A_Info.Sak))
         {
             gpphLibContext->LastTrancvSuccess = FALSE;
             trans_status = NFCSTATUS_FAILED;
             /* card type is mifare 1k/4k, then reconnect */
-            trans_status = phHal4Nfc_Connect(gpphLibContext->psHwReference,  
+            trans_status = phHal4Nfc_Connect(gpphLibContext->psHwReference,
                         pRmtdev_info,
                         (pphHal4Nfc_ConnectCallback_t)
                         phLibNfc_Reconnect_Mifare_Cb,
@@ -1181,9 +1191,9 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
         /*Update the state machine */
         phLibNfc_UpdateCurState(status,gpphLibContext);
         gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;
-        if(NFCSTATUS_PENDING != trans_status)  
+        if(NFCSTATUS_PENDING != trans_status)
         {
-            /* Tranceive over */              
+            /* Tranceive over */
             PHDBG_INFO("LibNfc:TXRX Callback-Update the Transceive responce");
             if (NULL != pUpper_TagNtfCb)
             {
@@ -1192,7 +1202,7 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
                     gpphLibContext->LastTrancvSuccess = TRUE;
                     pUpper_Context = gpphLibContext->CBInfo.pClientTranseCntx;
                     trans_resp->buffer = response->buffer;
-                    trans_resp->length = response->length;                  
+                    trans_resp->length = response->length;
                             /* Notify the upper layer */
                     PHDBG_INFO("LibNfc:Transceive Complete");
                     /* Notify the Transceive Completion to upper layer */
@@ -1204,8 +1214,8 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
                 else
                 {
                     gpphLibContext->LastTrancvSuccess = FALSE;
-                    pUpper_Context = gpphLibContext->CBInfo.pClientTranseCntx;                  
-                    trans_resp->length = 0;                     
+                    pUpper_Context = gpphLibContext->CBInfo.pClientTranseCntx;
+                    trans_resp->length = 0;
                             /* Notify the upper layer */
                     PHDBG_INFO("LibNfc:Transceive Complete");
                     /* Notify the Transceive Completion to upper layer */
@@ -1216,7 +1226,7 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
                 }
             }
        }
-       
+
     }
     else
     {    /*exception: wrong context pointer returned*/
@@ -1228,15 +1238,15 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
 /**
 * Interface to configure P2P configurations.
 */
-NFCSTATUS 
-phLibNfc_Mgt_SetP2P_ConfigParams(phLibNfc_sNfcIPCfg_t*		pConfigInfo,
-                                pphLibNfc_RspCb_t			pConfigRspCb,
-                                void*						pContext
+NFCSTATUS
+phLibNfc_Mgt_SetP2P_ConfigParams(phLibNfc_sNfcIPCfg_t*    pConfigInfo,
+                                pphLibNfc_RspCb_t     pConfigRspCb,
+                                void*           pContext
                                 )
 {
     NFCSTATUS RetVal = NFCSTATUS_FAILED;
     /* LibNfc Initialized or not */
-    if((NULL == gpphLibContext)|| 
+    if((NULL == gpphLibContext)||
         (gpphLibContext->LibNfcState.cur_state == eLibNfcHalStateShutdown))
     {
         RetVal = NFCSTATUS_NOT_INITIALISED;
@@ -1249,8 +1259,8 @@ phLibNfc_Mgt_SetP2P_ConfigParams(phLibNfc_sNfcIPCfg_t*		pConfigInfo,
     else if(gpphLibContext->LibNfcState.next_state == eLibNfcHalStateShutdown)
     {
         RetVal = NFCSTATUS_SHUTDOWN;
-    }    
-    else if(TRUE == gpphLibContext->status.GenCb_pending_status)        
+    }
+    else if(TRUE == gpphLibContext->status.GenCb_pending_status)
     { /*Previous callback is pending */
         RetVal = NFCSTATUS_BUSY;
     }
@@ -1259,7 +1269,7 @@ phLibNfc_Mgt_SetP2P_ConfigParams(phLibNfc_sNfcIPCfg_t*		pConfigInfo,
         if(eLibNfcHalStatePresenceChk !=
                 gpphLibContext->LibNfcState.next_state)
         {
-            phHal_uConfig_t uConfig;  
+            phHal_uConfig_t uConfig;
             /* copy General bytes of Max length = 48 bytes */
             (void)memcpy((void *)&(uConfig.nfcIPConfig.generalBytes),
                     (void *)pConfigInfo->generalBytes,
@@ -1267,13 +1277,13 @@ phLibNfc_Mgt_SetP2P_ConfigParams(phLibNfc_sNfcIPCfg_t*		pConfigInfo,
             /* also copy the General Bytes length*/
             uConfig.nfcIPConfig.generalBytesLength = pConfigInfo->generalBytesLength;
 
-            RetVal = phHal4Nfc_ConfigParameters(                                    
+            RetVal = phHal4Nfc_ConfigParameters(
                                 gpphLibContext->psHwReference,
                                 NFC_P2P_CONFIG,
                                 &uConfig,
                                 phLibNfc_Mgt_SetP2P_ConfigParams_Cb,
                                 (void *)gpphLibContext
-                                );          
+                                );
         }
         else
         {
@@ -1287,8 +1297,8 @@ phLibNfc_Mgt_SetP2P_ConfigParams(phLibNfc_sNfcIPCfg_t*		pConfigInfo,
             gpphLibContext->sNfcIp_Context.pClientNfcIpCfgCntx = pContext;
             gpphLibContext->status.GenCb_pending_status=TRUE;
             /* Next state is configured */
-            gpphLibContext->LibNfcState.next_state =eLibNfcHalStateConfigReady;            
-        }       
+            gpphLibContext->LibNfcState.next_state =eLibNfcHalStateConfigReady;
+        }
         else
         {
             RetVal = NFCSTATUS_FAILED;
@@ -1302,7 +1312,7 @@ phLibNfc_Mgt_SetP2P_ConfigParams(phLibNfc_sNfcIPCfg_t*		pConfigInfo,
 STATIC void phLibNfc_Mgt_SetP2P_ConfigParams_Cb(void     *context,
                                         NFCSTATUS status)
 {
-        pphLibNfc_RspCb_t       pClientCb=NULL;    
+        pphLibNfc_RspCb_t       pClientCb=NULL;
     void                    *pUpperLayerContext=NULL;
      /* Check for the context returned by below layer */
     if((phLibNfc_LibContext_t *)context != gpphLibContext)
@@ -1315,13 +1325,13 @@ STATIC void phLibNfc_Mgt_SetP2P_ConfigParams_Cb(void     *context,
         {   /*shutdown called before completion of this api allow
             shutdown to happen */
             phLibNfc_Pending_Shutdown();
-            status = NFCSTATUS_SHUTDOWN;    
+            status = NFCSTATUS_SHUTDOWN;
         }
         else
         {
             gpphLibContext->status.GenCb_pending_status = FALSE;
             if(NFCSTATUS_SUCCESS != status)
-            {   
+            {
                 status = NFCSTATUS_FAILED;
             }
             else
@@ -1342,7 +1352,7 @@ STATIC void phLibNfc_Mgt_SetP2P_ConfigParams_Cb(void     *context,
             /* Notify to upper layer status of configure operation */
             pClientCb(pUpperLayerContext, status);
         }
-    }   
+    }
     return;
 }
 

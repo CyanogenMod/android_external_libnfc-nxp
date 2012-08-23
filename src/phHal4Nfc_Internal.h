@@ -37,7 +37,7 @@
 
 #include <phHciNfc.h>
 
-/** 
+/**
 *  \name HAL4
 *
 * File: \ref phHal4Nfc_Internal.h
@@ -49,18 +49,18 @@
 #define PH_HAL4NFC_INTERNAL_FILEALIASES  "$Aliases: NFC_FRI1.1_WK1023_R35_1 $"     /**< \ingroup grp_file_attributes */
 /*@}*/
 
-/* -----------------Include files ---------------------------------------*/ 
+/* -----------------Include files ---------------------------------------*/
 
 /* ---------------- Macros ----------------------------------------------*/
 #define LLCP_DISCON_CHANGES
 #define PH_HAL4NFC_TRANSCEIVE_TIMEOUT        30000  /**<Transceive operation
-                                                        on any target should be 
-                                                        completed within this 
+                                                        on any target should be
+                                                        completed within this
                                                         interval.Else the
                                                         operation is timed out*/
 
 #define   PH_HAL4NFC_TGT_MERGE_ADDRESS          0x988BU
-#define   PH_HAL4NFC_TGT_MERGE_SAK                0x00U 
+#define   PH_HAL4NFC_TGT_MERGE_SAK                0x00U
 
 
 /*---------------- Hal4 Internal Data Structures -------------------------*/
@@ -80,7 +80,7 @@ typedef enum{
 } phHal4Nfc_Hal4state_t;
 
 
-/**Global Pointer to hardware reference used in timer callbacks to get the 
+/**Global Pointer to hardware reference used in timer callbacks to get the
    context pointer*/
 extern phHal_sHwReference_t *gpphHal4Nfc_Hwref;
 
@@ -100,7 +100,7 @@ typedef struct phHal4Nfc_TrcvCtxtInfo{
     phHciNfc_XchgInfo_t              XchangeInfo;
     /*sData pointer to point to upper layer's send data*/
     phNfc_sData_t                   *psUpperSendData;
-    /*Maintains the offset of number of bytes sent in one go ,so that the 
+    /*Maintains the offset of number of bytes sent in one go ,so that the
       remaining bytes can be sent during the next transceive*/
     uint32_t                         NumberOfBytesSent;
     /*Number of bytes received during a P2p receive*/
@@ -145,9 +145,9 @@ typedef struct phHal4Nfc_TargetConnectInfo{
     /*used when a release call is pending in HAL*/
     phHal_eReleaseType_t             ReleaseType;
     /*Points to Remote device info of a connected device*/
-    phHal_sRemoteDevInformation_t   *psConnectedDevice; 
+    phHal_sRemoteDevInformation_t   *psConnectedDevice;
     /*Emulation state Activated/Deactivated*/
-    phHal_Event_t                    EmulationState; 
+    phHal_Event_t                    EmulationState;
     /*Presence check callback*/
     pphHal4Nfc_GenCallback_t         pPresenceChkCb;
 }phHal4Nfc_TargetConnectInfo_t,*pphHal4Nfc_TargetConnectInfo_t;
@@ -163,16 +163,19 @@ typedef struct phHal4Nfc_UpperLayerInfo{
     void                            *DefaultListenerCtxt;
     /*Default event handler*/
     pphHal4Nfc_Notification_t        pDefaultEventHandler;
-    /**Upper layer has to register this listener for receiving info about 
+    /**Upper layer has to register this listener for receiving info about
         discovered tags*/
     pphHal4Nfc_Notification_t        pTagDiscoveryNotification;
-    /**Upper layer has to register this  listener for receiving info about 
+    /**Upper layer has to register this  listener for receiving info about
         discovered P2P devices*/
     pphHal4Nfc_Notification_t        pP2PNotification;
     /*Event Notification Context*/
     void                            *EventNotificationCtxt;
     /**Notification handler for emulation and other events*/
     pphHal4Nfc_Notification_t        pEventNotification;
+    /**Notification handler for emulation and other events*/
+    void                            *HCEEventNotificationCtxt;
+    pphHal4Nfc_Notification_t        pHCEEventNotification;
     /**Upper layer's Config discovery/Emulation callback registry*/
     pphHal4Nfc_GenCallback_t         pConfigCallback;
     void                            *psUpperLayerCtxt;
@@ -183,7 +186,7 @@ typedef struct phHal4Nfc_UpperLayerInfo{
      /**Upper layer's Open Callback registry*/
     pphHal4Nfc_GenCallback_t         pUpperOpenCb;
     /**Upper layer's Close Callback registry */
-    pphHal4Nfc_GenCallback_t         pUpperCloseCb; 
+    pphHal4Nfc_GenCallback_t         pUpperCloseCb;
     /*Ioctl out param pointer ,points to buffer provided by upper layer during
       a ioctl call*/
     phNfc_sData_t                   *pIoctlOutParam;
@@ -193,16 +196,16 @@ typedef struct phHal4Nfc_UpperLayerInfo{
 
 /**Context structure for HAL4.0*/
 typedef struct phHal4Nfc_Hal4Ctxt{
-    /**Hci handle obtained in Hci_Init*/ 
+    /**Hci handle obtained in Hci_Init*/
     void                            *psHciHandle;
     /**Layer configuration*/
     pphNfcLayer_sCfg_t               pHal4Nfc_LayerCfg;
     /**Device capabilities*/
     phHal_sDeviceCapabilities_t      Hal4Nfc_DevCaps;
     /*Current state of HAL4.Updated generally in callbacks*/
-    phHal4Nfc_Hal4state_t            Hal4CurrentState; 
+    phHal4Nfc_Hal4state_t            Hal4CurrentState;
     /*Next state of HAL.Updated during calls*/
-    phHal4Nfc_Hal4state_t            Hal4NextState; 
+    phHal4Nfc_Hal4state_t            Hal4NextState;
     /**Info related to upper layer*/
     phHal4Nfc_UpperLayerInfo_t       sUpperLayerInfo;
      /*ADD context info*/
@@ -213,11 +216,11 @@ typedef struct phHal4Nfc_Hal4Ctxt{
     phHal_sEventInfo_t              *psEventInfo;
     /*Select sector flag*/
     uint8_t                          SelectSectorFlag;
-    /**List of pointers to remote device information for all discovered 
+    /**List of pointers to remote device information for all discovered
        targets*/
     phHal_sRemoteDevInformation_t   *rem_dev_list[MAX_REMOTE_DEVICES];
     /*Transceive context info*/
-    pphHal4Nfc_TrcvCtxtInfo_t        psTrcvCtxtInfo; 
+    pphHal4Nfc_TrcvCtxtInfo_t        psTrcvCtxtInfo;
     /*Connect context info*/
     phHal4Nfc_TargetConnectInfo_t    sTgtConnectInfo;
     /*Last called Ioctl_type*/
@@ -279,8 +282,20 @@ extern void phHal4Nfc_HandleEmulationEvent(
 /*Callback completion routine for NFCIP1 Receive*/
 extern void phHal4Nfc_RecvCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
 
+/*Callback completion routine for CE_A Receive*/
+extern void phHal4Nfc_CE_A_RecvCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
+
+/*Callback completion routine for CE_B Receive*/
+extern void phHal4Nfc_CE_B_RecvCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
+
 /*Callback completion routine for Send*/
 extern void phHal4Nfc_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
+
+/*Callback completion routine for Send*/
+extern void phHal4Nfc_CE_A_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
+
+/*Callback completion routine for Send*/
+extern void phHal4Nfc_CE_B_SendCompleteHandler(phHal4Nfc_Hal4Ctxt_t  *Hal4Ctxt,void *pInfo);
 
 /*Callback completion routine for P2P Activate Event received from HCI*/
 extern void phHal4Nfc_P2PActivateComplete(

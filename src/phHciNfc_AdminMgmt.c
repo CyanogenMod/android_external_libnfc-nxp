@@ -192,7 +192,7 @@ static
  *
  * This function initialses the Admin Gates and Establishes the Session by creating
  * all the required pipes and sets the Session ID
- * 
+ *
  */
 
 NFCSTATUS
@@ -251,13 +251,13 @@ phHciNfc_Admin_Initialise(
                     else
                     {
                         /* Populate the pipe information in the pipe handle */
-                        ((phHciNfc_Pipe_Info_t *)p_pipe_info)->pipe.pipe_id = 
+                        ((phHciNfc_Pipe_Info_t *)p_pipe_info)->pipe.pipe_id =
                                         PIPETYPE_STATIC_ADMIN;
-                        ((phHciNfc_Pipe_Info_t *)p_pipe_info)->recv_resp = 
+                        ((phHciNfc_Pipe_Info_t *)p_pipe_info)->recv_resp =
                                         &phHciNfc_Recv_Admin_Response;
-                        ((phHciNfc_Pipe_Info_t *)p_pipe_info)->recv_cmd = 
+                        ((phHciNfc_Pipe_Info_t *)p_pipe_info)->recv_cmd =
                                         &phHciNfc_Recv_Admin_Cmd;
-                        ((phHciNfc_Pipe_Info_t *)p_pipe_info)->recv_event = 
+                        ((phHciNfc_Pipe_Info_t *)p_pipe_info)->recv_event =
                                         &phHciNfc_Recv_Admin_Event;
                         psHciContext->p_pipe_list[PIPETYPE_STATIC_ADMIN] =
                                                                     p_pipe_info ;
@@ -276,8 +276,8 @@ phHciNfc_Admin_Initialise(
                 {
                     p_pipe_info = p_admin_info->admin_pipe_info;
                     p_pipe_info->reg_index = SESSION_INDEX;
-                    p_pipe_info->prev_status = 
-                        phHciNfc_Send_Generic_Cmd( psHciContext, pHwRef, 
+                    p_pipe_info->prev_status =
+                        phHciNfc_Send_Generic_Cmd( psHciContext, pHwRef,
                             (uint8_t)HCI_ADMIN_PIPE_ID,
                                 (uint8_t)ANY_GET_PARAMETER);
                     if(NFCSTATUS_PENDING == p_pipe_info->prev_status )
@@ -313,28 +313,36 @@ phHciNfc_Admin_Initialise(
 #endif
                 case ADMIN_VERIFY_SESSION:
                 {
-                    phHal_sHwConfig_t *p_hw_config = 
+                    phHal_sHwConfig_t *p_hw_config =
                              (phHal_sHwConfig_t *) psHciContext->p_config_params;
-                    phHal_sHwReference_t *p_hw_ref = 
+                    phHal_sHwReference_t *p_hw_ref =
                              (phHal_sHwReference_t *) pHwRef;
                     int             cmp_val = 0;
                     p_pipe_info = p_admin_info->admin_pipe_info;
-                    cmp_val = phOsalNfc_MemCompare(p_hw_config->session_id , 
-                                 p_hw_ref->session_id , 
+                    cmp_val = phOsalNfc_MemCompare(p_hw_config->session_id ,
+                                 p_hw_ref->session_id ,
                                          sizeof(p_hw_ref->session_id));
-                    if((cmp_val == 0) 
+//this ifdef can be removed when this is not a patch that is being
+//administered after a new release of Android.  it is required that
+//the new pipes for A and B emu get created for the CE patch
+//if this patch is adminstered after the phone has been updated with
+//a release, it is possible that the create A/B pipe code could never
+//get executed, so we are forcing it every time.  this can be removed
+//for a main build with a new OS release
+#ifndef FIRST_CE_PATCH
+                    if((cmp_val == 0)
                         && ( HCI_SESSION == psHciContext->init_mode)
                         )
                     {
                         psHciContext->hci_mode = hciMode_Session;
                         status = phHciNfc_Update_Pipe( psHciContext, pHwRef,
                                                 &p_admin_info->pipe_seq );
-                        if((status == NFCSTATUS_SUCCESS) 
+                        if((status == NFCSTATUS_SUCCESS)
                             && (NULL != p_pipe_info))
                         {
-                            
+
                             p_pipe_info->reg_index = MAX_PIPE_INDEX;
-                            status = phHciNfc_Send_Generic_Cmd( psHciContext,  
+                            status = phHciNfc_Send_Generic_Cmd( psHciContext,
                                     pHwRef, (uint8_t)HCI_ADMIN_PIPE_ID,
                                                     (uint8_t)ANY_GET_PARAMETER );
                             p_pipe_info->prev_status = status;
@@ -346,12 +354,13 @@ phHciNfc_Admin_Initialise(
                         }
                         else
                         {
-                            status = PHNFCSTVAL(CID_NFC_HCI, 
+                            status = PHNFCSTVAL(CID_NFC_HCI,
                                             NFCSTATUS_INVALID_HCI_SEQUENCE);
                         }
                         break;
                     }
                     else
+#endif
                     {
                         /* To clear the pipe information*/
                         psHciContext->hci_mode = hciMode_Override;
@@ -362,14 +371,14 @@ phHciNfc_Admin_Initialise(
                 case ADMIN_CLEAR_PIPES:
                 {
                     p_pipe_info = p_admin_info->admin_pipe_info;
-                    p_pipe_info->prev_status = 
+                    p_pipe_info->prev_status =
                                     phHciNfc_Send_Admin_Cmd( psHciContext,
                                         pHwRef, ADM_CLEAR_ALL_PIPE,
                                             length, p_pipe_info);
                     status = ((p_pipe_info->prev_status == NFCSTATUS_PENDING)?
-                                            NFCSTATUS_SUCCESS : 
+                                            NFCSTATUS_SUCCESS :
                                                 p_pipe_info->prev_status);
-                    if(status == NFCSTATUS_SUCCESS) 
+                    if(status == NFCSTATUS_SUCCESS)
                     {
                         p_admin_info->next_seq = ADMIN_PIPE_REOPEN;
                         status = NFCSTATUS_PENDING;
@@ -393,7 +402,7 @@ phHciNfc_Admin_Initialise(
                 {
                     status = phHciNfc_Create_All_Pipes( psHciContext, pHwRef,
                                                         &p_admin_info->pipe_seq );
-                    if(status == NFCSTATUS_SUCCESS) 
+                    if(status == NFCSTATUS_SUCCESS)
                     {
                         p_admin_info->next_seq = ADMIN_GET_WHITE_LIST;
                         status = NFCSTATUS_PENDING;
@@ -405,13 +414,13 @@ phHciNfc_Admin_Initialise(
                     p_pipe_info = p_admin_info->admin_pipe_info;
                     if(NULL == p_pipe_info )
                     {
-                        status = PHNFCSTVAL(CID_NFC_HCI, 
+                        status = PHNFCSTVAL(CID_NFC_HCI,
                                         NFCSTATUS_INVALID_HCI_SEQUENCE);
                     }
                     else
                     {
                         p_pipe_info->reg_index = WHITELIST_INDEX;
-                        status = phHciNfc_Send_Generic_Cmd( psHciContext,  
+                        status = phHciNfc_Send_Generic_Cmd( psHciContext,
                                 pHwRef, (uint8_t)HCI_ADMIN_PIPE_ID,
                                                 (uint8_t)ANY_GET_PARAMETER );
                         p_pipe_info->prev_status = status;
@@ -420,7 +429,7 @@ phHciNfc_Admin_Initialise(
                             status = ((NFCSTATUS_PENDING == status )?
                                             NFCSTATUS_SUCCESS : status);
                         }
-                        else 
+                        else
                         {
                             if(NFCSTATUS_PENDING == status )
                             {
@@ -436,13 +445,13 @@ phHciNfc_Admin_Initialise(
                     p_pipe_info = p_admin_info->admin_pipe_info;
                     if(NULL == p_pipe_info )
                     {
-                        status = PHNFCSTVAL(CID_NFC_HCI, 
+                        status = PHNFCSTVAL(CID_NFC_HCI,
                                         NFCSTATUS_INVALID_HCI_SEQUENCE);
                     }
                     else
                     {
                         p_pipe_info->reg_index = HOST_LIST_INDEX;
-                        status = phHciNfc_Send_Generic_Cmd( psHciContext,  
+                        status = phHciNfc_Send_Generic_Cmd( psHciContext,
                                 pHwRef, (uint8_t)HCI_ADMIN_PIPE_ID,
                                                 (uint8_t)ANY_GET_PARAMETER );
                         p_pipe_info->prev_status = status;
@@ -464,7 +473,7 @@ phHciNfc_Admin_Initialise(
                     p_pipe_info = p_admin_info->admin_pipe_info;
                     if(NULL == p_pipe_info )
                     {
-                        status = PHNFCSTVAL(CID_NFC_HCI, 
+                        status = PHNFCSTVAL(CID_NFC_HCI,
                                         NFCSTATUS_INVALID_HCI_SEQUENCE);
                     }
                     else
@@ -476,7 +485,7 @@ phHciNfc_Admin_Initialise(
                             p_admin_info->whitelist[i] = i + 2;
                         }
                         status = phHciNfc_Set_Param(psHciContext, pHwRef,
-                                      p_pipe_info, WHITELIST_INDEX, 
+                                      p_pipe_info, WHITELIST_INDEX,
                                         (uint8_t *)p_admin_info->whitelist, i );
                         if(NFCSTATUS_PENDING == status )
                         {
@@ -488,7 +497,7 @@ phHciNfc_Admin_Initialise(
                 }
                 case ADMIN_SET_SESSION:
                 {
-                    phHal_sHwConfig_t *p_hw_config = 
+                    phHal_sHwConfig_t *p_hw_config =
                              (phHal_sHwConfig_t *) psHciContext->p_config_params;
                     p_pipe_info = p_admin_info->admin_pipe_info;
                     status = phHciNfc_Set_Param(psHciContext, pHwRef, p_pipe_info,
@@ -644,8 +653,8 @@ phHciNfc_Admin_Release(
     phHciNfc_AdminGate_Info_t   *p_admin_info=NULL;
     NFCSTATUS                   status = NFCSTATUS_SUCCESS;
 
-    if( (NULL == psHciContext) 
-        || (NULL == pHwRef) 
+    if( (NULL == psHciContext)
+        || (NULL == pHwRef)
       )
     {
       status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_INVALID_PARAMETER);
@@ -711,8 +720,8 @@ phHciNfc_Admin_Release(
     uint8_t                     i=0;
     NFCSTATUS                   status = NFCSTATUS_SUCCESS;
 
-    if( (NULL == psHciContext) 
-        || (NULL == pHwRef) 
+    if( (NULL == psHciContext)
+        || (NULL == pHwRef)
         || (NULL == params)
       )
     {
@@ -737,7 +746,7 @@ phHciNfc_Admin_Release(
                                         HCP_MSG_TYPE_COMMAND, cmd);
                 hcp_message = &(hcp_packet->msg.message);
 
-                /* Source HOST ID Parameter is not passed as a 
+                /* Source HOST ID Parameter is not passed as a
                  * parameter in the HCI SPEC */
 
                 /* hcp_message->payload[i++] = p_pipe_info->pipe.source.host_id; */
@@ -831,7 +840,7 @@ phHciNfc_Recv_Admin_Response(
 #endif
                     )
 {
-    phHciNfc_sContext_t         *psHciContext = 
+    phHciNfc_sContext_t         *psHciContext =
                                     (phHciNfc_sContext_t *)psContext ;
     phHciNfc_HCP_Packet_t       *hcp_packet = NULL;
     phHciNfc_HCP_Message_t      *hcp_message = NULL;
@@ -869,7 +878,7 @@ phHciNfc_Recv_Admin_Response(
                 {
                     status = phHciNfc_Admin_InfoUpdate(psHciContext,
                                 (phHal_sHwReference_t *)pHwRef,
-                                p_admin_info->admin_pipe_info->reg_index, 
+                                p_admin_info->admin_pipe_info->reg_index,
                                     &pResponse[HCP_HEADER_LEN],
                                         (uint8_t)(length - HCP_HEADER_LEN));
                     break;
@@ -961,7 +970,7 @@ static
 #endif
                      )
 {
-    phHciNfc_sContext_t         *psHciContext = 
+    phHciNfc_sContext_t         *psHciContext =
                                     (phHciNfc_sContext_t *)psContext ;
     phHciNfc_HCP_Packet_t       *hcp_packet = NULL;
     phHciNfc_HCP_Message_t      *hcp_message = NULL;
@@ -973,9 +982,9 @@ static
     uint8_t                     response = (uint8_t) ANY_OK;
     NFCSTATUS                   status = NFCSTATUS_SUCCESS;
 
-    if( (NULL == psHciContext) 
-        || (NULL == pHwRef) 
-        || (HCP_HEADER_LEN > length ) 
+    if( (NULL == psHciContext)
+        || (NULL == pHwRef)
+        || (HCP_HEADER_LEN > length )
       )
     {
       status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_INVALID_PARAMETER);
@@ -1001,17 +1010,17 @@ static
                 if(NULL != p_pipe_info)
                 {
                     /* The Source Host is the UICC Host */
-                    p_pipe_info->pipe.source.host_id = 
+                    p_pipe_info->pipe.source.host_id =
                                     hcp_message->payload[index++];
                     /* The Source Gate is same as the Destination Gate */
-                    p_pipe_info->pipe.source.gate_id    = 
+                    p_pipe_info->pipe.source.gate_id    =
                                     hcp_message->payload[index++];
                     /* The Source Host is the Terminal Host */
-                    p_pipe_info->pipe.dest.host_id = 
+                    p_pipe_info->pipe.dest.host_id =
                                     hcp_message->payload[index++];
-                    p_pipe_info->pipe.dest.gate_id  = 
+                    p_pipe_info->pipe.dest.gate_id  =
                                     hcp_message->payload[index++];
-                    p_pipe_info->pipe.pipe_id   = 
+                    p_pipe_info->pipe.pipe_id   =
                                     hcp_message->payload[index++];
                 }
                 status = phHciNfc_Update_PipeInfo(psHciContext,
@@ -1095,16 +1104,16 @@ static
 #endif
                      )
 {
-    phHciNfc_sContext_t         *psHciContext = 
+    phHciNfc_sContext_t         *psHciContext =
                                     (phHciNfc_sContext_t *)psContext ;
     phHciNfc_HCP_Packet_t       *hcp_packet = NULL;
     phHciNfc_HCP_Message_t      *hcp_message = NULL;
     uint8_t                     event = (uint8_t) HCP_MSG_INSTRUCTION_INVALID;
     NFCSTATUS                   status = NFCSTATUS_SUCCESS;
 
-    if( (NULL == psHciContext) 
-        || (NULL == pHwRef) 
-        || (HCP_HEADER_LEN > length ) 
+    if( (NULL == psHciContext)
+        || (NULL == pHwRef)
+        || (HCP_HEADER_LEN > length )
       )
     {
       status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_INVALID_PARAMETER);
@@ -1119,7 +1128,7 @@ static
 
         if( EVT_HOT_PLUG ==   event )
         {
-            status = phHciNfc_Send_Admin_Event ( psHciContext, pHwRef, 
+            status = phHciNfc_Send_Admin_Event ( psHciContext, pHwRef,
                                 EVT_HOT_PLUG, 0 ,NULL);
 
         }

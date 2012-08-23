@@ -10,14 +10,14 @@ LOCAL_ARM_MODE := arm
 
 #phLibNfc
 LOCAL_SRC_FILES:= \
-	src/phLibNfc.c \
-	src/phLibNfc_discovery.c \
-	src/phLibNfc_initiator.c \
-	src/phLibNfc_llcp.c \
-	src/phLibNfc_Ioctl.c \
-	src/phLibNfc_ndef_raw.c \
-	src/phLibNfc_SE.c \
-	src/phLibNfc_target.c
+  src/phLibNfc.c \
+  src/phLibNfc_discovery.c \
+  src/phLibNfc_initiator.c \
+  src/phLibNfc_llcp.c \
+  src/phLibNfc_Ioctl.c \
+  src/phLibNfc_ndef_raw.c \
+  src/phLibNfc_SE.c \
+  src/phLibNfc_target.c
 
 #phHalNfc
 LOCAL_SRC_FILES += src/phHal4Nfc_ADD.c
@@ -32,6 +32,7 @@ LOCAL_SRC_FILES += src/phDnldNfc.c
 #phHciNfc
 LOCAL_SRC_FILES += src/phHciNfc_AdminMgmt.c
 LOCAL_SRC_FILES += src/phHciNfc.c
+LOCAL_SRC_FILES += src/phHciNfc_CE.c
 LOCAL_SRC_FILES += src/phHciNfc_CE_A.c
 LOCAL_SRC_FILES += src/phHciNfc_CE_B.c
 LOCAL_SRC_FILES += src/phHciNfc_DevMgmt.c

@@ -28,7 +28,7 @@
 * $Date: Tue Jun  8 09:31:49 2010 $                                           *
 * $Author: ing04880 $                                                         *
 * $Revision: 1.108 $                                                           *
-* $Aliases: NFC_FRI1.1_WK1023_R35_1 $  
+* $Aliases: NFC_FRI1.1_WK1023_R35_1 $
 *                                                                             *
 * =========================================================================== *
 */
@@ -66,12 +66,12 @@ uint32_t nxp_nfc_hci_response_timeout = NXP_NFC_HCI_TIMEOUT;
 */
 
 
-#if  (NXP_NFC_HCI_TIMER == 1) 
+#if  (NXP_NFC_HCI_TIMER == 1)
 
 #define NXP_HCI_RESPONSE_TIMEOUT  (NXP_NFC_HCI_TIMEOUT)
 
 #include <phOsalNfc_Timer.h>
-/** \internal HCI Response Timer to detect the 
+/** \internal HCI Response Timer to detect the
  * Stalled HCI Response */
 static uint32_t                    hci_resp_timer_id = NXP_INVALID_TIMER_ID;
 static phHciNfc_sContext_t        *gpsHciContext= NULL;
@@ -200,7 +200,7 @@ phHciNfc_Process_Command (
 
 static
 void
-phHciNfc_Reset_Pipe_MsgInfo(    
+phHciNfc_Reset_Pipe_MsgInfo(
                             phHciNfc_Pipe_Info_t    *p_pipe_info
                         );
 
@@ -222,7 +222,7 @@ phHciNfc_Build_HCPHeader(
 /**
  * \ingroup grp_hci_nfc
  *
- *  The phHciNfc_Receive_HCP function receive the HCI Host Control Packet 
+ *  The phHciNfc_Receive_HCP function receive the HCI Host Control Packet
  *  Frames from the device.
  *
  *  \param[in]  psHciContext            psHciContext is the context of
@@ -282,7 +282,7 @@ phHciNfc_Response_Timeout (
         void                        *p_upper_context =
                                 gpsHciContext->p_upper_context;
         phHal_sHwReference_t        *pHwRef = gpsHciContext->p_hw_ref;
-		uint32_t				i = 0;
+    uint32_t        i = 0;
 
 
         HCI_DEBUG(" HCI TIMEOUT: HCI Response Timeout Occurred in %X Timer\n"
@@ -290,15 +290,15 @@ phHciNfc_Response_Timeout (
         /* Stop the Response Timer */
         phOsalNfc_Timer_Stop( hci_resp_timer_id );
 
-		comp_info.status = PHNFCSTVAL(CID_NFC_HCI,
-                        NFCSTATUS_BOARD_COMMUNICATION_ERROR); 
+    comp_info.status = PHNFCSTVAL(CID_NFC_HCI,
+                        NFCSTATUS_BOARD_COMMUNICATION_ERROR);
         /* Roll Back to the Select State */
         phHciNfc_FSM_Rollback(gpsHciContext);
 
-		for(i=0;i < PHHCINFC_MAX_PIPE; i++)
-		{
-			phHciNfc_Reset_Pipe_MsgInfo(gpsHciContext->p_pipe_list[i]);
-		}
+    for(i=0;i < PHHCINFC_MAX_PIPE; i++)
+    {
+      phHciNfc_Reset_Pipe_MsgInfo(gpsHciContext->p_pipe_list[i]);
+    }
 
         /* Notify the Error/Success Scenario to the upper layer */
         phHciNfc_Notify( p_upper_notify, p_upper_context,
@@ -495,7 +495,7 @@ phHciNfc_Response_Timeout (
 
 static
 void
-phHciNfc_Reset_Pipe_MsgInfo(    
+phHciNfc_Reset_Pipe_MsgInfo(
                             phHciNfc_Pipe_Info_t    *p_pipe_info
                         )
 {
@@ -517,7 +517,7 @@ phHciNfc_Release_Lower(
                     void                        *pHwRef
                )
 {
-    phNfc_sLowerIF_t            *plower_if = 
+    phNfc_sLowerIF_t            *plower_if =
                                     &(psHciContext->lower_interface);
     NFCSTATUS            status = NFCSTATUS_SUCCESS;
 
@@ -559,7 +559,7 @@ phHciNfc_Release_Lower(
 
     phNfc_sLowerIF_t        *plower_if = &(psHciContext->lower_interface);
 
-    if( (NULL != plower_if) 
+    if( (NULL != plower_if)
         && (NULL != plower_if->send)
       )
     {
@@ -571,7 +571,7 @@ phHciNfc_Release_Lower(
 
 #if  (NXP_NFC_HCI_TIMER == 1)
 
-    if ( 
+    if (
         (TRUE != psHciContext->tx_hcp_chaining)
         &&  (TRUE == psHciContext->response_pending)
         && ( NXP_INVALID_TIMER_ID != hci_resp_timer_id )
@@ -624,7 +624,7 @@ phHciNfc_Receive(
     {
         plower_if = &(psHciContext->lower_interface);
 
-        if( (NULL != plower_if) 
+        if( (NULL != plower_if)
             && (NULL != plower_if->receive)
           )
         {
@@ -675,13 +675,13 @@ phHciNfc_Receive(
             psHciContext->tx_hcp_frgmnt_index = HCP_ZERO_LEN ;
             chain_bit = HCP_CHAINBIT_BEGIN;
             /* Increment the Fragment index to skip the HCP Header */
-            psHciContext->tx_hcp_frgmnt_index++; 
+            psHciContext->tx_hcp_frgmnt_index++;
             psHciContext->tx_hcp_chaining = TRUE ;
             tx_length = PHHCINFC_MAX_PACKET_DATA ;
         }
         else if ( psHciContext->tx_remain > PHHCINFC_MAX_PACKET_DATA )
         {
-			/* Intermediate Chained HCI Frames */
+      /* Intermediate Chained HCI Frames */
             tx_length = PHHCINFC_MAX_PACKET_DATA ;
         }
         else
@@ -691,11 +691,11 @@ phHciNfc_Receive(
             tx_length = psHciContext->tx_remain ;
             psHciContext->tx_hcp_chaining = FALSE ;
         }
-        
+
         /* Build the HCP Header to have Chaining Enabled */
         phHciNfc_Build_HCPHeader(tx_data, chain_bit , pipe_id );
 
-        phHciNfc_Append_HCPFrame((uint8_t *)tx_data->msg.payload, hcp_index, 
+        phHciNfc_Append_HCPFrame((uint8_t *)tx_data->msg.payload, hcp_index,
             (&psHciContext->send_buffer[psHciContext->tx_hcp_frgmnt_index])
             , tx_length );
     }
@@ -708,13 +708,13 @@ phHciNfc_Receive(
 
         psHciContext->tx_remain = tx_length ;
     }
-    
+
     /* Include the Skipped HCP Header Byte */
     tx_length++;
 
     status = phHciNfc_Send ( (void *) psHciContext, pHwRef,
                         (uint8_t *)tx_data, tx_length );
-    
+
     return status;
 }
 
@@ -757,7 +757,7 @@ phHciNfc_Receive(
         {
             /* Copy the obtained fragment and receive the next fragment */
             phHciNfc_Append_HCPFrame(
-                psHciContext->recv_buffer, hcp_index, 
+                psHciContext->recv_buffer, hcp_index,
                     (uint8_t *)&pdata[HCP_MESSAGE_LEN],
                             (length - HCP_MESSAGE_LEN) );
             psHciContext->rx_hcp_frgmnt_index =(uint16_t)
@@ -768,14 +768,14 @@ phHciNfc_Receive(
         {
             psHciContext->rx_hcp_chaining = TRUE ;
             /* Copy the obtained fragment and receive the next fragment */
-            phHciNfc_Append_HCPFrame(psHciContext->recv_buffer, 
+            phHciNfc_Append_HCPFrame(psHciContext->recv_buffer,
                 hcp_index, pdata, length);
             psHciContext->rx_hcp_frgmnt_index = ( hcp_index + length ) ;
 
         }
         status = phHciNfc_Receive ( (void *) psHciContext, pHwRef,
                                                 pdata, length);
-    } 
+    }
     else
     {
         if(TRUE == psHciContext->rx_hcp_chaining)
@@ -784,11 +784,11 @@ phHciNfc_Receive(
             psHciContext->rx_hcp_chaining = FALSE ;
             /* Copy the Remaining buffer to the RX_BUFFER */
             phHciNfc_Append_HCPFrame(
-                psHciContext->recv_buffer, hcp_index, 
+                psHciContext->recv_buffer, hcp_index,
                     (uint8_t *)&pdata[HCP_MESSAGE_LEN],
                             (length - HCP_MESSAGE_LEN) );
             /* If there is chaining done the return the same data */
-            psHciContext->rx_total = 
+            psHciContext->rx_total =
                         (hcp_index + length - HCP_MESSAGE_LEN);
             psHciContext->rx_hcp_frgmnt_index = FALSE ;
         }
@@ -838,13 +838,13 @@ phHciNfc_Receive(
     }
     else
     {
-        status = phHciNfc_Receive_HCP( psHciContext, pHwRef, pdata, length ); 
+        status = phHciNfc_Receive_HCP( psHciContext, pHwRef, pdata, length );
     }/* End of the Valid Data Handling */
 
     if( NFCSTATUS_SUCCESS  == status )
     {
         packet = (phHciNfc_HCP_Packet_t *)psHciContext->recv_buffer;
-        length = 
+        length =
 #ifdef ONE_BYTE_LEN
             (uint8_t)
 #endif
@@ -926,7 +926,7 @@ phHciNfc_Receive(
     }
 
 #endif /* (NXP_NFC_HCI_TIMER == 1) */
-    
+
     if (pipe_id >=  PHHCINFC_MAX_PIPE )
     {
         status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_INVALID_HCI_INFORMATION);
@@ -1133,8 +1133,8 @@ static
         /* psHciContext->hci_transact_state = NFC_TRANSACT_SEND_COMPLETE;*/
         /* Receive the Response Packet */
 
-        status = phHciNfc_Receive( psHciContext, pHwRef, 
-                    (uint8_t *)(&psHciContext->rx_packet), 
+        status = phHciNfc_Receive( psHciContext, pHwRef,
+                    (uint8_t *)(&psHciContext->rx_packet),
                     sizeof(phHciNfc_HCP_Packet_t) );
 
         /* HCI_DEBUG("HCI Lower Layer Send Completion After Receive,\
@@ -1142,7 +1142,7 @@ static
     }
     else
     {
-        if( 
+        if(
 /* #define EVENT_NOTIFY */
 #ifndef EVENT_NOTIFY
             ( NFCSTATUS_SUCCESS == status  )
@@ -1259,10 +1259,10 @@ phHciNfc_Build_HCPMessage(
     phHciNfc_HCP_Message_t  *hcp_message = NULL;
 
     hcp_message = &(hcp_packet->msg.message);
-    /* Set the type to the provided message type in the HCP Message Header */ 
+    /* Set the type to the provided message type in the HCP Message Header */
     hcp_message->msg_header = (uint8_t) SET_BITS8(hcp_message->msg_header,HCP_MSG_TYPE_OFFSET,
                 HCP_MSG_TYPE_LEN, msg_type);
-    /* Set the instruction to the kind of instruction in the HCP Message Header */ 
+    /* Set the instruction to the kind of instruction in the HCP Message Header */
     hcp_message->msg_header  = (uint8_t) SET_BITS8(hcp_message->msg_header,HCP_MSG_INSTRUCTION_OFFSET,
                 HCP_MSG_INSTRUCTION_LEN, instruction);
     /* hcp_message->msg_header = hcp_message->msg_header | temp ; */
@@ -1278,10 +1278,10 @@ phHciNfc_Build_HCPHeader(
                                 uint8_t             pipe_id
                           )
 {
-    /* Set the Chaining bit to the default type */ 
+    /* Set the Chaining bit to the default type */
     hcp_packet->hcp_header = (uint8_t) SET_BITS8(hcp_packet->hcp_header,
                 HCP_CHAINBIT_OFFSET, HCP_CHAINBIT_LEN, chainbit);
-    /* Populate the Pipe ID to the HCP Header */ 
+    /* Populate the Pipe ID to the HCP Header */
     hcp_packet->hcp_header  = (uint8_t) SET_BITS8(hcp_packet->hcp_header,HCP_PIPEID_OFFSET,
                 HCP_PIPEID_LEN, pipe_id);
 
@@ -1290,7 +1290,7 @@ phHciNfc_Build_HCPHeader(
 /*!
  * \brief Builds the HCP Frame Packet.
  *
- * This function builds the HCP Frame in the HCP packet format to send to the 
+ * This function builds the HCP Frame in the HCP packet format to send to the
  * connected reader device.
  */
 
@@ -1326,9 +1326,9 @@ void
                           )
 {
     uint16_t src_index = 0;
-    if( (NULL != src_data) 
+    if( (NULL != src_data)
         /* && (hcp_index >= 0) */
-        && (src_len > 0) 
+        && (src_len > 0)
         )
     {
         for(src_index=0; src_index < src_len ; src_index++)
@@ -1343,7 +1343,7 @@ void
 /*!
  * \brief Sends the Generic HCI Commands to the connected reader device.
  *
- * This function Sends the Generic HCI Command frames in the HCP packet format to the 
+ * This function Sends the Generic HCI Command frames in the HCP packet format to the
  * connected reader device.
  */
 
@@ -1373,7 +1373,7 @@ void
     }
     else
     {
-        p_pipe_info = (phHciNfc_Pipe_Info_t *) 
+        p_pipe_info = (phHciNfc_Pipe_Info_t *)
                                 psHciContext->p_pipe_list[pipe_id];
         psHciContext->tx_total = 0 ;
         length +=  HCP_HEADER_LEN ;
@@ -1381,7 +1381,7 @@ void
         {
             case ANY_SET_PARAMETER:
             {
-                
+
                 hcp_packet = (phHciNfc_HCP_Packet_t *) psHciContext->send_buffer;
                 /* Construct the HCP Frame */
                 phHciNfc_Build_HCPFrame(hcp_packet,HCP_CHAINBIT_DEFAULT,
@@ -1469,7 +1469,7 @@ phHciNfc_Set_Param (
         p_pipe_info->param_info = (uint8_t *)p_param;
         p_pipe_info->param_length =  param_length;
         p_pipe_info->reg_index = reg_index;
-        status = phHciNfc_Send_Generic_Cmd( psHciContext, pHwRef, 
+        status = phHciNfc_Send_Generic_Cmd( psHciContext, pHwRef,
             (uint8_t)p_pipe_info->pipe.pipe_id,
                 (uint8_t)ANY_SET_PARAMETER);
         p_pipe_info->prev_status = status;
@@ -1513,8 +1513,8 @@ phHciNfc_Send_Complete (
 
     HCI_PRINT("HCI Send Completion....\n");
     if ( (NULL != psContext)
-        && (NULL != pInfo) 
-        && (NULL != pHwRef) 
+        && (NULL != pInfo)
+        && (NULL != pHwRef)
         )
     {
         phHciNfc_sContext_t *psHciContext = (phHciNfc_sContext_t *)psContext;
@@ -1532,8 +1532,8 @@ phHciNfc_Send_Complete (
         }
         else
         {
-	        HCI_DEBUG("HCI Send Completion... Length = %02X\n", length); 
-            /* To complete the send complete with the send 
+          HCI_DEBUG("HCI Send Completion... Length = %02X\n", length);
+            /* To complete the send complete with the send
              * or receive with chaining.
              */
             if( (TRUE == psHciContext->tx_hcp_chaining)
@@ -1582,8 +1582,8 @@ phHciNfc_Send_Complete (
 
                     /* psHciContext->hci_transact_state = NFC_TRANSACT_SEND_COMPLETE;*/
                     /* Receive the Response Packet */
-                    status = phHciNfc_Receive( psHciContext, pHwRef, 
-                                (uint8_t *)(&psHciContext->rx_packet), 
+                    status = phHciNfc_Receive( psHciContext, pHwRef,
+                                (uint8_t *)(&psHciContext->rx_packet),
                                 sizeof(phHciNfc_HCP_Packet_t) );
 
                     /* HCI_DEBUG("HCI Lower Layer Send Completion After Receive,\
@@ -1599,8 +1599,8 @@ phHciNfc_Send_Complete (
                 else
                 {
                     status = phHciNfc_Resume_Sequence(psHciContext, pHwRef );
-                } 
-            } 
+                }
+            }
 
         } /* End of status != Success */
 
@@ -1621,8 +1621,8 @@ phHciNfc_Receive_Complete (
 
     HCI_PRINT("HCI Receive Completion....\n");
     if ( (NULL != psContext)
-        && (NULL != pInfo) 
-        && (NULL != pHwRef) 
+        && (NULL != pInfo)
+        && (NULL != pHwRef)
         )
     {
         phHciNfc_sContext_t *psHciContext = (phHciNfc_sContext_t *)psContext;
@@ -1678,7 +1678,7 @@ phHciNfc_Tag_Notify(
                             void                    *pInfo
                )
 {
-    phNfc_sCompletionInfo_t *psCompInfo = 
+    phNfc_sCompletionInfo_t *psCompInfo =
                                 (phNfc_sCompletionInfo_t *)pInfo;
     pphNfcIF_Notification_CB_t  p_upper_notify = psHciContext->p_upper_notify;
     void                        *pcontext = psHciContext->p_upper_context;
@@ -1727,7 +1727,7 @@ phHciNfc_Target_Select_Notify(
                             void                    *pInfo
                )
 {
-    phNfc_sCompletionInfo_t *psCompInfo = 
+    phNfc_sCompletionInfo_t *psCompInfo =
                                 (phNfc_sCompletionInfo_t *)pInfo;
     pphNfcIF_Notification_CB_t  p_upper_notify = psHciContext->p_upper_notify;
     void                        *pcontext = psHciContext->p_upper_context;
@@ -1779,7 +1779,7 @@ phHciNfc_Release_Notify(
                             void                    *pInfo
                )
 {
-    phNfc_sCompletionInfo_t *psCompInfo = 
+    phNfc_sCompletionInfo_t *psCompInfo =
                                 (phNfc_sCompletionInfo_t *)pInfo;
     pphNfcIF_Notification_CB_t  p_upper_notify = psHciContext->p_upper_notify;
     void                        *pcontext = psHciContext->p_upper_context;
@@ -1801,8 +1801,8 @@ phHciNfc_Notify_Event(
     NFCSTATUS            status = NFCSTATUS_SUCCESS;
 
     if ( (NULL != psContext)
-        && (NULL != pInfo) 
-        && (NULL != pHwRef) 
+        && (NULL != pInfo)
+        && (NULL != pHwRef)
         )
     {
         phHciNfc_sContext_t *psHciContext = (phHciNfc_sContext_t *)psContext;
@@ -1812,7 +1812,7 @@ phHciNfc_Notify_Event(
         {
             case NFC_NOTIFY_INIT_COMPLETED:
             {
-                phNfc_sCompletionInfo_t *psCompInfo = 
+                phNfc_sCompletionInfo_t *psCompInfo =
                                             (phNfc_sCompletionInfo_t *)pInfo;
                 if(NFCSTATUS_SUCCESS == psCompInfo->status)
                 {
@@ -1884,14 +1884,14 @@ phHciNfc_Notify_Event(
 
                     if (NFCSTATUS_SUCCESS != status)
                     {
-                       status = phHciNfc_ReaderMgmt_Deselect( 
-                            psHciContext, pHwRef, phHal_eISO14443_A_PICC, FALSE); 
+                       status = phHciNfc_ReaderMgmt_Deselect(
+                            psHciContext, pHwRef, phHal_eISO14443_A_PICC, FALSE);
                     }
                 }
                 else
                 {
 #ifdef SW_RELEASE_TARGET
-                    /*status = phHciNfc_ReaderMgmt_Deselect( 
+                    /*status = phHciNfc_ReaderMgmt_Deselect(
                         psHciContext, pHwRef, phHal_eISO14443_A_PICC, FALSE); */
                     psHciContext->target_release = TRUE;
 #else
@@ -1900,29 +1900,42 @@ phHciNfc_Notify_Event(
                 }
                 break;
             }
-            /* To Notify the Target Released Notification 
+            /* To Notify the Target Released Notification
              * to the Above Layer */
             case NFC_NOTIFY_TARGET_RELEASED:
-            /* To Notify the NFC Secure Element Transaction 
+            /* To Notify the NFC Secure Element Transaction
              * Information to the Above Layer */
             /* case NFC_NOTIFY_TRANSACTION: */
-            /* To Notify the Generic Events To the Upper 
+            /* To Notify the Generic Events To the Upper
              * Layer */
             case NFC_NOTIFY_EVENT:
-            /* To Notify the Data Receive  Notification 
+            /* To Notify the Data Receive  Notification
              * to the Above Layer */
+            case NFC_NOTIFY_CE_A_RECV_EVENT:
+            case NFC_NOTIFY_CE_B_RECV_EVENT:
             case NFC_NOTIFY_RECV_EVENT:
             {
-                phNfc_sCompletionInfo_t *psCompInfo = 
-		                (phNfc_sCompletionInfo_t *)pInfo;
+                phNfc_sCompletionInfo_t *psCompInfo =
+                    (phNfc_sCompletionInfo_t *)pInfo;
 
-                if (((TRUE == psHciContext->event_pending) || 
+                if (((TRUE == psHciContext->event_pending) ||
                     (NFCSTATUS_RF_TIMEOUT == psCompInfo->status))
                     && ( hciState_Transact == psHciContext->hci_state.next_state))
                 {
                     /* Rollback due to Transmission Error */
                     phHciNfc_FSM_Rollback(psHciContext);
                 }
+                if(((phHal_sEventInfo_t *)pInfo)->eventType == NFC_EVT_DEACTIVATED)
+                {
+                    //reset HCI state
+                    phHciNfc_FSM_Rollback(psHciContext);
+                }
+                else if(((phHal_sEventInfo_t *)pInfo)->eventType == NFC_EVT_ACTIVATED)
+                {
+                    //update the HCI state
+                    phHciNfc_FSM_Update(psHciContext,hciState_Transact);
+                }
+
                 psHciContext->event_pending = FALSE;
                 phHciNfc_Notify(psHciContext->p_upper_notify,
                             psHciContext->p_upper_context, pHwRef,
@@ -1951,7 +1964,7 @@ phHciNfc_Notify_Event(
                         case phHal_eUnknown_DevType:
                         default:
                         {
-                            status = PHNFCSTVAL(CID_NFC_HCI, 
+                            status = PHNFCSTVAL(CID_NFC_HCI,
                                         NFCSTATUS_INVALID_PARAMETER);
                             break;
                         }
@@ -2003,10 +2016,10 @@ phHciNfc_Notify_Event(
             }
             case NFC_NOTIFY_DEVICE_ERROR:
             {
-                phNfc_sCompletionInfo_t *psCompInfo = 
+                phNfc_sCompletionInfo_t *psCompInfo =
                                             (phNfc_sCompletionInfo_t *)pInfo;
 
-                psCompInfo->status = ( NFCSTATUS_BOARD_COMMUNICATION_ERROR 
+                psCompInfo->status = ( NFCSTATUS_BOARD_COMMUNICATION_ERROR
                                         != PHNFCSTATUS(psCompInfo->status))?
                                             NFCSTATUS_BOARD_COMMUNICATION_ERROR:
                                                 psCompInfo->status ;
@@ -2033,13 +2046,13 @@ phHciNfc_Notify_Event(
             case NFC_NOTIFY_ERROR:
             default:
             {
-                phNfc_sCompletionInfo_t *psCompInfo = 
+                phNfc_sCompletionInfo_t *psCompInfo =
                                             (phNfc_sCompletionInfo_t *)pInfo;
 
 #if  (NXP_NFC_HCI_TIMER == 1)
 
                 if (( NFCSTATUS_BOARD_COMMUNICATION_ERROR == PHNFCSTATUS(psCompInfo->status))
-                        && ( NXP_INVALID_TIMER_ID != hci_resp_timer_id ))                
+                        && ( NXP_INVALID_TIMER_ID != hci_resp_timer_id ))
                 {
                     HCI_DEBUG(" HCI : Response Timer Stop, Status:%02X",
                                                           psCompInfo->status);
@@ -2049,7 +2062,7 @@ phHciNfc_Notify_Event(
 
 #endif /* (NXP_NFC_HCI_TIMER == 1) */
 
-                phHciNfc_Error_Sequence( psHciContext, pHwRef, 
+                phHciNfc_Error_Sequence( psHciContext, pHwRef,
                                                         psCompInfo->status, NULL, 0);
                 break;
             }
