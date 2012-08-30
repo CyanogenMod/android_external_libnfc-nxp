@@ -20,7 +20,7 @@
 * \brief HAL Custom Configurations
 *
 *
-* \note This is the configuration header file of the HAL 4.0. custom configurable 
+* \note This is the configuration header file of the HAL 4.0. custom configurable
 *       parameters of the HAL 4.0 are provided in this file
 *
 * Project: NFC-FRI-1.1 / HAL4.0
@@ -39,7 +39,7 @@
 /*@}*/
 
 
-/** 
+/**
 *  \name Hal
 *
 * File: \ref nfc_custom_config.h
@@ -60,15 +60,15 @@
 /**< Default Session ID for Initialisation */
 #define DEFAULT_SESSION "NXP-NFC2"
 
-/** Resolution value for the timer, here the 
+/** Resolution value for the timer, here the
     timer resolution is 100 milliseconds */
 #define TIMER_RESOLUTION                100U
 
-/**< Defines connection time out value for LLC timer, 
+/**< Defines connection time out value for LLC timer,
     500 is in milliseconds */
 #define LINK_CONNECTION_TIMEOUT         500U
 
-/**< Defines guard time out value for LLC timer, 
+/**< Defines guard time out value for LLC timer,
     250 is in milliseconds */
 #define LINK_GUARD_TIMEOUT              250U
 
@@ -76,14 +76,14 @@
  * Initialisation */
 
 
-/* PLEASE NOTE: This Macro should be only enabled if there is a SMART_MX 
+/* PLEASE NOTE: This Macro should be only enabled if there is a SMART_MX
  * Chip attached to the PN544.
  */
 /* #define NXP_HAL_ENABLE_SMX */
 
 
 
-/* PLEASE NOTE: Kindly change the DEFAULT_SESSION Macro for each of the 
+/* PLEASE NOTE: Kindly change the DEFAULT_SESSION Macro for each of the
  * configuration change done for the below Macros
  */
 
@@ -108,12 +108,12 @@
 
 #define NFC_DEV_HWCONF_DEFAULT          0xBCU
 
-/**<  TX LDO Configuration 
+/**<  TX LDO Configuration
        0x00 -> 00b     3.0 V,
        0x01 -> 01b     3.0 V,
        0x02 -> 10b     2.7 V,
        0x03 -> 11b     3.3 V,
-      
+
       */
 #define NXP_DEFAULT_TX_LDO              0x00U
 
@@ -134,17 +134,17 @@
 #define NXP_UICC_BIT_RATE               0x08U
 
 /**<  Indicates PN544 Power Modes Configuration for the NFC Device,
-      0x00U -> PN544 stays in active bat mode 
+      0x00U -> PN544 stays in active bat mode
                (except when generating RF field)
-      0x01U -> PN544 goes in standby when possible otherwise 
+      0x01U -> PN544 goes in standby when possible otherwise
                stays in active bat mode
-      0x02U -> PN544 goes in idle mode as soon as it can 
+      0x02U -> PN544 goes in idle mode as soon as it can
                (otherwise it is in active bat except when generating RF field)
-      0x03U -> PN544 goes in standby when possible otherwise goes in idle mode 
-               as soon as it can (otherwise it is in active bat except when 
+      0x03U -> PN544 goes in standby when possible otherwise goes in idle mode
+               as soon as it can (otherwise it is in active bat except when
                generating RF field)
       */
-	  
+
 #define NXP_SYSTEM_PWR_STATUS           0x01U
 
 
@@ -169,10 +169,10 @@
 
 
 /* Reset the Default values of Host Link Timers */
-/* Macro to Enable the Host Side Link Timeout Configuration 
+/* Macro to Enable the Host Side Link Timeout Configuration
  * 0x00 ----> Default Pre-defined Configuration;
  * 0x01 ----> Update only the Host Link Guard Timeout Configuration;
- * 0x03 ----> Update Both the Host Link Guard Timeout 
+ * 0x03 ----> Update Both the Host Link Guard Timeout
               and ACK Timeout Configuration;
  */
 #define HOST_LINK_TIMEOUT              0x00U
@@ -184,7 +184,7 @@
 #define NXP_NFC_LINK_ACK_CFG_DEFAULT   0x0005U
 
 
-/* Macro to Enable the Interface Character Timeout Configuration 
+/* Macro to Enable the Interface Character Timeout Configuration
  * 0x00 ----> Default Pre-defined Configuration;
  * 0x01 ----> Update the IFC Timeout Default Configuration;
  */
@@ -198,4 +198,3 @@
 
 
 #endif /* NFC_CUSTOM_CONFIG_H */
-
