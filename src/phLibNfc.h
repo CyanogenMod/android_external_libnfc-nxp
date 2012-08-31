@@ -56,8 +56,8 @@ extern const unsigned char *nxp_nfc_full_version;
 
 /**
 *\ingroup grp_lib_nfc
-*   
-*\brief Defines Testmode Init configuration values 
+*
+*\brief Defines Testmode Init configuration values
 */
 
 typedef enum
@@ -70,8 +70,8 @@ typedef enum
 
 /**
 *\ingroup grp_lib_nfc
-*   
-*\brief Defines Secure Element configurable states 
+*
+*\brief Defines Secure Element configurable states
 */
 
 typedef enum
@@ -99,7 +99,7 @@ typedef enum
 *
 *\brief Defines  Ndef Card Offset.
 */
-typedef enum 
+typedef enum
 {
     phLibNfc_Ndef_EBegin = 0x01,      /**<  Start from Beginning position */
     phLibNfc_Ndef_ECurrent            /**<  Start from Current position */
@@ -115,8 +115,8 @@ typedef enum
 *                This mode is also called as card emulation mode.when secure element mode is set
 *                to this mode,external reader can communicate with this SE.
 *
-*\b WiredMode:   Wired mode is used to communicate with the Secure Element internally.  
-*                No RF field is generated. In this mode, PN544 acts as reader and discovers 
+*\b WiredMode:   Wired mode is used to communicate with the Secure Element internally.
+*                No RF field is generated. In this mode, PN544 acts as reader and discovers
 *                SmartMX as MIFARE tag.External reader cannot access any of the SE's in this mode.
 *                This mode is applicable to only SmartMX secure element.
 *
@@ -144,7 +144,7 @@ typedef enum
 typedef enum
 {
     phLibNfc_SE_LowPowerMode_Off= 0x01, /**< Indicates no SE to be selected in low power mode */
-    phLibNfc_SE_LowPowerMode_On = 0x02  /**< Indicates requested SE to be  selected in low power mode */ 
+    phLibNfc_SE_LowPowerMode_On = 0x02  /**< Indicates requested SE to be  selected in low power mode */
 
 } phLibNfc_SE_LowPowerMode_t;
 
@@ -155,8 +155,18 @@ typedef enum
 */
 typedef union phLibNfc_uSeEvtInfo
 {
-   phNfc_sUiccInfo_t UiccEvtInfo;	/**< Indicates UICC event info for Evt_Transaction event */
+   phNfc_sUiccInfo_t UiccEvtInfo; /**< Indicates UICC event info for Evt_Transaction event */
 }phLibNfc_uSeEvtInfo_t;
+
+/**
+* \ingroup grp_lib_nfc
+*
+*\brief Defines card emulation event info .
+*/
+typedef union phLibNfc_uCeEvtInfo
+{
+   phNfc_sUiccInfo_t UiccEvtInfo; /**< Indicates UICC event info for Evt_Transaction event */
+}phLibNfc_uCeEvtInfo_t;
 
 /**
 * \ingroup grp_lib_nfc
@@ -165,14 +175,14 @@ typedef union phLibNfc_uSeEvtInfo
 */
 typedef enum
 {
-    phLibNfc_eSE_EvtStartTransaction=0x00,   /**< Indicates  transaction started on 
+    phLibNfc_eSE_EvtStartTransaction=0x00,   /**< Indicates  transaction started on
                                             secure element */
     phLibNfc_eSE_EvtEndTransaction=0x01,      /**<Indicates  transaction ended on    secure
                                              element*/
-    phLibNfc_eSE_EvtTypeTransaction=0x02,   /**<Indicates external reader trying to access secure element */ 
-                                                                                       
+    phLibNfc_eSE_EvtTypeTransaction=0x02,   /**<Indicates external reader trying to access secure element */
+
     phLibNfc_eSE_EvtConnectivity,           /**<This event notifies the terminal host that it shall
-                                           send a connectivity event from UICC as defined in 
+                                           send a connectivity event from UICC as defined in
                                            ETSI TS 102 622 V7.4.0 */
     phLibNfc_eSE_EvtFieldOn,  // consider using phLibNfc_eSE_EvtConnectivity
     phLibNfc_eSE_EvtFieldOff,
@@ -183,6 +193,25 @@ typedef enum
 
     phLibNfc_eSE_EvtMifareAccess /* Indicates when the SMX Emulation MIFARE is accessed */
 } phLibNfc_eSE_EvtType_t;
+
+/**
+* \ingroup grp_lib_nfc
+*
+*\brief Types of CE transaction events sent to CE notification handler .
+*/
+typedef enum
+{
+    phLibNfc_eCE_A_EvtActivated=0x00,   /**< Indicates  activation on
+                                            emulated card */
+    phLibNfc_eCE_A_EvtDeActivated=0x01,   /**< Indicates  de activation
+                                            emulated card */
+    phLibNfc_eCE_B_EvtActivated=0x02,   /**< Indicates  activation on
+                                            emulated card */
+    phLibNfc_eCE_B_EvtDeActivated=0x03,   /**< Indicates  de activation
+                                            emulated card */
+    phLibNfc_eCE_EvtFieldOn,  // consider using phLibNfc_eSE_EvtConnectivity
+    phLibNfc_eCE_EvtFieldOff
+} phLibNfc_eCE_EvtType_t;
 
 /**
 * \ingroup grp_lib_nfc
@@ -211,7 +240,7 @@ typedef phNfc_sData_t   phLibNfc_AID;
 *
 *\brief Remote Device Info definition  .
 */
-typedef phNfc_sRemoteDevInformation_t   phLibNfc_sRemoteDevInformation_t; 
+typedef phNfc_sRemoteDevInformation_t   phLibNfc_sRemoteDevInformation_t;
 /**
 * \ingroup grp_lib_nfc
 */
@@ -226,13 +255,13 @@ typedef phNfc_sTransceiveInfo_t         phLibNfc_sTransceiveInfo_t;
 /**
 * \ingroup grp_lib_nfc
 *
-*\brief Automatic Device Discovery Definition. 
+*\brief Automatic Device Discovery Definition.
 */
 typedef phNfc_sADD_Cfg_t            phLibNfc_sADD_Cfg_t;
 /**
 *\ingroup grp_lib_nfc
 *
-*\brief Release mode definition. 
+*\brief Release mode definition.
 */
 typedef phNfc_eReleaseType_t        phLibNfc_eReleaseType_t;
 
@@ -276,7 +305,7 @@ typedef phLibNfc_sSupportedTagInfo_t  phLibNfc_sNDEFMappingInfo_t;
 *\brief Defines supported tag types for NDEF formatting feature.
 */
 
-typedef phLibNfc_sSupportedTagInfo_t  phLibNfc_sTagFormattingInfo_t; 
+typedef phLibNfc_sSupportedTagInfo_t  phLibNfc_sTagFormattingInfo_t;
 
 /**
 * \ingroup grp_lib_nfc
@@ -285,7 +314,7 @@ typedef phLibNfc_sSupportedTagInfo_t  phLibNfc_sTagFormattingInfo_t;
 */
 
 typedef struct StackCapabilities
-{ 
+{
     phLibNfc_sDeviceCapabilities_t      psDevCapabilities;
     phLibNfc_sNDEFMappingInfo_t         psMappingCapabilities;
     phLibNfc_sTagFormattingInfo_t       psFormatCapabilities;
@@ -319,7 +348,7 @@ typedef struct phLibNfc_RemoteDev
 typedef  phNfc_sNfcIPCfg_t      phLibNfc_sNfcIPCfg_t;
 
 /**
-*\ingroup grp_lib_nfc 
+*\ingroup grp_lib_nfc
 *\brief  NDEF registration structure definition.
 */
 typedef struct phLibNfc_Ndef_SrchType
@@ -330,8 +359,8 @@ typedef struct phLibNfc_Ndef_SrchType
 } phLibNfc_Ndef_SrchType_t;
 
 /**
-*\ingroup grp_lib_nfc 
-* \brief NDEF information structure definition. \n 
+*\ingroup grp_lib_nfc
+* \brief NDEF information structure definition. \n
 */
 typedef struct phLibNfc_Ndef_Info
 {
@@ -340,20 +369,20 @@ typedef struct phLibNfc_Ndef_Info
     uint8_t                 *pNdefMessage;             /**<  Pointer to raw NDEF Data buffer    */
     uint32_t                NdefRecordCount;           /**<  Number of NDEF records pointed by pNdefRecord */
     phFriNfc_NdefRecord_t   *pNdefRecord;              /**<  Pointer to the NDEF Records contained within the NDEF message */
-    
+
 } phLibNfc_Ndef_Info_t;
 
-/* As per NFC forum specification, the card can be in either of the below mentioned states 
-    INVALID - means card is NOT NFC forum specified tag. NDEF FORMAT can only be performed for 
+/* As per NFC forum specification, the card can be in either of the below mentioned states
+    INVALID - means card is NOT NFC forum specified tag. NDEF FORMAT can only be performed for
                 the factory cards, other cards may or may not be formatted for NDEF FORMAT function.
-    INITIALISED - means card is NFC forum specified tag. But, in this state 
-                the user has to first call NDEF WRITE, because in INITIALISED state, there 
-                wont be any data i.e.,ACTUAL NDEF FILE SIZE is 0. After the first 
+    INITIALISED - means card is NFC forum specified tag. But, in this state
+                the user has to first call NDEF WRITE, because in INITIALISED state, there
+                wont be any data i.e.,ACTUAL NDEF FILE SIZE is 0. After the first
                 NDEF WRITE, NDEF READ and WRITE functions can be called any number of times.
-    READ WRITE - means card is NFC forum specified tag. User can use both 
+    READ WRITE - means card is NFC forum specified tag. User can use both
                 NDEF READ and WRITE functions
-    READ ONLY - means card is NFC forum specified tag. User can only use 
-                NDEF READ. NDEF WRITE function will not work.    
+    READ ONLY - means card is NFC forum specified tag. User can only use
+                NDEF READ. NDEF WRITE function will not work.
     */
 #define PHLIBNFC_NDEF_CARD_INVALID                      0x00U
 #define PHLIBNFC_NDEF_CARD_INITIALISED                  0x01U
@@ -369,7 +398,7 @@ typedef struct phLibNfc_ChkNdef_Info
 {
     uint8_t   NdefCardState;                    /**< Card state information */
     uint32_t  ActualNdefMsgLength;              /**< Indicates Actual length of NDEF Message in Tag */
-    uint32_t  MaxNdefMsgLength;                 /**< Indicates Maximum Ndef Message length that Tag can hold*/ 
+    uint32_t  MaxNdefMsgLength;                 /**< Indicates Maximum Ndef Message length that Tag can hold*/
 } phLibNfc_ChkNdef_Info_t;
 
 /**
@@ -391,13 +420,13 @@ typedef phFriNfc_LlcpTransport_sSocketOptions_t phLibNfc_Llcp_sSocketOptions_t;
 *
 *\brief Response callback for connect request.
 *
-* Callback type used to indicate a Connect request Successful or Failure indication to 
+* Callback type used to indicate a Connect request Successful or Failure indication to
 * LibNfc client.
 *
 * \param[in] pContext           Context passed in the connect request before.
-* \param[in] hRemoteDev         Handle to remote device on which connect was requested. 
+* \param[in] hRemoteDev         Handle to remote device on which connect was requested.
 * \param[in] psRemoteDevInfo    contains updated remote device details.For few tags
-*                               like ISO-14443A  details like historical bytes gets updated 
+*                               like ISO-14443A  details like historical bytes gets updated
 *                               only after connecting to target.Once connect is successful
 *                               \b psRemoteDevInfo gets updated.
 *
@@ -409,10 +438,10 @@ typedef phFriNfc_LlcpTransport_sSocketOptions_t phLibNfc_Llcp_sSocketOptions_t;
 *
 */
 
-typedef void (*pphLibNfc_ConnectCallback_t) (void*		pContext,
-                                phLibNfc_Handle			hRemoteDev,
+typedef void (*pphLibNfc_ConnectCallback_t) (void*    pContext,
+                                phLibNfc_Handle     hRemoteDev,
                                 phLibNfc_sRemoteDevInformation_t* psRemoteDevInfo,
-                                NFCSTATUS				Status
+                                NFCSTATUS       Status
                                 );
 
 /**
@@ -420,11 +449,11 @@ typedef void (*pphLibNfc_ConnectCallback_t) (void*		pContext,
 *
 *\brief Response callback for disconnect request.
 *
-* Callback type used to provide a disconnect Success or Failure indication to 
+* Callback type used to provide a disconnect Success or Failure indication to
 * LibNfc client.
 *
 * \param[in] pContext       Context passed in the disconnect request before.
-* \param[in] hRemoteDev     Handle to remote device on which disconnect is requested.   
+* \param[in] hRemoteDev     Handle to remote device on which disconnect is requested.
 * \param[in] status         Status of the response  callback.
 *
 *                  \param NFCSTATUS_SUCCESS          Disconnect operation successful.
@@ -440,7 +469,7 @@ typedef void (*pphLibNfc_DisconnectCallback_t)(void*                pContext,
 *
 *\brief Response callback for IOCTL request.
 *
-* Callback type to inform success or failure of the Ioctl request 
+* Callback type to inform success or failure of the Ioctl request
 * made by LibNfc client. It may optionally contain response data
 * depending on the Ioctl command type issued.
 
@@ -452,14 +481,14 @@ typedef void (*pphLibNfc_DisconnectCallback_t)(void*                pContext,
 *                  \param NFCSTATUS_TARGET_LOST Ioctl operation failed because target is lost.
 *                  \param NFCSTATUS_SHUTDOWN    Ioctl operation failed because Shutdown in progress.
 *
-*\param[in,out]     pOutParam       contains Ioctl command specific response buffer and size 
-*                                   of the buffer.This buffer address will be same as 
+*\param[in,out]     pOutParam       contains Ioctl command specific response buffer and size
+*                                   of the buffer.This buffer address will be same as
 *                                   pOutParam sent in \ref phLibNfc_Mgt_IoCtl.
 *
 */
 
 
-typedef void (*pphLibNfc_IoctlCallback_t)   (void*          pContext,                                        
+typedef void (*pphLibNfc_IoctlCallback_t)   (void*          pContext,
                                              phNfc_sData_t* pOutParam,
                                              NFCSTATUS      Status
                                              );
@@ -471,13 +500,13 @@ typedef void (*pphLibNfc_IoctlCallback_t)   (void*          pContext,
 *
 *\brief Response callback for Transceive request.
 *
-* This callback type is used to provide received data and it's size to the 
-* LibNfc client in \ref phNfc_sData_t format ,when  LibNfc client has performed 
-* a Transceive operation on a tag or when the device acts as an Initiator during a 
+* This callback type is used to provide received data and it's size to the
+* LibNfc client in \ref phNfc_sData_t format ,when  LibNfc client has performed
+* a Transceive operation on a tag or when the device acts as an Initiator during a
 * P2P transactions.
 *
 * \param[in] pContext       LibNfc client context   passed in the corresponding request before.
-* \param[in] hRemoteDev     Handle to remote device on transceive is performed.     
+* \param[in] hRemoteDev     Handle to remote device on transceive is performed.
 * \param[in] pResBuffer     Response buffer of type \ref phNfc_sData_t.
 * \param[in] status         Status of the response  callback.
 *
@@ -490,7 +519,7 @@ typedef void (*pphLibNfc_IoctlCallback_t)   (void*          pContext,
 typedef void (*pphLibNfc_TransceiveCallback_t)( void*               pContext,
                                                 phLibNfc_Handle     hRemoteDev,
                                                 phNfc_sData_t*      pResBuffer,
-                                                NFCSTATUS			Status
+                                                NFCSTATUS     Status
                                               );
 
 /**
@@ -500,7 +529,7 @@ typedef void (*pphLibNfc_TransceiveCallback_t)( void*               pContext,
 *
 * Generic callback definition used as callback type in few APIs below.
 *
-* \note : Status and error codes for this type of callback are documented in respective APIs 
+* \note : Status and error codes for this type of callback are documented in respective APIs
 * wherever it is used.
 *
 * \param[in] pContext       LibNfc client context   passed in the corresponding request
@@ -515,7 +544,7 @@ typedef void(*pphLibNfc_RspCb_t) (void* pContext,NFCSTATUS  Status);
 *
 * This call back is used by check ndef api.
 *
-* \note : Status and error codes for this type of callback are documented in API 
+* \note : Status and error codes for this type of callback are documented in API
 *
 * \param[in] pContext       LibNfc client context   passed in the corresponding request
 *                           before.
@@ -544,8 +573,8 @@ typedef void(*pphLibNfc_ChkNdefRspCb_t)(void*           pContext,
 *Subsequent operations on discovered target shall be performed using  target specific handle
 *\b hTargetDev.
 *
-* \param[in] pContext       Client context passed in the corresponding 
-*                           request before.The context is handled by client 
+* \param[in] pContext       Client context passed in the corresponding
+*                           request before.The context is handled by client
 *                           only.
 *
 * \param[in] psRemoteDevList Remote Device list contains discovered target details.
@@ -553,8 +582,8 @@ typedef void(*pphLibNfc_ChkNdefRspCb_t)(void*           pContext,
 *                            List size depends on no of remote devices discovered.
 *
 * \param[in] uNofRemoteDev   Indicates no of remote devices discovered .
-*                            In case more than one target discovered,\b psRemoteDevList contains 
-*                            multiple target details.   
+*                            In case more than one target discovered,\b psRemoteDevList contains
+*                            multiple target details.
 *
 * \param[in] Status Status  of the response callback.
 *
@@ -562,11 +591,11 @@ typedef void(*pphLibNfc_ChkNdefRspCb_t)(void*           pContext,
 *                   \param NFCSTATUS_MULTIPLE_TARGETS   multiple targets found.
 *                   \param NFCSTATUS_MULTI_PROTOCOLS    Target found supports multiple protocols.
 *                   \param NFCSTATUS_SHUTDOWN           Registration  failed because shutdown in progress.
-*                   \param NFCSTATUS_DESELECTED         initiator issued disconnect or intiator 
+*                   \param NFCSTATUS_DESELECTED         initiator issued disconnect or intiator
 *                                                       physically removed from the RF field.
 *
-*\note: multiple tag detection is possible only within same technology but not across 
-*       different technologies. 
+*\note: multiple tag detection is possible only within same technology but not across
+*       different technologies.
 */
 typedef void (*phLibNfc_NtfRegister_RspCb_t)(
     void*                           pContext,
@@ -574,13 +603,13 @@ typedef void (*phLibNfc_NtfRegister_RspCb_t)(
     uint8_t                         uNofRemoteDev,
     NFCSTATUS                       Status
     );
-  
+
 /**
 * \ingroup grp_lib_nfc
 * \brief Response Callback for secure element mode settings.
 *
 * This callback type is used to provide information on requested secure element is
-* activated or not to LibNfcClient. 
+* activated or not to LibNfcClient.
 *
 * \param[in] pContext LibNfc client context     passed in the activation request.
 *
@@ -595,10 +624,10 @@ typedef void (*phLibNfc_NtfRegister_RspCb_t)(
 typedef void(*pphLibNfc_SE_SetModeRspCb_t)(
                                             void*            pContext,
                                             phLibNfc_Handle  hSecureElement,
-                                            NFCSTATUS        Status                                          
+                                            NFCSTATUS        Status
                                            );
 /**
-* \ingroup grp_lib_nfc 
+* \ingroup grp_lib_nfc
 * \brief Notification callback for \ref phLibNfc_SE_NtfRegister().
 *
 * A function of this type is called when external reader tries to access SE.
@@ -625,16 +654,44 @@ typedef void (*pphLibNfc_SE_NotificationCb_t) (void*                        pCon
                                                NFCSTATUS                    Status
                                                );
 
+/**
+* \ingroup grp_lib_nfc
+* \brief Notification callback for \ref phLibNfc_CE_NtfRegister().
+*
+* A function of this type is called when external reader tries to access SE.
+*
+*\param[in] pContext        LibNfc client context passed in the SE notification register request.
+*                           The context is Handled by client only.
+* \param[in] EventType          Event type of secure element transaction
+*
+* \param[in] handle to connected device if connected          Event type of secure element transaction
+*
+*\param[in] pAppID              Application identifier to be accessed on SE .
+*                               Sent when available from SE otherwise empty.
+*
+*\param[in] Status      Indicates API status.
+*       \param NFCSTATUS_SUCCESS         Notification handler registered sucessfully.
+*       \param NFCSTATUS_SHUTDOWN   Shutdown in progress.
+*       \param NFCSTATUS_FAILED     set mode operation failed.
+*
+*
+*/
+typedef void (*pphLibNfc_CE_NotificationCb_t) (void*                        pContext,
+                                               phLibNfc_eCE_EvtType_t       EventType,
+                                               uint32_t                     handle,
+                                               NFCSTATUS                    Status
+                                               );
+
 
 /**
 *\ingroup grp_lib_nfc
 *\brief Receive callback definition.
 *
-* This callback type is used to provide received data and it's size to the 
-* LibNfc client in \ref phNfc_sData_t format ,when  LibNfc client has performed 
-* when the device acts as a Target during P2P communication 
+* This callback type is used to provide received data and it's size to the
+* LibNfc client in \ref phNfc_sData_t format ,when  LibNfc client has performed
+* when the device acts as a Target during P2P communication
 *
-* \param[in] pContext                   LibNfc client context   passed in the corresponding 
+* \param[in] pContext                   LibNfc client context   passed in the corresponding
 *                                       request before.
 * \param[in] pRecvBufferInfo            Response buffer of type \ref phNfc_sData_t.
 * \param[in] status                     Status of the response  callback.
@@ -647,7 +704,7 @@ typedef void (*pphLibNfc_SE_NotificationCb_t) (void*                        pCon
 *                                       closed and send and receive requests not allowed any more
 *                                       unless new session is started.
 */
-typedef void (*pphLibNfc_Receive_RspCb_t)(void*              pContext,                                    
+typedef void (*pphLibNfc_Receive_RspCb_t)(void*              pContext,
                                           phNfc_sData_t*     pRecvBufferInfo,
                                           NFCSTATUS          status
                                           );
@@ -660,7 +717,7 @@ typedef void (*pphLibNfc_Receive_RspCb_t)(void*              pContext,
 *
 * \b Note :Once this type callback is notified,discovery wheel is stopped.
 *In order to restart discovery process again it is important to disconnect
-*from current tag.LibNfc client shall disconnect explicitly using 
+*from current tag.LibNfc client shall disconnect explicitly using
 *\ref phLibNfc_RemoteDev_Disconnect() interface.
 *
 *\param[in] pContext                    Pointer to context previously provided by the user
@@ -676,11 +733,11 @@ typedef void (*pphLibNfc_Receive_RspCb_t)(void*              pContext,
 
 
 */
-typedef void (*pphLibNfc_Ndef_Search_RspCb_t)   ( void*                  pContext, 
+typedef void (*pphLibNfc_Ndef_Search_RspCb_t)   ( void*                  pContext,
                                                 phLibNfc_Ndef_Info_t*    psNdefInfo,
                                                 phLibNfc_Handle          hRemoteDevice,
                                                 NFCSTATUS                Status
-                                                );   
+                                                );
 
 
 /**
@@ -796,7 +853,7 @@ typedef void (*pphLibNfc_LlcpSocketSendCb_t) ( void*        pContext,
  * sends the HANDLE to the caller.
  *
  * \param[in]       psConfig   Driver configuration details as provided
- *                             by the upper layer. 
+ *                             by the upper layer.
  * \param[in,out]   ppDriverHandle     pointer to which valid Handle to driver
  *                             interface is assigned.
  *
@@ -824,7 +881,7 @@ NFCSTATUS phLibNfc_Mgt_ConfigureDriver (pphLibNfc_sConfig_t     psConfig,
  *
  * \brief Release configuration for the given driver Interface.
  *
- * \copydoc page_reg Release all that has been 
+ * \copydoc page_reg Release all that has been
  *      initialised in \b phLibNfc_Mgt_ConfigureDriver function (Synchronous function).
  *
  * \param[in] pDriverHandle            Link information of the hardware
@@ -838,13 +895,13 @@ NFCSTATUS phLibNfc_Mgt_ConfigureDriver (pphLibNfc_sConfig_t     psConfig,
  *LibNfcClient<<LibNfc [label="NFCSTATUS_SUCCESS"];
  *LibNfcClient=>LibNfc [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
  *LibNfcClient<<LibNfc [label="NFCSTATUS_PENDING"];
- *LibNfcClient<-LibNfc [label="pInitCb"]; 
+ *LibNfcClient<-LibNfc [label="pInitCb"];
  *--- [label="Perform feature operations "];
  *LibNfcClient=>LibNfc [label="phLibNfc_Mgt_DeInitialize()",URL="\ref   phLibNfc_Mgt_DeInitialize"];
  *LibNfcClient<<LibNfc [label="NFCSTATUS_PENDING"];
- *LibNfcClient<-LibNfc [label="pDeInitCb"]; 
+ *LibNfcClient<-LibNfc [label="pDeInitCb"];
  *LibNfcClient=>LibNfc [label="phLibNfc_Mgt_UnConfigureDriver()",URL="\ref phLibNfc_Mgt_UnConfigureDriver"];
- *LibNfcClient<<LibNfc [label="NFCSTATUS_SUCCESS"]; 
+ *LibNfcClient<<LibNfc [label="NFCSTATUS_SUCCESS"];
  *\endmsc
  */
 NFCSTATUS phLibNfc_Mgt_UnConfigureDriver (void *                 pDriverHandle
@@ -912,7 +969,7 @@ int phLibNfc_GetMifareRawTimeout();
 *
 * \retval NFCSTATUS_ALREADY_INITIALISED     Stack is already initialized.
 * \retval NFCSTATUS_PENDING                 Init sequence   has been successfully
-*                                           started and result will be  conveyed via 
+*                                           started and result will be  conveyed via
 *                                           callback notification.
 * \retval NFCSTATUS_INVALID_PARAMETER       The parameter could not be  properly
 *                                           interpreted.
@@ -953,10 +1010,10 @@ NFCSTATUS phLibNfc_Mgt_Initialize (void *                 pDriverHandle,
 *
 * \retval NFCSTATUS_SUCCESS     Device stack is already De-Initialized.
 * \retval NFCSTATUS_PENDING     De-Initialization sequence has been successfully
-*                               started and result is conveyed via callback 
+*                               started and result is conveyed via callback
 *                               notification.
 *
-* \retval NFCSTATUS_INVALID_PARAMETER   The parameter could not be  properly 
+* \retval NFCSTATUS_INVALID_PARAMETER   The parameter could not be  properly
 *                                       interpreted.
 * \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
 * \retval  NFCSTATUS_BUSY               Previous request in progress can not accept new request.
@@ -968,11 +1025,11 @@ NFCSTATUS phLibNfc_Mgt_Initialize (void *                 pDriverHandle,
 *LibNfcClient,LibNfc;
 *LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
 *LibNfcClient<<LibNfc   [label="NFCSTATUS_PENDING"];
-*LibNfcClient<-LibNfc   [label="pInitCb"]; 
+*LibNfcClient<-LibNfc   [label="pInitCb"];
 *--- [label="Perform feature operations "];
 *LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_DeInitialize()",URL="\ref   phLibNfc_Mgt_DeInitialize"];
 *LibNfcClient<<LibNfc   [label="NFCSTATUS_PENDING"];
-*LibNfcClient<-LibNfc   [label="pDeInitCb"]; 
+*LibNfcClient<-LibNfc   [label="pDeInitCb"];
 *\endmsc
 */
 NFCSTATUS phLibNfc_Mgt_DeInitialize(void *                      pDriverHandle,
@@ -985,16 +1042,16 @@ NFCSTATUS phLibNfc_Mgt_DeInitialize(void *                      pDriverHandle,
 * \brief Get list of available Secure Elements.
 *
 * This  function retrieves list of secure elements locally connected.
-* during LibNfc initialization these SEs enumerated from lower stack and maintained 
+* during LibNfc initialization these SEs enumerated from lower stack and maintained
 * in LibNfc library.Once libNfc client queries using this interface,
-* same details exposed to LibNfc client. 
+* same details exposed to LibNfc client.
 * LibNfc client  shall pass empty list of size \ref PHLIBNFC_MAXNO_OF_SE .
-* Once SE list is available, libNfc client can perform operation on specific SE 
+* Once SE list is available, libNfc client can perform operation on specific SE
 * using SE handle.
 * The handle given in the \ref phLibNfc_SE_List_t structure stays valid until
-* shutdown is called.  
+* shutdown is called.
 *
-*\note In case no SE's found, API still returns \ref NFCSTATUS_SUCCESS with \b uSE_count 
+*\note In case no SE's found, API still returns \ref NFCSTATUS_SUCCESS with \b uSE_count
 set to zero.Value zero indicates none of the SE's connected to PN544 hardware.
 
 * \param[in,out] pSE_List       contains list of SEs with SE details in \ref phLibNfc_SE_List_t format.
@@ -1013,7 +1070,7 @@ set to zero.Value zero indicates none of the SE's connected to PN544 hardware.
 *LibNfcClient,LibNfc;
 *LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
 *LibNfcClient<<LibNfc   [label="NFCSTATUS_PENDING"];
-*LibNfcClient<-LibNfc   [label="pInitCb"]; 
+*LibNfcClient<-LibNfc   [label="pInitCb"];
 *--- [label="Now SE list can be retrieved"];
 *\endmsc
 */
@@ -1043,17 +1100,17 @@ NFCSTATUS phLibNfc_SE_GetSecureElementList(phLibNfc_SE_List_t*  pSE_List,
 * 2.When SmartMX SE configured in Wired Mode ,LibNfc client shall restart discovery process.
 *   SmartMX gets detected as MIFARE tag.
 * 3.To exit wired mode ,LibNfc client has to disconnect with release type as "NFC_SMARTMX_RELEASE".
-*    
+*
 *
 *\b c)If mode is \ref phLibNfc_SE_ActModeOff
-*This means SE is off mode .It can not be accessed any more in wired or virtual mode. 
+*This means SE is off mode .It can not be accessed any more in wired or virtual mode.
 *internal reader any more.communicate with internal reader and only
-*PN544 can communicate in reader mode and external reader can not 
+*PN544 can communicate in reader mode and external reader can not
 *communicate with it.This mode is applicable  both SE types ( UICC and SmartMX)
 *
 * \param[in]  hSE_Handle            Secure  Element Handle .
 * \param[in]  eActivation_mode      Indicates SE mode to be configured.
-*                                    
+*
 *
 *
 * \param[in]  pphLibNfc_SE_setModeRspCb_t   pointer to response callback.
@@ -1068,7 +1125,7 @@ NFCSTATUS phLibNfc_SE_GetSecureElementList(phLibNfc_SE_List_t*  pSE_List,
 * \retval   NFCSTATUS_INVALID_HANDLE        Invalid Handle.
 * \retval   NFCSTATUS_INVALID_PARAMETER     One or more of the supplied parameters
 *                                           could not be properly interpreted.
-* \retval   NFCSTATUS_REJECTED              Invalid request.(Ex: If wired mode settings called using 
+* \retval   NFCSTATUS_REJECTED              Invalid request.(Ex: If wired mode settings called using
 *                                           UICC SE handle ,this error code seen).
 * \retval   NFCSTATUS_FAILED                Request failed.
 *
@@ -1084,9 +1141,9 @@ NFCSTATUS phLibNfc_SE_GetSecureElementList(phLibNfc_SE_List_t*  pSE_List,
 *LibNfcClient=>LibNfc   [label="phLibNfc_SE_SetMode(hSE_Handle,)",URL="\ref phLibNfc_SE_SetMode"];
 *LibNfcClient<<LibNfc   [label="NFCSTATUS_PENDING"];
 *LibNfcClient<-LibNfc   [label="pSE_SetMode_Rsp_cb"];
-*\endmsc 
+*\endmsc
 */
-NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle, 
+NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle,
                                phLibNfc_eSE_ActivationMode  eActivation_mode,
                                pphLibNfc_SE_SetModeRspCb_t  pSE_SetMode_Rsp_cb,
                                void *                       pContext
@@ -1115,7 +1172,7 @@ NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle,
 *LibNfcClient,LibNfc;
 *LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
 *LibNfcClient<<LibNfc   [label="NFCSTATUS_PENDING"];
-*LibNfcClient<-LibNfc   [label="pInitCb"]; 
+*LibNfcClient<-LibNfc   [label="pInitCb"];
 *--- [label="Perform feature operations "];
 *
 *LibNfcClient=>LibNfc   [label="phLibNfc_SE_NtfRegister()",URL="\ref    phLibNfc_SE_NtfRegister"];
@@ -1123,17 +1180,58 @@ LibNfcClient<<LibNfc    [label="NFCSTATUS_SUCCESS"];
 *--- [label="Registration sucessfull"];
 *
 *--- [label="In case external reader performs transactions,callback is notified as shown below"];
-*LibNfcClient<-LibNfc   [label="pSE_NotificationCb"]; 
+*LibNfcClient<-LibNfc   [label="pSE_NotificationCb"];
 *\endmsc
 */
 
 NFCSTATUS phLibNfc_SE_NtfRegister   (pphLibNfc_SE_NotificationCb_t  pSE_NotificationCb,
                                      void   *                       pContext
                                      );
+
+/**
+* \ingroup grp_lib_nfc
+* \brief Registers notification handler to handle secure element specific events.
+*
+*  This function registers handler to report SE specific transaction events.
+*  Possible different types of events are as defined in \ref phLibNfc_eSE_EvtType_t.
+
+* \param[in]  pSE_NotificationCb    pointer to notification callback.
+* \param[in]  pContext              Client context which will   be included in
+*                                   callback when the request is completed.
+*
+*\retval  NFCSTATUS_SUCCESS                 Registration Sucessful.
+*\retval  NFSCSTATUS_SHUTDOWN               Shutdown in progress.
+*\retval  NFCSTATUS_NOT_INITIALISED         Indicates stack is not yet initialized.
+*\retval  NFCSTATUS_INVALID_PARAMETER       One or more of the supplied parameters
+*                                           could not be properly interpreted.
+*\retval  NFCSTATUS_FAILED                  Request failed.
+*
+*
+*\msc
+*LibNfcClient,LibNfc;
+*LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
+*LibNfcClient<<LibNfc   [label="NFCSTATUS_PENDING"];
+*LibNfcClient<-LibNfc   [label="pInitCb"];
+*--- [label="Perform feature operations "];
+*
+*LibNfcClient=>LibNfc   [label="phLibNfc_SE_NtfRegister()",URL="\ref    phLibNfc_SE_NtfRegister"];
+LibNfcClient<<LibNfc    [label="NFCSTATUS_SUCCESS"];
+*--- [label="Registration sucessfull"];
+*
+*--- [label="In case external reader performs transactions,callback is notified as shown below"];
+*LibNfcClient<-LibNfc   [label="pSE_NotificationCb"];
+*\endmsc
+*/
+
+NFCSTATUS phLibNfc_CE_NtfRegister   (pphLibNfc_CE_NotificationCb_t  pCE_NotificationCb,
+                                     void   *                       pContext
+                                     );
+
+
 /**
 * \ingroup grp_lib_nfc
 *\brief This function unregister the registered listener for SE event.
-* This function unregisters the listener which  has been registered with \ref 
+* This function unregisters the listener which  has been registered with \ref
 * phLibNfc_SE_NtfRegister.
 *
 *\retval  NFCSTATUS_SUCCESS                 Unregistration successful.
@@ -1144,7 +1242,7 @@ NFCSTATUS phLibNfc_SE_NtfRegister   (pphLibNfc_SE_NotificationCb_t  pSE_Notifica
 *LibNfcClient,LibNfc;
 *LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
 *LibNfcClient<<LibNfc   [label="NFCSTATUS_PENDING"];
-*LibNfcClient<-LibNfc   [label="pInitCb"]; 
+*LibNfcClient<-LibNfc   [label="pInitCb"];
 *--- [label="Perform feature operations "];
 *LibNfcClient=>LibNfc   [label="phLibNfc_SE_NtfRegister()",URL="\ref    phLibNfc_SE_NtfRegister"];
 LibNfcClient<<LibNfc    [label="NFCSTATUS_SUCCESS"];
@@ -1152,7 +1250,7 @@ LibNfcClient<<LibNfc    [label="NFCSTATUS_SUCCESS"];
 *
 *--- [label="In case external reader performs transactions,callback is notified as shown below"];
 *
-*LibNfcClient<-LibNfc   [label="pSE_NotificationCb"]; 
+*LibNfcClient<-LibNfc   [label="pSE_NotificationCb"];
 *--- [label="Unregister SE notification handler in case required "];
 *LibNfcClient=>LibNfc   [label="phLibNfc_SE_NtfUnregister()",URL="\ref  phLibNfc_SE_NtfUnregister"];
 *LibNfcClient<<LibNfc   [label="NFCSTATUS_SUCCESS"];
@@ -1162,42 +1260,73 @@ LibNfcClient<<LibNfc    [label="NFCSTATUS_SUCCESS"];
 NFCSTATUS phLibNfc_SE_NtfUnregister(void);
 
 /**
-*\ingroup   grp_lib_nfc
-* \brief IOCTL interface. 
+* \ingroup grp_lib_nfc
+*\brief This function unregister the registered listener for CE event.
+* This function unregisters the listener which  has been registered with \ref
+* phLibNfc_SE_NtfRegister.
 *
-* The I/O Control function allows   the caller to configure specific 
-* functionality provided by the lower layer.Each feature is accessible via a    
+*\retval  NFCSTATUS_SUCCESS                 Unregistration successful.
+*\retval  NFSCSTATUS_SHUTDOWN               Shutdown in progress.
+*\retval  NFCSTATUS_NOT_INITIALISED         Indicates stack is not yet initialized.
+*\retval  NFCSTATUS_FAILED                  Request failed.
+*\msc
+*LibNfcClient,LibNfc;
+*LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
+*LibNfcClient<<LibNfc   [label="NFCSTATUS_PENDING"];
+*LibNfcClient<-LibNfc   [label="pInitCb"];
+*--- [label="Perform feature operations "];
+*LibNfcClient=>LibNfc   [label="phLibNfc_SE_NtfRegister()",URL="\ref    phLibNfc_CE_NtfRegister"];
+LibNfcClient<<LibNfc    [label="NFCSTATUS_SUCCESS"];
+*--- [label="Registration sucessfull"];
+*
+*--- [label="In case external reader performs transactions,callback is notified as shown below"];
+*
+*LibNfcClient<-LibNfc   [label="pCE_NotificationCb"];
+*--- [label="Unregister CE notification handler in case required "];
+*LibNfcClient=>LibNfc   [label="phLibNfc_SE_NtfUnregister()",URL="\ref  phLibNfc_CE_NtfUnregister"];
+*LibNfcClient<<LibNfc   [label="NFCSTATUS_SUCCESS"];
+
+*\endmsc
+*/
+NFCSTATUS phLibNfc_CE_NtfUnregister(void);
+
+/**
+*\ingroup   grp_lib_nfc
+* \brief IOCTL interface.
+*
+* The I/O Control function allows   the caller to configure specific
+* functionality provided by the lower layer.Each feature is accessible via a
 * specific IOCTL Code.
 *
 * \param[in]        pDriverHandle      Interface handle.This parameter is valid only for firmware download feature.
 *                                   for other IOCTL features this parameter is  not relevent.
 *
-* \param[in]        IoctlCode       Control code for the operation. 
-*                                   This value identifies the specific 
+* \param[in]        IoctlCode       Control code for the operation.
+*                                   This value identifies the specific
 *                                   operation to be performed.For more details on supported
 *                                   IOCTL codes refer to \ref grp_lib_ioctl.
-*\param[in,out]     pInParam        Pointer to any input data structure 
-*                                   containing data which is interpreted 
-*                                   based on IoCtl code and the length of 
+*\param[in,out]     pInParam        Pointer to any input data structure
+*                                   containing data which is interpreted
+*                                   based on IoCtl code and the length of
 *                                   the data.
 *
-*\param[in,out]     pOutParam       Pointer to output buffer details to hold 
+*\param[in,out]     pOutParam       Pointer to output buffer details to hold
 *                                   Ioctl specific response buffer and size of
 *                                   the buffer.This buffer will be updated and
 *                                   sent back as part of of callback details.
-*                                   
-*\param[in]         pIoCtl_Rsp_cb   Response callback registered by the caller. 
-*                                                                   
+*
+*\param[in]         pIoCtl_Rsp_cb   Response callback registered by the caller.
+*
 * \param[in]    pContext            Client context which will   be included in
 *                                   callback when the request is completed.
 *
 *
 *\retval    NFCSTATUS_PENDING           Update in pending state. RspCB will be
-*                                       called later. 
+*                                       called later.
 *\retval    NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters
-*                                       could not be properly interpreted. 
+*                                       could not be properly interpreted.
 *
-\retval     NFCSTATUS_BUFFER_TOO_SMALL  The buffer supplied by the caller is to 
+\retval     NFCSTATUS_BUFFER_TOO_SMALL  The buffer supplied by the caller is to
 *\retval    NFSCSTATUS_SHUTDOWN         Shutdown in progress.
 *\retval    NFCSTATUS_NOT_INITIALISED   Indicates stack is not yet initialized.
 *\retval    NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters
@@ -1217,26 +1346,26 @@ NFCSTATUS phLibNfc_SE_NtfUnregister(void);
 */
 NFCSTATUS phLibNfc_Mgt_IoCtl    (void*                      pDriverHandle,
                                  uint16_t                   IoctlCode,
-                                 phNfc_sData_t*             pInParam, 
+                                 phNfc_sData_t*             pInParam,
                                  phNfc_sData_t*             pOutParam,
                                  pphLibNfc_IoctlCallback_t  pIoCtl_Rsp_cb,
-                                 void*                      pContext    
+                                 void*                      pContext
                                  );
 
 /**
 * \ingroup  grp_lib_nfc
 * \brief    This interface registers notification handler for target discovery.
 *
-* This  function allows  libNfc client to register for notifications based technology 
+* This  function allows  libNfc client to register for notifications based technology
 * type it is interested to discover. In case application is interested in multiples technology
 * discovery,it can enable respective bits in \b pRegistryInfo . when Registered type target
 * is discovered in RF field ,LibNfc notifies registered notification callback.
 *
-* \note In case this API is called multiple times ,most recent request registry details will be used 
+* \note In case this API is called multiple times ,most recent request registry details will be used
 *for registration.
-* 
+*
 *\param[in] pRegistryInfo           structure contains bitwise registry information.
-*                                   Specific technology type discovery can be registered if 
+*                                   Specific technology type discovery can be registered if
 *                                   corresponding bit is enabled.In case bit is disabled
 *                                   it indicates specific technology type unregistered.
 *
@@ -1263,7 +1392,7 @@ NFCSTATUS phLibNfc_Mgt_IoCtl    (void*                      pDriverHandle,
 *\endmsc
 */
 
-NFCSTATUS   phLibNfc_RemoteDev_NtfRegister( 
+NFCSTATUS   phLibNfc_RemoteDev_NtfRegister(
                                         phLibNfc_Registry_Info_t*       pRegistryInfo,
                                         phLibNfc_NtfRegister_RspCb_t    pNotificationHandler,
                                         void*                           pContext
@@ -1274,17 +1403,17 @@ NFCSTATUS   phLibNfc_RemoteDev_NtfRegister(
 * \ingroup  grp_lib_nfc
 * \brief Configure Discovery Modes.
 *
-*This function is used to configure ,start and stop the discovery wheel. 
-*Configuration includes 
+*This function is used to configure ,start and stop the discovery wheel.
+*Configuration includes
 *<br><br>a)Enabling/disabling of Reader phases for A,B and F technologies.
 *<br>b)Configuring NFC-IP1 Initiator Speed and duration of the Emulation phase .
 *
 *Discovery wheel configuration based on discovery mode selected is as below.
-*<br><br>1.If discovery Mode is set as \ref NFC_DISCOVERY_CONFIG then  previous configurations 
+*<br><br>1.If discovery Mode is set as \ref NFC_DISCOVERY_CONFIG then  previous configurations
 * over written by new configurations passed in \ref phLibNfc_sADD_Cfg_t and Discovery wheel
 *restarts with new configurations.
-*<br><br>2.If discovery Mode is set as \ref NFC_DISCOVERY_START or \ref NFC_DISCOVERY_STOP then 
-* discovery parameters passed in \ref phLibNfc_sADD_Cfg_t will not be considered and previous 
+*<br><br>2.If discovery Mode is set as \ref NFC_DISCOVERY_START or \ref NFC_DISCOVERY_STOP then
+* discovery parameters passed in \ref phLibNfc_sADD_Cfg_t will not be considered and previous
 *configurations still holds good.
 *<br><br>3.If discovery Mode is set as \ref NFC_DISCOVERY_RESUME discovery mode starts the discovery
 *wheel from where it is stopped previously.
@@ -1292,28 +1421,28 @@ NFCSTATUS   phLibNfc_RemoteDev_NtfRegister(
 *\b Note: Config types \b NFC_DISCOVERY_START, \b NFC_DISCOVERY_STOP and \b NFC_DISCOVERY_RESUME
 * are not supported currently. It is for future use.
 *
-* \param[in]    DiscoveryMode           Discovery Mode allows to choose between: 
+* \param[in]    DiscoveryMode           Discovery Mode allows to choose between:
 *                                       discovery configuration and start, stop
 *                                       discovery and start discovery (with last
-*                                       set configuration).For  mode details refer  to 
-\ref phNfc_eDiscoveryConfigMode_t. 
-* \param[in]    sADDSetup               Includes Enable/Disable discovery for 
+*                                       set configuration).For  mode details refer  to
+\ref phNfc_eDiscoveryConfigMode_t.
+* \param[in]    sADDSetup               Includes Enable/Disable discovery for
 *                                       each protocol   A,B and F.
 *                                       Details refer to \ref phNfc_sADD_Cfg_t.
-* \param[in]    pConfigDiscovery_RspCb  is called once the discovery wheel 
-*                                       configuration is    complete. 
+* \param[in]    pConfigDiscovery_RspCb  is called once the discovery wheel
+*                                       configuration is    complete.
 * \param[in]    pContext                Client context which will   be included in
 *                                       callback when the request is completed.
-*             
 *
-*\retval NFCSTATUS_PENDING                  Discovery request is in progress and result 
+*
+*\retval NFCSTATUS_PENDING                  Discovery request is in progress and result
 *                                           will be notified via callback later.
-*\retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters 
+*\retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
 *                                           could not be properly interpreted.
 *\retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not initialized.
 *\retval NFCSTATUS_INSUFFICIENT_RESOURCES   Insufficient resource.(Ex: insufficient memory)
 *\retval NFCSTATUS_BUSY                     already discovery in progress
-*                                           or it is already discovered Target  and 
+*                                           or it is already discovered Target  and
 *                                           connected.
 *\retval NFSCSTATUS_SHUTDOWN                Shutdown in progress.
 *\retval NFCSTATUS_FAILED                   Request failed.
@@ -1323,7 +1452,7 @@ NFCSTATUS   phLibNfc_RemoteDev_NtfRegister(
 *               to call \ref phLibNfc_RemoteDev_Connect before any transaction can be performed
 *               with the discovered target. Even if the LibNfc client is not
 *               interested in using any of the discovered targets \ref phLibNfc_RemoteDev_Connect
-*               and \ref phLibNfc_RemoteDev_Disconnect should be called to restart the Discovery 
+*               and \ref phLibNfc_RemoteDev_Disconnect should be called to restart the Discovery
 *               wheel.
 *   \sa \ref phLibNfc_RemoteDev_Connect, phLibNfc_RemoteDev_Disconnect.
 
@@ -1331,7 +1460,7 @@ NFCSTATUS   phLibNfc_RemoteDev_NtfRegister(
 *LibNfcClient,LibNfc;
 *LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_Initialize()",URL="\ref phLibNfc_Mgt_Initialize"];
 *LibNfcClient<-LibNfc   [label="pInitCb()",URL="\ref pphLibNfc_RspCb_t()"];
-*LibNfcClient=>LibNfc   [label="phLibNfc_RemoteDev_NtfRegister()",URL="\ref 
+*LibNfcClient=>LibNfc   [label="phLibNfc_RemoteDev_NtfRegister()",URL="\ref
 phLibNfc_RemoteDev_NtfRegister"];
 *LibNfcClient<<LibNfc   [label="NFCSTATUS_SUCCESS"];
 *LibNfcClient=>LibNfc   [label="phLibNfc_Mgt_ConfigureDiscovery()",URL="\ref phLibNfc_Mgt_ConfigureDiscovery"];
@@ -1350,7 +1479,7 @@ phLibNfc_RemoteDev_NtfRegister"];
 *               \param NFCSTATUS_FAILED         Request failed.
 */
 
-NFCSTATUS phLibNfc_Mgt_ConfigureDiscovery (phLibNfc_eDiscoveryConfigMode_t  DiscoveryMode,   
+NFCSTATUS phLibNfc_Mgt_ConfigureDiscovery (phLibNfc_eDiscoveryConfigMode_t  DiscoveryMode,
                                            phLibNfc_sADD_Cfg_t              sADDSetup,
                                            pphLibNfc_RspCb_t                pConfigDiscovery_RspCb,
                                            void*                            pContext
@@ -1363,10 +1492,10 @@ NFCSTATUS phLibNfc_Mgt_ConfigureDiscovery (phLibNfc_eDiscoveryConfigMode_t  Disc
 *
 * This function is called to connect to discovered target.
 * Once notification handler notified sucessfully discovered targets will be available in
-* \ref phLibNfc_RemoteDevList_t .Remote device list contains valid handles for discovered 
+* \ref phLibNfc_RemoteDevList_t .Remote device list contains valid handles for discovered
 * targets .Using this interface LibNfc client can connect to one out of 'n' discovered targets.
 * A new session is started after  connect operation is successful.The session ends with a
-* successful disconnect operation.Connect operation on an already connected tag Reactivates 
+* successful disconnect operation.Connect operation on an already connected tag Reactivates
 * the Tag.This Feature is not Valid for Jewel/Topaz Tags ,and hence a second connect if issued
 * without disconnecting a Jewel/Topaz tag always Fails.
 *
@@ -1374,7 +1503,7 @@ NFCSTATUS phLibNfc_Mgt_ConfigureDiscovery (phLibNfc_eDiscoveryConfigMode_t  Disc
 *
 * \param[in]     hRemoteDevice       Handle of the target device obtained during discovery process.
 *
-* \param[in]    pNotifyConnect_RspCb Client response callback to be to be 
+* \param[in]    pNotifyConnect_RspCb Client response callback to be to be
 *                                    notified to indicate status of the request.
 *
 * \param[in]    pContext             Client context which will  be included in
@@ -1382,7 +1511,7 @@ NFCSTATUS phLibNfc_Mgt_ConfigureDiscovery (phLibNfc_eDiscoveryConfigMode_t  Disc
 *
 *\retval NFCSTATUS_PENDING           Request initiated, result will be informed via
 *                                    callback.
-*\retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters 
+*\retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters
 *                                    could not be properly interpreted.
 *\retval NFCSTATUS_TARGET_LOST       Indicates target is lost.
 *\retval NFSCSTATUS_SHUTDOWN         shutdown in progress.
@@ -1421,13 +1550,13 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(phLibNfc_Handle                hRemoteDevic
 *
 * This function is called only if there are more than one remote device is detected.
 * Once notification handler notified sucessfully discovered targets will be available in
-* \ref phLibNfc_RemoteDevList_t .Remote device list contains valid handles for discovered 
+* \ref phLibNfc_RemoteDevList_t .Remote device list contains valid handles for discovered
 * targets .Using this interface LibNfc client can connect to one out of 'n' discovered targets.
 * A new session is started after  connect operation is successful.
-* Similarly, if the user wants to connect to another handle. Libnfc client can select the handle and 
+* Similarly, if the user wants to connect to another handle. Libnfc client can select the handle and
 * the previously connected device is replaced by present handle. The session ends with a
-* successful disconnect operation. 
-* Re-Connect operation on an already connected tag Reactivates the Tag. This Feature is not 
+* successful disconnect operation.
+* Re-Connect operation on an already connected tag Reactivates the Tag. This Feature is not
 * Valid for Jewel/Topaz Tags ,and hence a second re-connect if issued
 * without disconnecting a Jewel/Topaz tag always Fails.
 *
@@ -1435,7 +1564,7 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(phLibNfc_Handle                hRemoteDevic
 *
 * \param[in]     hRemoteDevice       Handle of the target device obtained during discovery process.
 *
-* \param[in]    pNotifyReConnect_RspCb Client response callback to be to be 
+* \param[in]    pNotifyReConnect_RspCb Client response callback to be to be
 *                                    notified to indicate status of the request.
 *
 * \param[in]    pContext             Client context which will  be included in
@@ -1443,7 +1572,7 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(phLibNfc_Handle                hRemoteDevic
 *
 *\retval NFCSTATUS_PENDING           Request initiated, result will be informed via
 *                                    callback.
-*\retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters 
+*\retval NFCSTATUS_INVALID_PARAMETER One or more of the supplied parameters
 *                                    could not be properly interpreted.
 *\retval NFCSTATUS_TARGET_LOST       Indicates target is lost.
 *\retval NFSCSTATUS_SHUTDOWN         shutdown in progress.
@@ -1472,7 +1601,7 @@ NFCSTATUS phLibNfc_RemoteDev_Connect(phLibNfc_Handle                hRemoteDevic
 *
 *\endmsc
 */
-NFCSTATUS 
+NFCSTATUS
 phLibNfc_RemoteDev_ReConnect (
     phLibNfc_Handle                 hRemoteDevice,
     pphLibNfc_ConnectCallback_t     pNotifyReConnect_RspCb,
@@ -1484,27 +1613,27 @@ phLibNfc_RemoteDev_ReConnect (
 * \ingroup  grp_lib_nfc
 * \brief This interface allows to perform Read/write operation on remote device.
 *
-* This function allows to send data to and receive data 
-* from the target selected by libNfc client.It is also used by the 
+* This function allows to send data to and receive data
+* from the target selected by libNfc client.It is also used by the
 * NFCIP1 Initiator while performing a transaction with the NFCIP1 target.
-* The LibNfc client  has to provide the handle of the target and the 
+* The LibNfc client  has to provide the handle of the target and the
 * command in order to communicate with the selected remote device.
 *
 *
-*\param[in] hRemoteDevice       handle of the remote device.This handle to be 
-*                               same as as handle obtained for specific remote device 
+*\param[in] hRemoteDevice       handle of the remote device.This handle to be
+*                               same as as handle obtained for specific remote device
 *                               during device discovery.
-* \param[in] psTransceiveInfo   Information required by transceive  is concealed in 
-*                               this structure.It   contains send,receive buffers 
+* \param[in] psTransceiveInfo   Information required by transceive  is concealed in
+*                               this structure.It   contains send,receive buffers
 *                               and command specific details.
 *
 *
-* \param[in] pTransceive_RspCb   Callback function for returning the received response 
+* \param[in] pTransceive_RspCb   Callback function for returning the received response
 *                                or error.
 * \param[in]    pContext         Client context which will  be included in
 *                                callback when the request is completed.
 *
-* \retval NFCSTATUS_PENDING      Request    initiated, result will be informed through 
+* \retval NFCSTATUS_PENDING      Request    initiated, result will be informed through
 *                                the callback.
 *   \retval NFCSTATUS_INVALID_PARAMETER     One or more of the supplied parameters could
 *                                           not be properly interpreted or  invalid.
@@ -1546,24 +1675,24 @@ NFCSTATUS phLibNfc_RemoteDev_Transceive(phLibNfc_Handle                 hRemoteD
 *\ingroup   grp_lib_nfc
 *\brief Allows to disconnect from already connected target.
 *
-*  The function allows to disconnect from from already connected target. This 
-*  function closes the session opened during connect operation.The status of discovery 
-*  wheel after disconnection is determined by the \ref phLibNfc_eReleaseType_t parameter. 
+*  The function allows to disconnect from from already connected target. This
+*  function closes the session opened during connect operation.The status of discovery
+*  wheel after disconnection is determined by the \ref phLibNfc_eReleaseType_t parameter.
 *  it is also used to switch from wired to virtual mode in case the discovered
-*  device is SmartMX in wired mode. 
+*  device is SmartMX in wired mode.
 *
-*\param[in]  hRemoteDevice              handle of the target device.This handle to be 
-*                                       same as as handle obtained for specific remote device 
+*\param[in]  hRemoteDevice              handle of the target device.This handle to be
+*                                       same as as handle obtained for specific remote device
 *                                       during device discovery.
-* \param[in] ReleaseType                Release mode to be  used while 
+* \param[in] ReleaseType                Release mode to be  used while
 *                                       disconnecting from target.Refer \ref phLibNfc_eReleaseType_t
 *                                       for possible release types.
-*\param[in] pDscntCallback              Client response callback to be  to be notified 
+*\param[in] pDscntCallback              Client response callback to be  to be notified
 to indicate status of the request.
 * \param[in]    pContext                Client context which will   be included in
 *                                       callback when the request is completed.
 
-*\retval    NFCSTATUS_PENDING                Request initiated,  result will be informed through 
+*\retval    NFCSTATUS_PENDING                Request initiated,  result will be informed through
 the callback.
 *\retval    NFCSTATUS_INVALID_PARAMETER      One or  more of the supplied parameters could not be
 *                                            properly interpreted.
@@ -1602,7 +1731,7 @@ NFCSTATUS phLibNfc_RemoteDev_Disconnect( phLibNfc_Handle                 hRemote
                                         phLibNfc_eReleaseType_t          ReleaseType,
                                         pphLibNfc_DisconnectCallback_t   pDscntCallback,
                                         void*                            pContext
-										);
+                    );
 
 
 
@@ -1612,7 +1741,7 @@ NFCSTATUS phLibNfc_RemoteDev_Disconnect( phLibNfc_Handle                 hRemote
 *
 * This  function unregisters the listener which has been registered with
 * phLibNfc_RemoteDev_NtfUnregister() before. After  this call the callback
-* function  won't be called anymore. If nothing is  registered the 
+* function  won't be called anymore. If nothing is  registered the
 * function  still succeeds
 * \retval NFCSTATUS_SUCCESS          callback unregistered.
 * \retval NFCSTATUS_SHUTDOWN         Shutdown in progress.
@@ -1641,8 +1770,8 @@ NFCSTATUS phLibNfc_RemoteDev_NtfUnregister(void);
 * tag is present in RF field or not.
 *
 *
-*\param[in]  hRemoteDevice          handle of the target device.This handle to be 
-*                                   same as as handle obtained for specific remote device 
+*\param[in]  hRemoteDevice          handle of the target device.This handle to be
+*                                   same as as handle obtained for specific remote device
 *                                   during device discovery.
 * \param[in] pPresenceChk_RspCb     callback function called on completion  of the
 *                                   presence check or in case an error has occurred.
@@ -1699,15 +1828,15 @@ NFCSTATUS phLibNfc_RemoteDev_CheckPresence( phLibNfc_Handle     hRemoteDevice,
 *\brief Allows  to check connected tag is NDEF compliant or not.
 * This function allows  to validate connected tag is NDEF compliant or  not.
 *
-*\param[in] hRemoteDevice       handle of the remote device.This handle to be 
-*                               same as as handle obtained for specific remote device 
+*\param[in] hRemoteDevice       handle of the remote device.This handle to be
+*                               same as as handle obtained for specific remote device
 *                               during device discovery.
-*\param[in] pCheckNdef_RspCb    Response callback defined by the caller.    
+*\param[in] pCheckNdef_RspCb    Response callback defined by the caller.
 *\param[in] pContext            Client context which will   be included in
 *                               callback when the request is completed.
 *
 * \retval NFCSTATUS_PENDING            The action has been successfully triggered.
-* \retval NFCSTATUS_INVALID_PARAMETER  At least one parameter of the function 
+* \retval NFCSTATUS_INVALID_PARAMETER  At least one parameter of the function
 *                                      is invalid.
 * \retval NFCSTATUS_TARGET_LOST        Indicates target is lost
 * \retval NFCSTATUS_TARGET_NOT_CONNECTED         The Remote Device is not connected.
@@ -1739,7 +1868,7 @@ NFCSTATUS phLibNfc_RemoteDev_CheckPresence( phLibNfc_Handle     hRemoteDevice,
 * \param[in] status     Status of the response  callback.
 *
 *                  \param NFCSTATUS_SUCCESS             Successful and tag is NDEF compliant .
-*                  \param NFCSTATUS_TARGET_LOST         NDEF check operation is failed because of target is	**														lost.
+*                  \param NFCSTATUS_TARGET_LOST         NDEF check operation is failed because of target is **                            lost.
 *                  \param NFCSTATUS_SHUTDOWN            Shutdown in progress.
 *                  \param NFCSTATUS_ABORTED             Aborted due to disconnect operation in between.
 *                  \param NFCSTATUS_FAILED              Request failed.
@@ -1752,26 +1881,26 @@ NFCSTATUS phLibNfc_Ndef_CheckNdef(phLibNfc_Handle              hRemoteDevice,
 /**
 * \ingroup  grp_lib_nfc
 * \brief Read NDEF  message from a Tag.
-* This  function reads an NDEF message from already connected tag. 
-* the NDEF  message is read starting after the position of the last read operation 
+* This  function reads an NDEF message from already connected tag.
+* the NDEF  message is read starting after the position of the last read operation
 * of the same tag during current session.
 * If it's FALSE the NDEF message is read from starting  of the NDEF message.
-* If the call returns with NFCSTATUS_PENDING , a response callback pNdefRead_RspCb is 
+* If the call returns with NFCSTATUS_PENDING , a response callback pNdefRead_RspCb is
 * called ,when the read operation is complete.
 *
 *\note Before issuing NDEF read operation LibNfc client should perform NDEF check operation
 * using \ref phLibNfc_Ndef_CheckNdef interface.
-* If the call back error code is NFCSTATUS_FAILED then the LIBNFC client has to do the 
+* If the call back error code is NFCSTATUS_FAILED then the LIBNFC client has to do the
 * phLibNfc_RemoteDev_CheckPresence to find , its communication error or target lost.
 *
-*\param[in]  hRemoteDevice          handle of the remote device.This handle to be 
-*                                   same as as handle obtained for specific remote device 
+*\param[in]  hRemoteDevice          handle of the remote device.This handle to be
+*                                   same as as handle obtained for specific remote device
 *                                   during device discovery.
 *   \param[in]  psRd                Pointer to  the  read buffer info.
-*   \param[in]  Offset              Reading Offset  : phLibNfc_Ndef_EBegin means from the 
-*                                   beginning, phLibNfc_Ndef_ECurrent means from the 
-*                                   current offset.     
-*   \param[in]  pNdefRead_RspCb     Response callback defined by the caller. 
+*   \param[in]  Offset              Reading Offset  : phLibNfc_Ndef_EBegin means from the
+*                                   beginning, phLibNfc_Ndef_ECurrent means from the
+*                                   current offset.
+*   \param[in]  pNdefRead_RspCb     Response callback defined by the caller.
 *   \param[in]  pContext            Client context which will   be included in
 *                                   callback when the request is completed.
 *
@@ -1780,13 +1909,13 @@ NFCSTATUS phLibNfc_Ndef_CheckNdef(phLibNfc_Handle              hRemoteDevice,
 * \retval NFCSTATUS_SHUTDOWN            Shutdown in progress
 * \retval NFCSTATUS_INVALID_HANDLE      Target  handle is invalid
 * \retval NFCSTATUS_NOT_INITIALISED     Indicates stack is not yet initialized.
-* \retval NFCSTATUS_INVALID_PARAMETER   One or more of the supplied parameters could not 
+* \retval NFCSTATUS_INVALID_PARAMETER   One or more of the supplied parameters could not
 *                                       be properly interpreted.
-* \retval NFCSTATUS_TARGET_NOT_CONNECTED          The Remote Device is not connected. 
+* \retval NFCSTATUS_TARGET_NOT_CONNECTED          The Remote Device is not connected.
 * \retval NFCSTATUS_FAILED              Read operation failed since tag does not contain NDEF data.
 * \retval NFCSTATUS_NON_NDEF_COMPLIANT  Tag is not Ndef Compliant.
-* \param NFCSTATUS_REJECTED             Rejected due to NDEF read issued on non 
-*                                       ,or Ndef check has not been performed 
+* \param NFCSTATUS_REJECTED             Rejected due to NDEF read issued on non
+*                                       ,or Ndef check has not been performed
 *                                       before the readNDEF tag.
 *
 *\msc
@@ -1830,27 +1959,27 @@ NFCSTATUS phLibNfc_Ndef_Read(phLibNfc_Handle                   hRemoteDevice,
 * \brief Write  NDEF data to  NFC tag.
 *
 * This function allows the client to write a NDEF data to already connected NFC tag.
-* Function writes a complete NDEF   message to a tag. If a NDEF message already 
+* Function writes a complete NDEF   message to a tag. If a NDEF message already
 * exists in the tag, it will be overwritten. When the transaction is complete,
 * a notification callback is notified.
-*   
+*
 *\note Before issuing NDEF write operation LibNfc client should perform NDEF check operation
 * using \ref phLibNfc_Ndef_CheckNdef interface.
 *
-*\param[in] hRemoteDevice           handle of the remote device.This handle to be 
-*                                   same as as handle obtained for specific remote device 
+*\param[in] hRemoteDevice           handle of the remote device.This handle to be
+*                                   same as as handle obtained for specific remote device
 *                                   during device discovery.
-*\param[in] psWr                    Ndef    Buffer to write. If NdefMessageLen is set to 0 
+*\param[in] psWr                    Ndef    Buffer to write. If NdefMessageLen is set to 0
 *                                   and pNdefMessage    = NULL, the NFC library will erase
 *                                   tag internally.
-*\param[in] pNdefWrite_RspCb        Response callback defined by the caller. 
+*\param[in] pNdefWrite_RspCb        Response callback defined by the caller.
 *\param[in] pContext                Client context which will   be included in
 *                                   callback when the request is completed.
 *
 *\note If \ref phNfc_sData_t.NdefMessageLen is 0 bytes,  this function will erase all
 *current NDEF data present in the tag. Any non-zero length buffer size
 *will attempt to write  NEDF data onto the tag.
-* If the call back error code is NFCSTATUS_FAILED then the LIBNFC client has to do the 
+* If the call back error code is NFCSTATUS_FAILED then the LIBNFC client has to do the
 * phLibNfc_RemoteDev_CheckPresence to find , its communication error or target lost.
 *
 *
@@ -1858,11 +1987,11 @@ NFCSTATUS phLibNfc_Ndef_Read(phLibNfc_Handle                   hRemoteDevice,
 * \retval NFCSTATUS_SHUTDOWN            Shutdown in progress.
 * \retval NFCSTATUS_INVALID_HANDLE      Target  handle is invalid.
 * \retval NFCSTATUS_NOT_INITIALISED     Indicates stack is not yet initialized.
-* \retval NFCSTATUS_INVALID_PARAMETER   One or more of the supplied parameters could not 
+* \retval NFCSTATUS_INVALID_PARAMETER   One or more of the supplied parameters could not
 *                                       be  properly interpreted.
 * \retval NFCSTATUS_NON_NDEF_COMPLIANT  Tag is not Ndef Compliant.
-* \retval NFCSTATUS_TARGET_NOT_CONNECTED            The Remote Device is not connected.                
-* \retval NFCSTATUS_REJECTED            Rejected due to NDEF write issued without 
+* \retval NFCSTATUS_TARGET_NOT_CONNECTED            The Remote Device is not connected.
+* \retval NFCSTATUS_REJECTED            Rejected due to NDEF write issued without
 *                                       performing a CheckNdef().
 * \retval NFCSTATUS_FAILED              operation failed.
 *
@@ -1911,21 +2040,21 @@ NFCSTATUS phLibNfc_Ndef_Write (phLibNfc_Handle          hRemoteDevice,
 * \brief Format target.
 *
 * This function allows the LibNfc client to perform  NDEF formating operation on discovered target.
-This function formats given target 
+This function formats given target
 *
-*\note 
+*\note
 * <br>1. Prior to formating it is recommended to perform NDEF check using \ref phLibNfc_Ndef_CheckNdef interface.
 * <br>2. formatting feature supported only for MIFARE Std,MIFARE UL and Desfire tag types.
-* If the call back error code is NFCSTATUS_FAILED then the LIBNFC client has to do the 
+* If the call back error code is NFCSTATUS_FAILED then the LIBNFC client has to do the
 * phLibNfc_RemoteDev_CheckPresence to find , its communication error or target lost.
 *
-*\param[in]  hRemoteDevice          handle of the remote device.This handle to be 
-*                                   same as as handle obtained for specific remote device 
+*\param[in]  hRemoteDevice          handle of the remote device.This handle to be
+*                                   same as as handle obtained for specific remote device
 *                                   during device discovery.
 *\param[in] pScrtKey                info containing the secret key data
-*                                   and  Secret key buffer length. 
+*                                   and  Secret key buffer length.
 *
-*\param[in] pNdefformat_RspCb       Response    callback defined by the caller. 
+*\param[in] pNdefformat_RspCb       Response    callback defined by the caller.
 *\param[in] pContext                Client context which will   be included in
 *                                   callback when the request is completed.
 *
@@ -1934,9 +2063,9 @@ This function formats given target
 * \retval NFCSTATUS_SHUTDOWN                Shutdown in progress.
 * \retval NFCSTATUS_INVALID_HANDLE          Target  handle is invalid.
 * \retval NFCSTATUS_NOT_INITIALISED         Indicates stack is not yet initialized.
-* \retval NFCSTATUS_INVALID_PARAMETER       One or more of the supplied parameters could not 
+* \retval NFCSTATUS_INVALID_PARAMETER       One or more of the supplied parameters could not
 *                                           be  properly interpreted.
-* \retval NFCSTATUS_TARGET_NOT_CONNECTED    The Remote Device is not connected. 
+* \retval NFCSTATUS_TARGET_NOT_CONNECTED    The Remote Device is not connected.
 * \retval NFCSTATUS_FAILED                  operation failed.
 * \retval NFCSTATUS_REJECTED                Tag is already  formatted one.
 *
@@ -1972,7 +2101,7 @@ This function formats given target
 */
 
 NFCSTATUS phLibNfc_RemoteDev_FormatNdef(phLibNfc_Handle         hRemoteDevice,
-                                        phNfc_sData_t*          pScrtKey,  
+                                        phNfc_sData_t*          pScrtKey,
                                         pphLibNfc_RspCb_t       pNdefformat_RspCb,
                                         void*                   pContext
                                         );
@@ -2053,7 +2182,7 @@ NFCSTATUS phLibNfc_ConvertToReadOnlyNdef (phLibNfc_Handle         hRemoteDevice,
 /**
 * \ingroup grp_lib_nfc
 * \brief <b>Search for NDEF Record type</b>.
-*  
+*
 *  This function allows  LibNfc client to search NDEF content based on TNF value and type \n
 *
 *This API allows to find NDEF records based on  RTD (Record Type Descriptor) info.
@@ -2061,17 +2190,17 @@ NFCSTATUS phLibNfc_ConvertToReadOnlyNdef (phLibNfc_Handle         hRemoteDevice,
 *In case there is match LibNfc notifies LibNfc client with NDEF information details.
 *LibNfc client can search a new NDEF registration type once the previous call is handled.
 *
-*\param[in]     hRemoteDevice       Handle of the remote device.This handle to be 
-*                                   same as as handle obtained for specific remote device 
+*\param[in]     hRemoteDevice       Handle of the remote device.This handle to be
+*                                   same as as handle obtained for specific remote device
 *                                   during device discovery.
 *\param[in]     psSrchTypeList      List of NDEF records to be looked in based on TNF value and type.
 *                                   For NDEF search type refer to \ref phLibNfc_Ndef_SrchType.
 *                                   If this set to NULL then it means that libNfc client interested in
 *                                   all possible NDEF records.
 *
-*\param[in]     uNoSrchRecords      Indicates no of NDEF records in requested list as mentioned 
+*\param[in]     uNoSrchRecords      Indicates no of NDEF records in requested list as mentioned
 *                                   in psSrchTypeList.
-*\param[in]     pNdefNtfRspCb       Response callback defined by the caller.    
+*\param[in]     pNdefNtfRspCb       Response callback defined by the caller.
 *\param[in]     pContext            Client context which will   be included in
 *                                   callback when callback is notified.
 *
@@ -2080,11 +2209,11 @@ NFCSTATUS phLibNfc_ConvertToReadOnlyNdef (phLibNfc_Handle         hRemoteDevice,
 * \retval NFCSTATUS_SHUTDOWN            Shutdown in progress.
 * \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
 * \retval NFCSTATUS_INVALID_HANDLE      Target  handle is invalid.
-* \retval NFCSTATUS_INVALID_PARAMETER   One or more of the supplied parameters could not 
+* \retval NFCSTATUS_INVALID_PARAMETER   One or more of the supplied parameters could not
 *                                       be  properly interpreted.
-* \retval NFCSTATUS_TARGET_NOT_CONNECTED          The Remote Device is not connected. 
+* \retval NFCSTATUS_TARGET_NOT_CONNECTED          The Remote Device is not connected.
 * \retval NFCSTATUS_FAILED              operation failed.
-* \retval NFCSTATUS_BUSY                Previous request in progress can not accept new request.   
+* \retval NFCSTATUS_BUSY                Previous request in progress can not accept new request.
 *
 * \retval NFCSTATUS_ABORTED             Aborted due to disconnect request in between.
 *\msc
@@ -2111,12 +2240,12 @@ NFCSTATUS phLibNfc_ConvertToReadOnlyNdef (phLibNfc_Handle         hRemoteDevice,
 * \param[in] status     Status of the response  callback.
 *
 */
-NFCSTATUS phLibNfc_Ndef_SearchNdefContent(  
+NFCSTATUS phLibNfc_Ndef_SearchNdefContent(
                                 phLibNfc_Handle                 hRemoteDevice,
-                                phLibNfc_Ndef_SrchType_t*       psSrchTypeList,  
+                                phLibNfc_Ndef_SrchType_t*       psSrchTypeList,
                                 uint8_t                         uNoSrchRecords,
-                                pphLibNfc_Ndef_Search_RspCb_t   pNdefNtfRspCb,  
-                                void *                          pContext   
+                                pphLibNfc_Ndef_Search_RspCb_t   pNdefNtfRspCb,
+                                void *                          pContext
                                 );
 
 
@@ -2126,22 +2255,22 @@ NFCSTATUS phLibNfc_Ndef_SearchNdefContent(
 * \ingroup grp_lib_nfc
 * \brief <b> Interface used to receive data from initiator at target side during P2P communication</b>.
 *
-*This function  Allows the NFC-IP1 target to retrieve data/commands coming from the 
-*Initiator.Once this function is called by LibNfc client on target side it waits for 
+*This function  Allows the NFC-IP1 target to retrieve data/commands coming from the
+*Initiator.Once this function is called by LibNfc client on target side it waits for
 *receiving data from initiator.It is used by libNfc client which acts as target during P2P
 *communication.
 *
-*\note : Once this API is called,its mandatory to wait for receive 
-*\ref pphLibNfc_Receive_RspCb_t callback notification,before calling any other 
+*\note : Once this API is called,its mandatory to wait for receive
+*\ref pphLibNfc_Receive_RspCb_t callback notification,before calling any other
 *API.Only function allowed is \ref phLibNfc_Mgt_DeInitialize.
 *
 *  \param[in]     hRemoteDevice         Peer handle obtained during device discovery process.
-*                                       
-*  \param[in]     pReceiveRspCb         Callback function called after receiving 
-*                                       the data or in case an error has 
+*
+*  \param[in]     pReceiveRspCb         Callback function called after receiving
+*                                       the data or in case an error has
 *                                       has occurred.
 *
-*  \param[in]     pContext              Upper layer context to be returned 
+*  \param[in]     pContext              Upper layer context to be returned
 *                                       in the callback.
 *
 *  \retval NFCSTATUS_PENDING            Receive operation is in progress.
@@ -2151,13 +2280,13 @@ NFCSTATUS phLibNfc_Ndef_SearchNdefContent(
 * \retval  NFCSTATUS_SHUTDOWN           Shutdown in progress.
 * \retval  NFCSTATUS_INVALID_DEVICE     The device has been disconnected meanwhile.
 * \retval  NFCSTATUS_DESELECTED         Receive operation is not possible due to
-*                                       initiator issued disconnect or intiator 
+*                                       initiator issued disconnect or intiator
 *                                       physically removed from the RF field.
 *
 *\retval   NFCSTATUS_REJECTED           Indicates invalid request.
 *\retval   NFCSTATUS_FAILED             Request failed.
 *
-*\msc 
+*\msc
 *P2PInitiatorClient,InitiatorLibNfc,P2PTargetLibNfc,P2PTargetClient;
 *--- [label="stack is intialised and P2P notification handler registered alredy"];
 *P2PTargetClient=>P2PTargetLibNfc   [label="phLibNfc_Mgt_SetP2P_ConfigParams()",URL="\ref    phLibNfc_Mgt_SetP2P_ConfigParams"];
@@ -2167,7 +2296,7 @@ NFCSTATUS phLibNfc_Ndef_SearchNdefContent(
 *P2PInitiatorClient<<InitiatorLibNfc    [label="NFCSTATUS_PENDING"];
 *P2PInitiatorClient<-InitiatorLibNfc    [label="pConfigRspCb()",URL="\ref pphLibNfc_RspCb_t"];
 *P2PTargetClient=>P2PTargetLibNfc [label="phLibNfc_Mgt_ConfigureDiscovery()",URL="\ref  phLibNfc_Mgt_ConfigureDiscovery"];
-*P2PTargetClient<<P2PTargetLibNfc   [label="NFCSTATUS_PENDING"]; 
+*P2PTargetClient<<P2PTargetLibNfc   [label="NFCSTATUS_PENDING"];
 *P2PTargetClient<-P2PTargetLibNfc   [label="pConfigDiscovery_RspCb",URL="\ref pphLibNfc_RspCb_t"];
 *P2PInitiatorClient=>InitiatorLibNfc    [label="phLibNfc_Mgt_ConfigureDiscovery()",URL="\ref    phLibNfc_Mgt_ConfigureDiscovery"];
 *P2PInitiatorClient<<InitiatorLibNfc    [label="NFCSTATUS_PENDING"];
@@ -2181,7 +2310,7 @@ NFCSTATUS phLibNfc_Ndef_SearchNdefContent(
 *--- [label="On connect target must be immediately ready to receive data from initiator"];
 *P2PTargetClient=>P2PTargetLibNfc   [label="phLibNfc_RemoteDev_Receive()",URL="\ref phLibNfc_RemoteDev_Receive"];
 *--- [label="Now target waits to receive data from intiator"];
-*--- [label="Send data from initiator now"]; 
+*--- [label="Send data from initiator now"];
 *P2PInitiatorClient=>InitiatorLibNfc   [label="phLibNfc_RemoteDev_Transceive()",URL="\ref  phLibNfc_RemoteDev_Transceive "];
 *P2PInitiatorClient<-InitiatorLibNfc   [label="pTransceive_RspCb",URL="\ref pphLibNfc_TransceiveCallback_t"];
 *--- [label="Now data arrived at target side"];
@@ -2197,16 +2326,128 @@ NFCSTATUS phLibNfc_Ndef_SearchNdefContent(
 *           \param NFCSTATUS_ABORTED        Aborted due to initiator issued disconnect request.
 *                                           or intiator removed physically from the RF field.
 *                                           This status code reported,to indicate P2P session
-*                                           closed and send and receive requests not allowed 
+*                                           closed and send and receive requests not allowed
 *                                           any more unless new session is started.
 *           \param  NFCSTATUS_DESELECTED    Receive operation is not possible due to
-*                                           initiator issued disconnect or intiator 
+*                                           initiator issued disconnect or intiator
 *                                           physically removed from the RF field.
 */
-extern 
-NFCSTATUS 
+extern
+NFCSTATUS
 phLibNfc_RemoteDev_Receive( phLibNfc_Handle            hRemoteDevice,
                            pphLibNfc_Receive_RspCb_t   pReceiveRspCb,
+                           void*                       pContext
+                           );
+
+/**
+* \ingroup grp_lib_nfc
+* \brief <b> Interface used to receive data from reader at target side during communication</b>.
+*
+*This function  Allows the target to retrieve data/commands coming from the
+*Reader.Once this function is called by LibNfc client on target side it waits for
+*receiving data from initiator.It is used by libNfc client which acts as target during P2P
+*communication.
+*
+*\note : Once this API is called,its mandatory to wait for receive
+*\ref pphLibNfc_Receive_RspCb_t callback notification,before calling any other
+*API.Only function allowed is \ref phLibNfc_Mgt_DeInitialize.
+*
+*  \param[in]     pReceiveRspCb         Callback function called after receiving
+*                                       the data or in case an error has
+*                                       has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned
+*                                       in the callback.
+*
+*  \retval NFCSTATUS_PENDING            Receive operation is in progress.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+* \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
+* \retval  NFCSTATUS_SHUTDOWN           Shutdown in progress.
+* \retval  NFCSTATUS_INVALID_DEVICE     The device has been disconnected meanwhile.
+* \retval  NFCSTATUS_DESELECTED         Receive operation is not possible due to
+*                                       initiator issued disconnect or intiator
+*                                       physically removed from the RF field.
+*
+*\retval   NFCSTATUS_REJECTED           Indicates invalid request.
+*\retval   NFCSTATUS_FAILED             Request failed.
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*           \param NFCSTATUS_SUCCESS             Receive operation  successful.
+*           \param NFCSTATUS_SHUTDOWN       Receive operation failed because Shutdown in progress.
+*           \param NFCSTATUS_ABORTED        Aborted due to initiator issued disconnect request.
+*                                           or intiator removed physically from the RF field.
+*                                           This status code reported,to indicate P2P session
+*                                           closed and send and receive requests not allowed
+*                                           any more unless new session is started.
+*           \param  NFCSTATUS_DESELECTED    Receive operation is not possible due to
+*                                           initiator issued disconnect or intiator
+*                                           physically removed from the RF field.
+*/
+extern
+NFCSTATUS
+phLibNfc_RemoteDev_CE_A_Receive(
+                           pphLibNfc_TransceiveCallback_t   pReceiveRspCb,
+                           void*                       pContext
+                           );
+
+/**
+* \ingroup grp_lib_nfc
+* \brief <b> Interface used to receive data from reader at target side during communication</b>.
+*
+*This function  Allows the target to retrieve data/commands coming from the
+*Reader.Once this function is called by LibNfc client on target side it waits for
+*receiving data from initiator.It is used by libNfc client which acts as target during P2P
+*communication.
+*
+*\note : Once this API is called,its mandatory to wait for receive
+*\ref pphLibNfc_Receive_RspCb_t callback notification,before calling any other
+*API.Only function allowed is \ref phLibNfc_Mgt_DeInitialize.
+*
+*  \param[in]     pReceiveRspCb         Callback function called after receiving
+*                                       the data or in case an error has
+*                                       has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned
+*                                       in the callback.
+*
+*  \retval NFCSTATUS_PENDING            Receive operation is in progress.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+* \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
+* \retval  NFCSTATUS_SHUTDOWN           Shutdown in progress.
+* \retval  NFCSTATUS_INVALID_DEVICE     The device has been disconnected meanwhile.
+* \retval  NFCSTATUS_DESELECTED         Receive operation is not possible due to
+*                                       initiator issued disconnect or intiator
+*                                       physically removed from the RF field.
+*
+*\retval   NFCSTATUS_REJECTED           Indicates invalid request.
+*\retval   NFCSTATUS_FAILED             Request failed.
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*           \param NFCSTATUS_SUCCESS             Receive operation  successful.
+*           \param NFCSTATUS_SHUTDOWN       Receive operation failed because Shutdown in progress.
+*           \param NFCSTATUS_ABORTED        Aborted due to initiator issued disconnect request.
+*                                           or intiator removed physically from the RF field.
+*                                           This status code reported,to indicate P2P session
+*                                           closed and send and receive requests not allowed
+*                                           any more unless new session is started.
+*           \param  NFCSTATUS_DESELECTED    Receive operation is not possible due to
+*                                           initiator issued disconnect or intiator
+*                                           physically removed from the RF field.
+*/
+extern
+NFCSTATUS
+phLibNfc_RemoteDev_CE_B_Receive(
+                           pphLibNfc_TransceiveCallback_t   pReceiveRspCb,
                            void*                       pContext
                            );
 
@@ -2218,20 +2459,20 @@ phLibNfc_RemoteDev_Receive( phLibNfc_Handle            hRemoteDevice,
 * \ingroup grp_lib_nfc
 * \brief <b>Interface used to send data from target to initiator during P2P communication</b>.
 *
-*This function  Allows the NFC-IP1 target to send data to Initiator,in response to packet received 
-*from initiator during P2P communication.It is must prior to send request target has received 
+*This function  Allows the NFC-IP1 target to send data to Initiator,in response to packet received
+*from initiator during P2P communication.It is must prior to send request target has received
 *data from initiator using \ref phLibNfc_RemoteDev_Receive interface.
 *
 *
 *  \param[in]     hRemoteDevice        Peer handle obtained during device discovery process.
 *
-*  \param[in]     pTransferData         Data and the length of the data to be 
+*  \param[in]     pTransferData         Data and the length of the data to be
 *                                       transferred.
-*  \param[in]     pSendRspCb            Callback function called on completion 
-*                                       of the NfcIP sequence or in case an 
+*  \param[in]     pSendRspCb            Callback function called on completion
+*                                       of the NfcIP sequence or in case an
 *                                       error has occurred.
 *
-*  \param[in]     pContext              Upper layer context to be returned in 
+*  \param[in]     pContext              Upper layer context to be returned in
 *                                       the callback.
 *
 **  \retval NFCSTATUS_PENDING            Send operation is in progress.
@@ -2240,14 +2481,14 @@ phLibNfc_RemoteDev_Receive( phLibNfc_Handle            hRemoteDevice,
 * \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
 * \retval  NFCSTATUS_SHUTDOWN           Shutdown in progress.
 *  \retval NFCSTATUS_INVALID_DEVICE     The device has been disconnected meanwhile.
-* \retval  NFCSTATUS_BUSY               Previous request in progress can not accept new request.   
+* \retval  NFCSTATUS_BUSY               Previous request in progress can not accept new request.
 * \retval  NFCSTATUS_DESELECTED         Receive operation is not possible due to
-*                                       initiator issued disconnect or intiator 
+*                                       initiator issued disconnect or intiator
 *                                       physically removed from the RF field.
 *\retval   NFCSTATUS_REJECTED           Indicates invalid request.
 *\retval   NFCSTATUS_FAILED             Request failed.
 *
-*\msc 
+*\msc
 *P2PInitiatorClient,InitiatorLibNfc,P2PTargetLibNfc,P2PTargetClient;
 *--- [label="stack is intialised and P2P notification handler registered alredy"];
 *P2PTargetClient=>P2PTargetLibNfc   [label="phLibNfc_Mgt_SetP2P_ConfigParams()",URL="\ref    phLibNfc_Mgt_SetP2P_ConfigParams"];
@@ -2257,7 +2498,7 @@ phLibNfc_RemoteDev_Receive( phLibNfc_Handle            hRemoteDevice,
 *P2PInitiatorClient<<InitiatorLibNfc    [label="NFCSTATUS_PENDING"];
 *P2PInitiatorClient<-InitiatorLibNfc    [label="pConfigRspCb()",URL="\ref pphLibNfc_RspCb_t"];
 *P2PTargetClient=>P2PTargetLibNfc [label="phLibNfc_Mgt_ConfigureDiscovery()",URL="\ref  phLibNfc_Mgt_ConfigureDiscovery"];
-*P2PTargetClient<<P2PTargetLibNfc   [label="NFCSTATUS_PENDING"]; 
+*P2PTargetClient<<P2PTargetLibNfc   [label="NFCSTATUS_PENDING"];
 *P2PTargetClient<-P2PTargetLibNfc   [label="pConfigDiscovery_RspCb",URL="\ref pphLibNfc_RspCb_t"];
 *P2PInitiatorClient=>InitiatorLibNfc    [label="phLibNfc_Mgt_ConfigureDiscovery()",URL="\ref    phLibNfc_Mgt_ConfigureDiscovery"];
 *P2PInitiatorClient<<InitiatorLibNfc    [label="NFCSTATUS_PENDING"];
@@ -2271,7 +2512,7 @@ phLibNfc_RemoteDev_Receive( phLibNfc_Handle            hRemoteDevice,
 *--- [label="On connect target must be immediately ready to receive data from initiator"];
 *P2PTargetClient=>P2PTargetLibNfc   [label="phLibNfc_RemoteDev_Receive()",URL="\ref phLibNfc_RemoteDev_Receive"];
 *--- [label="Now target waits to receive data from intiator"];
-*--- [label="Send data from initiator now"]; 
+*--- [label="Send data from initiator now"];
 *P2PInitiatorClient=>InitiatorLibNfc   [label="phLibNfc_RemoteDev_Transceive()",URL="\ref  phLibNfc_RemoteDev_Transceive "];
 *--- [label="Now data arrived at target side"];
 *P2PTargetClient<-P2PTargetLibNfc   [label="pReceiveRspCb",URL="\ref    pphLibNfc_Receive_RspCb_t"];
@@ -2291,16 +2532,16 @@ phLibNfc_RemoteDev_Receive( phLibNfc_Handle            hRemoteDevice,
 *           \param NFCSTATUS_ABORTED        Aborted due to initiator issued disconnect request.
 *                                           or intiator removed physically from the RF field.
 *                                           This status code reported,to indicate P2P session
-*                                           closed and send and receive requests not allowed 
+*                                           closed and send and receive requests not allowed
 *                                           any more unless new session is started.
 *           \param  NFCSTATUS_DESELECTED    Receive operation is not possible due to
-*                                           initiator issued disconnect or intiator 
+*                                           initiator issued disconnect or intiator
 *                                           physically removed from the RF field.
 *
 *
 */
-extern 
-NFCSTATUS 
+extern
+NFCSTATUS
 phLibNfc_RemoteDev_Send(phLibNfc_Handle             hRemoteDevice,
                         phNfc_sData_t*              pTransferData,
                         pphLibNfc_RspCb_t           pSendRspCb,
@@ -2309,8 +2550,238 @@ phLibNfc_RemoteDev_Send(phLibNfc_Handle             hRemoteDevice,
 
 /**
 * \ingroup grp_lib_nfc
+* \brief <b>Interface used to send data from A target to reader during communication</b>.
+*
+*This function  Allows the A type target to send data to Initiator,in response to packet received
+*from reader during CE communication.It is must prior to send request target has received
+*data from initiator using \ref phLibNfc_RemoteDev_Receive interface.
+*
+*
+*  \param[in]     pTransferData         Data and the length of the data to be
+*                                       transferred.
+*  \param[in]     pSendRspCb            Callback function called on completion
+*                                       of the NfcIP sequence or in case an
+*                                       error has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned in
+*                                       the callback.
+*
+**  \retval NFCSTATUS_PENDING            Send operation is in progress.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+* \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
+* \retval  NFCSTATUS_SHUTDOWN           Shutdown in progress.
+*  \retval NFCSTATUS_INVALID_DEVICE     The device has been disconnected meanwhile.
+* \retval  NFCSTATUS_BUSY               Previous request in progress can not accept new request.
+* \retval  NFCSTATUS_DESELECTED         Receive operation is not possible due to
+*                                       initiator issued disconnect or intiator
+*                                       physically removed from the RF field.
+*\retval   NFCSTATUS_REJECTED           Indicates invalid request.
+*\retval   NFCSTATUS_FAILED             Request failed.
+*
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*           \param NFCSTATUS_SUCCESS             Send operation  successful.
+*           \param NFCSTATUS_SHUTDOWN       Send operation failed because Shutdown in progress.
+*           \param NFCSTATUS_ABORTED        Aborted due to initiator issued disconnect request.
+*                                           or intiator removed physically from the RF field.
+*                                           This status code reported,to indicate P2P session
+*                                           closed and send and receive requests not allowed
+*                                           any more unless new session is started.
+*           \param  NFCSTATUS_DESELECTED    Receive operation is not possible due to
+*                                           initiator issued disconnect or intiator
+*                                           physically removed from the RF field.
+*
+*
+*/
+extern
+NFCSTATUS
+phLibNfc_RemoteDev_CE_A_Send(
+                        phNfc_sData_t*              pTransferData,
+                        pphLibNfc_RspCb_t           pSendRspCb,
+                        void*                       pContext
+                        );
+
+/**
+* \ingroup grp_lib_nfc
+* \brief <b>Interface used to send data from A target to reader during communication</b>.
+*
+*This function  Allows the B type target to send data to Initiator,in response to packet received
+*from reader during CE communication.It is must prior to send request target has received
+*data from initiator using \ref phLibNfc_RemoteDev_Receive interface.
+*
+*
+*  \param[in]     pTransferData         Data and the length of the data to be
+*                                       transferred.
+*  \param[in]     pSendRspCb            Callback function called on completion
+*                                       of the NfcIP sequence or in case an
+*                                       error has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned in
+*                                       the callback.
+*
+**  \retval NFCSTATUS_PENDING            Send operation is in progress.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+* \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
+* \retval  NFCSTATUS_SHUTDOWN           Shutdown in progress.
+*  \retval NFCSTATUS_INVALID_DEVICE     The device has been disconnected meanwhile.
+* \retval  NFCSTATUS_BUSY               Previous request in progress can not accept new request.
+* \retval  NFCSTATUS_DESELECTED         Receive operation is not possible due to
+*                                       initiator issued disconnect or intiator
+*                                       physically removed from the RF field.
+*\retval   NFCSTATUS_REJECTED           Indicates invalid request.
+*\retval   NFCSTATUS_FAILED             Request failed.
+*
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*           \param NFCSTATUS_SUCCESS             Send operation  successful.
+*           \param NFCSTATUS_SHUTDOWN       Send operation failed because Shutdown in progress.
+*           \param NFCSTATUS_ABORTED        Aborted due to initiator issued disconnect request.
+*                                           or intiator removed physically from the RF field.
+*                                           This status code reported,to indicate P2P session
+*                                           closed and send and receive requests not allowed
+*                                           any more unless new session is started.
+*           \param  NFCSTATUS_DESELECTED    Receive operation is not possible due to
+*                                           initiator issued disconnect or intiator
+*                                           physically removed from the RF field.
+*
+*
+*/
+extern
+NFCSTATUS
+phLibNfc_RemoteDev_CE_B_Send(
+                        phNfc_sData_t*              pTransferData,
+                        pphLibNfc_RspCb_t           pSendRspCb,
+                        void*                       pContext
+                        );
+
+/**
+* \ingroup grp_lib_nfc
+* \brief <b>Interface used to transceive data from A target to reader during communication</b>.
+*
+*This function  Allows the A type target to send data to Initiator,in response to packet received
+*from reader during CE communication.It is must prior to send request target has received
+*data from initiator using \ref phLibNfc_RemoteDev_Receive interface.
+*
+*
+*  \param[in]     pTransferData         Data and the length of the data to be
+*                                       transferred.
+*  \param[in]     pRecvRspCb            Callback function called on completion
+*                                       of the NfcIP sequence or in case an
+*                                       error has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned in
+*                                       the callback.
+*
+**  \retval NFCSTATUS_PENDING            Send operation is in progress.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+* \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
+* \retval  NFCSTATUS_SHUTDOWN           Shutdown in progress.
+*  \retval NFCSTATUS_INVALID_DEVICE     The device has been disconnected meanwhile.
+* \retval  NFCSTATUS_BUSY               Previous request in progress can not accept new request.
+* \retval  NFCSTATUS_DESELECTED         Receive operation is not possible due to
+*                                       initiator issued disconnect or intiator
+*                                       physically removed from the RF field.
+*\retval   NFCSTATUS_REJECTED           Indicates invalid request.
+*\retval   NFCSTATUS_FAILED             Request failed.
+*
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*           \param NFCSTATUS_SUCCESS             Send operation  successful.
+*           \param NFCSTATUS_SHUTDOWN       Send operation failed because Shutdown in progress.
+*           \param NFCSTATUS_ABORTED        Aborted due to initiator issued disconnect request.
+*                                           or intiator removed physically from the RF field.
+*                                           This status code reported,to indicate P2P session
+*                                           closed and send and receive requests not allowed
+*                                           any more unless new session is started.
+*           \param  NFCSTATUS_DESELECTED    Receive operation is not possible due to
+*                                           initiator issued disconnect or intiator
+*                                           physically removed from the RF field.
+*
+*
+*/
+extern
+NFCSTATUS
+phLibNfc_RemoteDev_CE_A_Transceive(
+                        phNfc_sData_t *      pTransferData,
+                        pphLibNfc_TransceiveCallback_t    pTransceive_RspCb,
+                        void                 *pContext
+                        );
+/**
+* \ingroup grp_lib_nfc
+* \brief <b>Interface used to transceive data from B target to reader during communication</b>.
+*
+*This function  Allows the B type target to send data to Initiator,in response to packet received
+*from reader during CE communication.It is must prior to send request target has received
+*data from initiator using \ref phLibNfc_RemoteDev_Receive interface.
+*
+*
+*  \param[in]     pTransferData         Data and the length of the data to be
+*                                       transferred.
+*  \param[in]     pRecvRspCb            Callback function called on completion
+*                                       of the NfcIP sequence or in case an
+*                                       error has occurred.
+*
+*  \param[in]     pContext              Upper layer context to be returned in
+*                                       the callback.
+*
+**  \retval NFCSTATUS_PENDING            Send operation is in progress.
+*  \retval NFCSTATUS_INVALID_PARAMETER  One or more of the supplied parameters
+*                                       could not be properly interpreted.
+* \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
+* \retval  NFCSTATUS_SHUTDOWN           Shutdown in progress.
+*  \retval NFCSTATUS_INVALID_DEVICE     The device has been disconnected meanwhile.
+* \retval  NFCSTATUS_BUSY               Previous request in progress can not accept new request.
+* \retval  NFCSTATUS_DESELECTED         Receive operation is not possible due to
+*                                       initiator issued disconnect or intiator
+*                                       physically removed from the RF field.
+*\retval   NFCSTATUS_REJECTED           Indicates invalid request.
+*\retval   NFCSTATUS_FAILED             Request failed.
+*
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*           \param NFCSTATUS_SUCCESS             Send operation  successful.
+*           \param NFCSTATUS_SHUTDOWN       Send operation failed because Shutdown in progress.
+*           \param NFCSTATUS_ABORTED        Aborted due to initiator issued disconnect request.
+*                                           or intiator removed physically from the RF field.
+*                                           This status code reported,to indicate P2P session
+*                                           closed and send and receive requests not allowed
+*                                           any more unless new session is started.
+*           \param  NFCSTATUS_DESELECTED    Receive operation is not possible due to
+*                                           initiator issued disconnect or intiator
+*                                           physically removed from the RF field.
+*
+*
+*/
+extern
+NFCSTATUS
+phLibNfc_RemoteDev_CE_B_Transceive(
+                        phNfc_sData_t *      pTransferData,
+                        pphLibNfc_TransceiveCallback_t    pTransceive_RspCb,
+                        void                 *pContext
+                        );
+/**
+* \ingroup grp_lib_nfc
 * \brief <b>Interface to configure P2P and intiator mode configurations</b>.
-*  The  setting will be typically take effect for the next cycle of the relevant 
+*  The  setting will be typically take effect for the next cycle of the relevant
 *  phase of discovery. For optional configuration internal defaults will be
 *  used in case the configuration is not set.
 *
@@ -2319,10 +2790,10 @@ phLibNfc_RemoteDev_Send(phLibNfc_Handle             hRemoteDevice,
 *  \param[in] pConfigInfo           Union containing P2P configuration details as
 *                                   in \ref phLibNfc_sNfcIPCfg_t.
 *
-*  \param[in] pConfigRspCb          This callback has to be called once LibNfc 
+*  \param[in] pConfigRspCb          This callback has to be called once LibNfc
 *                                   completes the Configuration.
 *
-*  \param[in] pContext              Upper layer context to be returned in 
+*  \param[in] pContext              Upper layer context to be returned in
 *                                   the callback.
 *
 *
@@ -2331,9 +2802,9 @@ phLibNfc_RemoteDev_Send(phLibNfc_Handle             hRemoteDevice,
 *                                       could not be properly interpreted.
 * \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN            Shutdown in progress.
-* \retval NFCSTATUS_BUSY                Previous request in progress can not accept new request.   
+* \retval NFCSTATUS_BUSY                Previous request in progress can not accept new request.
 *
-*\msc 
+*\msc
 *P2PInitiatorClient,InitiatorLibNfc,P2PTargetLibNfc,P2PTargetClient;
 *--- [label="stack is intialised and P2P notification handler registered alredy"];
 *P2PTargetClient=>P2PTargetLibNfc   [label="phLibNfc_Mgt_SetP2P_ConfigParams()",URL="\ref    phLibNfc_Mgt_SetP2P_ConfigParams"];
@@ -2342,7 +2813,7 @@ phLibNfc_RemoteDev_Send(phLibNfc_Handle             hRemoteDevice,
 *P2PInitiatorClient=>InitiatorLibNfc    [label="phLibNfc_Mgt_SetP2P_ConfigParams()",URL="\ref    phLibNfc_Mgt_SetP2P_ConfigParams"];
 *P2PInitiatorClient<<InitiatorLibNfc    [label="NFCSTATUS_PENDING"];
 *P2PTargetClient=>P2PTargetLibNfc [label="phLibNfc_Mgt_ConfigureDiscovery()",URL="\ref  phLibNfc_Mgt_ConfigureDiscovery"];
-*P2PTargetClient<<P2PTargetLibNfc   [label="NFCSTATUS_PENDING"]; 
+*P2PTargetClient<<P2PTargetLibNfc   [label="NFCSTATUS_PENDING"];
 *P2PTargetClient<-P2PTargetLibNfc   [label="pConfigDiscovery_RspCb",URL="\ref pphLibNfc_RspCb_t"];
 *P2PInitiatorClient=>InitiatorLibNfc    [label="phLibNfc_Mgt_ConfigureDiscovery()",URL="\ref    phLibNfc_Mgt_ConfigureDiscovery"];
 *P2PInitiatorClient<<InitiatorLibNfc    [label="NFCSTATUS_PENDING"];
@@ -2371,12 +2842,114 @@ extern NFCSTATUS phLibNfc_Mgt_SetP2P_ConfigParams(   phLibNfc_sNfcIPCfg_t*   pCo
                                                     void*                   pContext
                                                 );
 
+
+/**
+* \ingroup grp_lib_nfc
+* \brief <b>Interface to break any existing pending callbacks for card emulation</b>.
+* \retval NFCSTATUS_SUCCESS             Config operation succeeded.
+* \retval  NFCSTATUS_NOT_INITIALISED    There was no callback in progress.
+*
+*/
+
+extern NFCSTATUS phLibNfc_Mgt_Unblock_Cb_CE_A_14443_4( );
+
+/**
+* \ingroup grp_lib_nfc
+* \brief <b>Interface to break any existing pending callbacks for card emulation</b>.
+* \retval NFCSTATUS_SUCCESS             Config operation succeeded.
+* \retval  NFCSTATUS_NOT_INITIALISED    There was no callback in progress.
+*
+*/
+
+extern NFCSTATUS phLibNfc_Mgt_Unblock_Cb_CE_B_14443_4( );
+
+/**
+* \ingroup grp_lib_nfc
+* \brief <b>Interface to configure Card Emulation mode configurations</b>.
+*  The  setting will be typically take effect for the next cycle of the relevant
+*  phase of discovery. For optional configuration internal defaults will be
+*  used in case the configuration is not set.
+*
+*\note Currently general bytes configuration supported.
+*
+*  \param[in] bool                  turn on or off (TRUE/FALSE)
+*
+*  \param[in] pConfigRspCb          This callback has to be called once LibNfc
+*                                   completes the Configuration.
+*
+*  \param[in] pContext              Upper layer context to be returned in
+*                                   the callback.
+*
+*
+* \retval NFCSTATUS_PENDING             Config operation is in progress.
+* \retval NFCSTATUS_INVALID_PARAMETER   One or more of the supplied parameters
+*                                       could not be properly interpreted.
+* \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
+* \retval NFCSTATUS_SHUTDOWN            Shutdown in progress.
+* \retval NFCSTATUS_BUSY                Previous request in progress can not accept new request.
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*                  \param NFCSTATUS_SUCCESS                  configuration operation is successful.
+*                  \param NFCSTATUS_SHUTDOWN            Shutdown in progress.
+*                  \param NFCSTATUS_FAILED              Request failed.
+*
+*/
+extern NFCSTATUS phLibNfc_Mgt_SetCE_A_14443_4_ConfigParams(
+                                                    uint8_t emulate,
+                                                    pphLibNfc_RspCb_t       pConfigRspCb,
+                                                    void*                   pContext
+                                                );
+/**
+* \ingroup grp_lib_nfc
+* \brief <b>Interface to configure Card Emulation mode configurations</b>.
+*  The  setting will be typically take effect for the next cycle of the relevant
+*  phase of discovery. For optional configuration internal defaults will be
+*  used in case the configuration is not set.
+*
+*\note Currently general bytes configuration supported.
+*
+*  \param[in] bool                  turn on or off (TRUE/FALSE)
+*
+*  \param[in] pConfigRspCb          This callback has to be called once LibNfc
+*                                   completes the Configuration.
+*
+*  \param[in] pContext              Upper layer context to be returned in
+*                                   the callback.
+*
+*
+* \retval NFCSTATUS_PENDING             Config operation is in progress.
+* \retval NFCSTATUS_INVALID_PARAMETER   One or more of the supplied parameters
+*                                       could not be properly interpreted.
+* \retval  NFCSTATUS_NOT_INITIALISED    Indicates stack is not yet initialized.
+* \retval NFCSTATUS_SHUTDOWN            Shutdown in progress.
+* \retval NFCSTATUS_BUSY                Previous request in progress can not accept new request.
+*
+*\note Response callback parameters details for this interface are as listed below.
+*
+* \param[in] pContext   LibNfc client context   passed in the corresponding request before.
+* \param[in] status     Status of the response  callback.
+*
+*                  \param NFCSTATUS_SUCCESS                  configuration operation is successful.
+*                  \param NFCSTATUS_SHUTDOWN            Shutdown in progress.
+*                  \param NFCSTATUS_FAILED              Request failed.
+*
+*/
+extern NFCSTATUS phLibNfc_Mgt_SetCE_B_14443_4_ConfigParams(
+                                                    uint8_t emulate,
+                                                    pphLibNfc_RspCb_t       pConfigRspCb,
+                                                    void*                   pContext
+                                                );
+
 /**
 * \ingroup grp_lib_nfc
 * \brief <b>Interface to stack capabilities</b>.
 *
 *  LibNfc client can query to retrieve stack capabilities.Stack capabilities contains
-*  <br><br>a).Device capabilities which contains details like protocols supported, 
+*  <br><br>a).Device capabilities which contains details like protocols supported,
 *  Hardware,Firmware  and model-id version details .For details refer to \ref phNfc_sDeviceCapabilities_t.
 * <br><br>b).NDEF mapping related info. This info helps in identifying supported tags for NDEF mapping feature.
 * <br><br>c).NDEF formatting related info. This info helps in identifying supported tags for NDEF formatting feature.
@@ -2384,7 +2957,7 @@ extern NFCSTATUS phLibNfc_Mgt_SetP2P_ConfigParams(   phLibNfc_sNfcIPCfg_t*   pCo
 *  \param[in] phLibNfc_StackCapabilities   Contains device capabilities and NDEF mapping and formatting feature
                                            support for different tag types.
 *
-*  \param[in] pContext                     Upper layer context to be returned in 
+*  \param[in] pContext                     Upper layer context to be returned in
 *                                          the callback.
 *
 *
@@ -2488,7 +3061,7 @@ extern NFCSTATUS phLibNfc_Llcp_CheckLlcp( phLibNfc_Handle              hRemoteDe
 * This function launches the link activation process on a remote LLCP-compliant peer. The link status
 * notification will be sent by the corresponding callback given in the phLibNfc_Llcp_CheckLlcp function.
 * If the activation fails, the deactivated status will be notified, even if the link is already in a
-* deactivated state. 
+* deactivated state.
 *
 * \param[in] hRemoteDevice       Peer handle obtained during device discovery process.
 *
@@ -2579,7 +3152,7 @@ extern NFCSTATUS phLibNfc_Llcp_GetRemoteInfo( phLibNfc_Handle                   
 * \ingroup grp_lib_nfc
 * \brief <b>Create a socket on a LLCP-connected device</b>.
 *
-* This function creates a socket for a given LLCP link. Sockets can be of two types : 
+* This function creates a socket for a given LLCP link. Sockets can be of two types :
 * connection-oriented and connectionless. If the socket is connection-oriented, the caller
 * must provide a working buffer to the socket in order to handle incoming data. This buffer
 * must be large enough to fit the receive window (RW * MIU), the remaining space being
@@ -2692,7 +3265,7 @@ extern NFCSTATUS phLibNfc_Llcp_Close( phLibNfc_Handle hSocket );
 * \retval NFCSTATUS_SUCCESS                  Operation successful.
 * \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
 *                                            could not be properly interpreted.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -2717,7 +3290,7 @@ extern NFCSTATUS phLibNfc_Llcp_SocketGetLocalOptions( phLibNfc_Handle           
 * \retval NFCSTATUS_SUCCESS                  Operation successful.
 * \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
 *                                            could not be properly interpreted.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -2741,7 +3314,7 @@ extern NFCSTATUS phLibNfc_Llcp_SocketGetRemoteOptions( phLibNfc_Handle          
 * \retval NFCSTATUS_SUCCESS                  Operation successful.
 * \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
 *                                            could not be properly interpreted.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_ALREADY_REGISTERED       The selected SAP is already bound to another
                                              socket.
@@ -2801,7 +3374,7 @@ extern NFCSTATUS phLibNfc_Llcp_Listen( phLibNfc_Handle                  hSocket,
 * \param[in]  psWorkingBuffer       A working buffer to be used by the library.
 * \param[in]  pErr_Cb               The callback to be called each time the accepted socket
 *                                   is in error.
-* \param[in]  pAccept_RspCb         The callback to be called when the Accept operation 
+* \param[in]  pAccept_RspCb         The callback to be called when the Accept operation
 *                                   is completed.
 * \param[in]  pContext              Upper layer context to be returned in the callback.
 *
@@ -2832,7 +3405,7 @@ extern NFCSTATUS phLibNfc_Llcp_Accept( phLibNfc_Handle                  hSocket,
 * is implicitly closed when the function is called.
 *
 * \param[in]  hSocket               Socket handle obtained in the listening callback.
-* \param[in]  pReject_RspCb         The callback to be called when the Reject operation 
+* \param[in]  pReject_RspCb         The callback to be called when the Reject operation
 *                                   is completed.
 * \retval NFCSTATUS_SUCCESS                  Operation successful.
 * \retval NFCSTATUS_INVALID_PARAMETER        One or more of the supplied parameters
@@ -2866,7 +3439,7 @@ extern NFCSTATUS phLibNfc_Llcp_Reject( phLibNfc_Handle                  hRemoteD
 *                                            could not be properly interpreted.
 * \retval NFCSTATUS_PENDING                  Connection operation is in progress,
 *                                            pConnect_RspCb will be called upon completion.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -2899,7 +3472,7 @@ extern NFCSTATUS phLibNfc_Llcp_Connect( phLibNfc_Handle                 hRemoteD
 *                                            could not be properly interpreted.
 * \retval NFCSTATUS_PENDING                  Connection operation is in progress,
 *                                            pConnect_RspCb will be called upon completion.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -2920,7 +3493,7 @@ extern NFCSTATUS phLibNfc_Llcp_ConnectByUri( phLibNfc_Handle                 hRe
 * This function initiates the disconnection of a previously connected socket.
 *
 * \param[in]  hSocket            Socket handle obtained during socket creation.
-* \param[in]  pDisconnect_RspCb  The callback to be called when the 
+* \param[in]  pDisconnect_RspCb  The callback to be called when the
 *                                operation is completed.
 * \param[in]  pContext           Upper layer context to be returned in
 *                                the callback.
@@ -2930,7 +3503,7 @@ extern NFCSTATUS phLibNfc_Llcp_ConnectByUri( phLibNfc_Handle                 hRe
 *                                            could not be properly interpreted.
 * \retval NFCSTATUS_PENDING                  Disconnection operation is in progress,
 *                                            pDisconnect_RspCb will be called upon completion.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -2952,11 +3525,11 @@ extern NFCSTATUS phLibNfc_Llcp_Disconnect( phLibNfc_Handle                    hR
 * are available. If no data is available, the function will be pending until
 * more data comes, and the response will be sent by the callback. This function
 * can only be called on a connection-oriented socket.
-* 
+*
 *
 * \param[in]  hSocket            Socket handle obtained during socket creation.
 * \param[in]  psBuffer           The buffer receiving the data.
-* \param[in]  pRecv_RspCb        The callback to be called when the 
+* \param[in]  pRecv_RspCb        The callback to be called when the
 *                                operation is completed.
 * \param[in]  pContext           Upper layer context to be returned in
 *                                the callback.
@@ -2966,7 +3539,7 @@ extern NFCSTATUS phLibNfc_Llcp_Disconnect( phLibNfc_Handle                    hR
 *                                            could not be properly interpreted.
 * \retval NFCSTATUS_PENDING                  Reception operation is in progress,
 *                                            pRecv_RspCb will be called upon completion.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -2986,11 +3559,11 @@ extern NFCSTATUS phLibNfc_Llcp_Recv( phLibNfc_Handle              hRemoteDevice,
 *
 * This function is the same as phLibNfc_Llcp_Recv, except that the callback includes
 * the source SAP. This functions can only be called on a connectionless socket.
-* 
+*
 *
 * \param[in]  hSocket            Socket handle obtained during socket creation.
 * \param[in]  psBuffer           The buffer receiving the data.
-* \param[in]  pRecv_RspCb        The callback to be called when the 
+* \param[in]  pRecv_RspCb        The callback to be called when the
 *                                operation is completed.
 * \param[in]  pContext           Upper layer context to be returned in
 *                                the callback.
@@ -3000,7 +3573,7 @@ extern NFCSTATUS phLibNfc_Llcp_Recv( phLibNfc_Handle              hRemoteDevice,
 *                                            could not be properly interpreted.
 * \retval NFCSTATUS_PENDING                  Reception operation is in progress,
 *                                            pRecv_RspCb will be called upon completion.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -3021,11 +3594,11 @@ extern NFCSTATUS phLibNfc_Llcp_RecvFrom( phLibNfc_Handle                   hRemo
 * This function is used to write data on a socket. This function
 * can only be called on a connection-oriented socket which is already
 * in a connected state.
-* 
+*
 *
 * \param[in]  hSocket            Socket handle obtained during socket creation.
 * \param[in]  psBuffer           The buffer containing the data to send.
-* \param[in]  pSend_RspCb        The callback to be called when the 
+* \param[in]  pSend_RspCb        The callback to be called when the
 *                                operation is completed.
 * \param[in]  pContext           Upper layer context to be returned in
 *                                the callback.
@@ -3035,7 +3608,7 @@ extern NFCSTATUS phLibNfc_Llcp_RecvFrom( phLibNfc_Handle                   hRemo
 *                                            could not be properly interpreted.
 * \retval NFCSTATUS_PENDING                  Reception operation is in progress,
 *                                            pSend_RspCb will be called upon completion.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -3055,12 +3628,12 @@ extern NFCSTATUS phLibNfc_Llcp_Send( phLibNfc_Handle              hRemoteDevice,
 *
 * This function is used to write data on a socket to a given destination SAP.
 * This function can only be called on a connectionless socket.
-* 
+*
 *
 * \param[in]  hSocket            Socket handle obtained during socket creation.
 * \param[in]  nSap               The destination SAP.
 * \param[in]  psBuffer           The buffer containing the data to send.
-* \param[in]  pSend_RspCb        The callback to be called when the 
+* \param[in]  pSend_RspCb        The callback to be called when the
 *                                operation is completed.
 * \param[in]  pContext           Upper layer context to be returned in
 *                                the callback.
@@ -3070,7 +3643,7 @@ extern NFCSTATUS phLibNfc_Llcp_Send( phLibNfc_Handle              hRemoteDevice,
 *                                            could not be properly interpreted.
 * \retval NFCSTATUS_PENDING                  Reception operation is in progress,
 *                                            pSend_RspCb will be called upon completion.
-* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of 
+* \retval NFCSTATUS_INVALID_STATE            The socket is not in a valid state, or not of
 *                                            a valid type to perform the requsted operation.
 * \retval NFCSTATUS_NOT_INITIALISED          Indicates stack is not yet initialized.
 * \retval NFCSTATUS_SHUTDOWN                 Shutdown in progress.
@@ -3091,14 +3664,14 @@ extern NFCSTATUS phLibNfc_Llcp_SendTo( phLibNfc_Handle               hRemoteDevi
 * \brief Initializes \ DeInitialize the NFC library for testmode.
 *
 *
-*\brief This function initializes / DeInitialize NFC library and its underlying layers 
+*\brief This function initializes / DeInitialize NFC library and its underlying layers
 * in test mode. As part of this interface underlying layers gets configured.
 * Once phLibNfc_TstMode_On is successful ,NFC library ready in testmode using IOCTL.
 * After using test IOCTLs ,Test mode should be DeInit using phLibNfc_TstMode_Off.
-*\note This API should be used only for test IOCTL codes. 
+*\note This API should be used only for test IOCTL codes.
 *
 * \param[in] pDriverHandle         Driver Handle currently application is using.
-* \param[in] pTestModeCb        The init callback is called by the LibNfc when 
+* \param[in] pTestModeCb        The init callback is called by the LibNfc when
 *                               Configure test mode completed or there is an error
 *                               in initialization.
 *
@@ -3107,7 +3680,7 @@ extern NFCSTATUS phLibNfc_Llcp_SendTo( phLibNfc_Handle               hRemoteDevi
 *
 * \retval NFCSTATUS_ALREADY_INITIALISED     Stack is already initialized.
 * \retval NFCSTATUS_PENDING                 Init sequence   has been successfully
-*                                           started and result will be  conveyed via 
+*                                           started and result will be  conveyed via
 *                                           callback notification.
 * \retval NFCSTATUS_INVALID_PARAMETER       The parameter could not be  properly
 *                                           interpreted.
@@ -3135,7 +3708,7 @@ NFCSTATUS phLibNfc_Mgt_ConfigureTestMode(void              *pDriverHandle,
 *
 *  LibNfc client can reset the stack.
 *
-*  \param[in] pContext                     Upper layer context to be returned in 
+*  \param[in] pContext                     Upper layer context to be returned in
 *                                          the callback.
 *
 *

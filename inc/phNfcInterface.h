@@ -75,27 +75,31 @@
 #define NFC_NOTIFY_DEINIT_COMPLETED     0x02
 #define NFC_NOTIFY_DEINIT_FAILED        0xF2
 
-#define	NFC_NOTIFY_EVENT				0x70
+#define NFC_NOTIFY_EVENT        0x70
 
 #define NFC_NOTIFY_DEVICE_ACTIVATED     0x82
 #define NFC_NOTIFY_DEVICE_DEACTIVATED   0x83
 
 #define NFC_NOTIFY_SEND_COMPLETED       0x03
+#define NFC_NOTIFY_SEND_CE_A_COMPLETED       0x76
+#define NFC_NOTIFY_SEND_CE_B_COMPLETED       0x77
 #define NFC_NOTIFY_SEND_ERROR           0xF3
 
 #define NFC_NOTIFY_RECV_COMPLETED       0x04
 #define NFC_NOTIFY_RECV_ERROR           0xF4
-#define	NFC_NOTIFY_RECV_EVENT			0x74
+#define NFC_NOTIFY_RECV_EVENT     0x74
+#define NFC_NOTIFY_CE_A_RECV_EVENT 0x75
+#define NFC_NOTIFY_CE_B_RECV_EVENT 0x78
 #define NFC_NOTIFY_RECV_CANCELLED       0x34
 
 #define NFC_NOTIFY_TRANSCEIVE_COMPLETED 0x05
 #define NFC_NOTIFY_TRANSCEIVE_ERROR     0xF5
 
 #define NFC_NOTIFY_POLL_ENABLED         0x06
-#define NFC_NOTIFY_POLL_RESTARTED		0x16
+#define NFC_NOTIFY_POLL_RESTARTED   0x16
 #define NFC_NOTIFY_POLL_DISABLED        0x26
-#define NFC_NOTIFY_CONFIG_SUCCESS		0x36
-#define NFC_NOTIFY_CONFIG_ERROR			0xF6
+#define NFC_NOTIFY_CONFIG_SUCCESS   0x36
+#define NFC_NOTIFY_CONFIG_ERROR     0xF6
 
 #define NFC_NOTIFY_TARGET_DISCOVERED    0x10
 #define NFC_NOTIFY_DISCOVERY_ERROR      0xFA
@@ -107,9 +111,9 @@
 #define NFC_NOTIFY_TARGET_DISCONNECTED  0x15
 #define NFC_NOTIFY_DISCONNECT_FAILED    0xFD
 
-#define	NFC_NOTIFY_TRANSACTION			0x07
+#define NFC_NOTIFY_TRANSACTION      0x07
 
-#define	NFC_NOTIFY_RESULT				0x08
+#define NFC_NOTIFY_RESULT       0x08
 
 #define NFC_NOTIFY_DEVICE_ERROR         0xFEU
 #define NFC_NOTIFY_ERROR                0xFFU
@@ -149,16 +153,16 @@ enum phNfcIF_eExecution{
 
 
 typedef enum phNfc_eModeType{
-	MODE_ON		= 0x00U,       /**<  Switches the particular feature ON*/
-	MODE_OFF				   /**<  Switches the particular feature OFF*/
+  MODE_ON   = 0x00U,       /**<  Switches the particular feature ON*/
+  MODE_OFF           /**<  Switches the particular feature OFF*/
 }phNfc_eModeType_t;
 
 /**
  * State Structure to hold the State Information
  *
- * This structure holds the state Information of a specified 
+ * This structure holds the state Information of a specified
  * Layer .
- * 
+ *
  */
 
 typedef struct phNfc_sState
@@ -173,31 +177,31 @@ typedef struct phNfc_sState
 
 
 /**
- * Transaction Completion Information Structure 
+ * Transaction Completion Information Structure
  *
- * This structure holds the completion callback information of the 
- * transaction passed from the lower layer to the upper layer 
+ * This structure holds the completion callback information of the
+ * transaction passed from the lower layer to the upper layer
  * along with the completion callback.
  */
 
 typedef struct phNfc_sTransactionInfo
 {
-	/* Returns the status of the Transaction Completion routine */
+  /* Returns the status of the Transaction Completion routine */
     NFCSTATUS           status;
-	/* Indicates the Type of the Transaction */
-	uint8_t				type;
-	/* To contain more Transaction Notification specific info */
-	void                *info;
-	/* The data response from the Transaction */
+  /* Indicates the Type of the Transaction */
+  uint8_t       type;
+  /* To contain more Transaction Notification specific info */
+  void                *info;
+  /* The data response from the Transaction */
     uint8_t             *buffer;
-	/* The size of the data response from the Transaction */
+  /* The size of the data response from the Transaction */
     uint16_t             length;
 }phNfc_sTransactionInfo_t;
 
 /**
- * Notification Information Structure 
+ * Notification Information Structure
  *
- * This structure holds the notification callback information passed from 
+ * This structure holds the notification callback information passed from
  * the lower layer to the upper layer along with the notification callback.
  */
 
@@ -206,29 +210,29 @@ typedef struct phNfc_sCompletionInfo
     /* Returns the status of the completion routine */
     NFCSTATUS           status;
 
-	/* Indicates the Type of the Information
-	 * associated with the completion
-	 */
-	uint8_t				type;
+  /* Indicates the Type of the Information
+   * associated with the completion
+   */
+  uint8_t       type;
 
-	/* To contain more completion specific info */
+  /* To contain more completion specific info */
     void                *info;
 
 }phNfc_sCompletionInfo_t;
 
 
 /**
- *  Notification Information 
- * 
+ *  Notification Information
+ *
  */
 typedef struct phNfc_sNotificationInfo
 {
-	/* Returns the status of the Notification routine */
-	NFCSTATUS						status;
-	/* Indicates the Type of the Notification */
-	phHal_eNotificationType_t		type;
-	/* To contain more Notification specific info */
-	void							*info;
+  /* Returns the status of the Notification routine */
+  NFCSTATUS           status;
+  /* Indicates the Type of the Notification */
+  phHal_eNotificationType_t   type;
+  /* To contain more Notification specific info */
+  void              *info;
 
 }phNfc_sNotificationInfo_t;
 
@@ -298,8 +302,8 @@ typedef NFCSTATUS (*pphNfcIF_Interface_t) (
 /**
  * Data Transaction between the lower layer interface
  *
- * Sends or Receives the given amount of data to the lower layer. 
- * The call returns immediately and the registered callback is 
+ * Sends or Receives the given amount of data to the lower layer.
+ * The call returns immediately and the registered callback is
  * called when all data has been written.
  * <p>
  *
@@ -351,11 +355,11 @@ typedef struct phNfc_sLowerIF
 
 typedef struct phNfcIF_sCallBack
 {
-	/**<Holds context info to be sent to lower layer*/
+  /**<Holds context info to be sent to lower layer*/
     void                                        *pif_ctxt;
-	/**<Callback notifies occurrance of event in Lower Interface*/
+  /**<Callback notifies occurrance of event in Lower Interface*/
     pphNfcIF_Notification_CB_t                  notify;
-	/**<asynchronous Interface Transaction Completion callback*/
+  /**<asynchronous Interface Transaction Completion callback*/
     pphNfcIF_Transact_Completion_CB_t           send_complete;
     pphNfcIF_Transact_Completion_CB_t           receive_complete;
 
@@ -371,11 +375,11 @@ typedef struct phNfcIF_sCallBack
 
 typedef struct phNfcIF_sReference
 {
-	/**<Generic Interface structure with the Lower Layer*/	
+  /**<Generic Interface structure with the Lower Layer*/
     phNfc_sLowerIF_t                        *plower_if;
-	/**<pointer to the data to be sent*/
+  /**<pointer to the data to be sent*/
     uint8_t                                 *tx_data;
-	/**<pointer to the data to be received*/
+  /**<pointer to the data to be received*/
     uint8_t                                 *rx_data;
 }phNfcIF_sReference_t, *pphNfcIF_sReference_t;
 

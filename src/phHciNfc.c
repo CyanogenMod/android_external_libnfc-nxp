@@ -703,11 +703,11 @@ phHciNfc_Config_Emulation (
                 case NFC_HOST_CE_B_EMULATION:
 #if defined(HOST_EMULATION)
                 {
-                    if(TRUE == pEmulationCfg->config.
+                    /*if(TRUE == pEmulationCfg->config.
                         hostEmuCfg_A.enableEmulation)
                     {
                         psHciContext->hci_seq = ADMIN_CE_SEQ;
-                    }
+                    }*/
                     status = phHciNfc_EmulationCfg_Sequence(
                                                 psHciContext, pHwRef);
                     break;
