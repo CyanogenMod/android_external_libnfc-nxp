@@ -255,6 +255,7 @@ phHciNfc_CE_A_Initialise(
                 }
                 default :
                 {
+                  status=NFCSTATUS_FAILED;
                     break;
                 }
             }
@@ -340,6 +341,7 @@ phHciNfc_CE_A_Release(
                 }
                 default :
                 {
+                    status=NFCSTATUS_FAILED;
                     break;
                 }
             }
@@ -376,7 +378,7 @@ phHciNfc_CE_A_Update_PipeInfo(
         /* Update the pipe_id of the card emulation A Gate o
             btained from the HCI Response */
         ps_ce_a_info->pipe_id = pipeID;
-        if (HCI_UNKNOWN_PIPE_ID != pipeID)
+        if (HCI_UNKNOWN_PIPE_ID != pipeID && pipeID>0)
         {
             ps_ce_a_info->p_pipe_info = pPipeInfo;
             if (NULL != pPipeInfo)
