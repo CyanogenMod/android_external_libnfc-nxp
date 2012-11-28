@@ -172,7 +172,7 @@
 
 
 #ifndef NXP_ISO_XCHG_TIMEOUT
-#define NXP_ISO_XCHG_TIMEOUT            0x1AU
+#define NXP_ISO_XCHG_TIMEOUT            0x1BU
 #endif
 
 #ifndef NXP_MIFARE_XCHG_TIMEOUT
