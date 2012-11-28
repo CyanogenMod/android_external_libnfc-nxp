@@ -631,6 +631,7 @@ static NFCSTATUS phFriNfc_Felica_HChkApduBuff_Size( phFriNfc_NdefMap_t *NdefMap)
     NFCSTATUS status = NFCSTATUS_PENDING;
     uint8_t ResetFlag = FALSE;
     uint32_t Nbc = 0;
+    uint32_t DataLen = 0;
 
     Nbc = phFriNfc_Felica_HGetMaximumBlksToRead(NdefMap,PH_NFCFRI_NDEFMAP_FELI_NBC);
 
@@ -733,7 +734,18 @@ static NFCSTATUS phFriNfc_Felica_HChkApduBuff_Size( phFriNfc_NdefMap_t *NdefMap)
         }
         if ( ResetFlag == TRUE)
         {
-            *NdefMap->NumOfBytesRead = NdefMap->ApduBuffIndex;
+            PH_NFCFRI_NDEFMAP_FELI_CAL_LEN_BYTES(NdefMap->FelicaAttrInfo.LenBytes[0],
+                                                                NdefMap->FelicaAttrInfo.LenBytes[1],
+                                                                NdefMap->FelicaAttrInfo.LenBytes[2],
+                                                                DataLen);
+            if (NdefMap->ApduBuffIndex > DataLen)
+            {
+                *NdefMap->NumOfBytesRead = DataLen;
+            }
+            else
+            {
+                *NdefMap->NumOfBytesRead = NdefMap->ApduBuffIndex;
+            }
                                 /*Reset the index, internal buffer counters back to zero*/
                                 NdefMap->ApduBuffIndex = 0;
                                 NdefMap->Felica.Rd_NoBytesToCopy=0;
