@@ -1006,6 +1006,7 @@ static
                 pipe_id = hcp_message->payload[RESPONSE_PIPEID_OFFSET];
                 p_pipe_info = (phHciNfc_Pipe_Info_t *)
                         phOsalNfc_GetMemory(sizeof(phHciNfc_Pipe_Info_t));
+                memset(p_pipe_info, 0, sizeof(phHciNfc_Pipe_Info_t));
                 if(NULL != p_pipe_info)
                 {
                     /* The Source Host is the UICC Host */

@@ -144,6 +144,7 @@ void phOsalNfc_RaiseException(phOsalNfc_ExceptionType_t eExceptionType, uint16_t
 {
     if(eExceptionType == phOsalNfc_e_UnrecovFirmwareErr)
     {
+        ALOGE("HCI Timeout - Exception raised - Force restart of NFC service");
         phLibNfc_Mgt_Recovery();
         abort();
     } else {
