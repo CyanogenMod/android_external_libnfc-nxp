@@ -307,7 +307,7 @@ phHal4Nfc_Configure_Layers(
 #include <dlfcn.h>
 
 #define FW_PATH "/vendor/firmware/libpn544_fw.so"
-
+#define FW_PATH_2 "/system/lib/libpn544_fw.so"
 const unsigned char *nxp_nfc_full_version = NULL;
 const unsigned char *nxp_nfc_fw = NULL;
 
@@ -316,8 +316,11 @@ int dlopen_firmware() {
 
     void *handle = dlopen(FW_PATH, RTLD_NOW);
     if (handle == NULL) {
-        ALOGE("Could not open %s", FW_PATH);
-        return -1;
+        handle = dlopen(FW_PATH_2, RTLD_NOW);
+        if (handle == NULL) {
+            ALOGE("Could not open %s or %s", FW_PATH, FW_PATH_2);
+            return -1;
+        }
     }
 
     p = dlsym(handle, "nxp_nfc_full_version");
