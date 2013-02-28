@@ -702,7 +702,8 @@ static void phFriNfc_Llcp_LinkStatus_CB( void                              *pCon
 
 static void phFriNfc_Llcp_ResetLTO( phFriNfc_Llcp_t *Llcp )
 {
-   uint32_t nDuration;
+   uint32_t nDuration = 0;
+   uint8_t bIsReset = 0;
 
    /* Stop timer */
    phOsalNfc_Timer_Stop(Llcp->hSymmTimer);
@@ -720,6 +721,7 @@ static void phFriNfc_Llcp_ResetLTO( phFriNfc_Llcp_t *Llcp )
    else if (Llcp->state != PHFRINFC_LLCP_STATE_DEACTIVATION &&
             Llcp->state != PHFRINFC_LLCP_STATE_RESET_INIT)
    {
+      bIsReset = 1;
       /* Not yet in OPERATION state, perform first reset */
       if (Llcp->eRole == phFriNfc_LlcpMac_ePeerTypeInitiator)
       {
@@ -740,11 +742,22 @@ static void phFriNfc_Llcp_ResetLTO( phFriNfc_Llcp_t *Llcp )
    }
    else
    {
-      /* Must answer before the local announced LTO */
-      /* NOTE: to ensure the answer is completely sent before LTO, the
-               timer is triggered _before_ LTO expiration */
-      /* TODO: make sure time scope is enough, and avoid use of magic number */
-      nDuration = (Llcp->sLocalParams.lto * 10) / 2;
+      if (bIsReset)
+      {
+          /* Immediately bounce SYMM back - it'll take
+           * a while for the host to come up with something,
+           * and maybe the remote is faster.
+           */
+          nDuration = 1;
+      }
+      else
+      {
+          /* Must answer before the local announced LTO */
+          /* NOTE: to ensure the answer is completely sent before LTO, the
+                  timer is triggered _before_ LTO expiration */
+          /* TODO: make sure time scope is enough, and avoid use of magic number */
+          nDuration = (Llcp->sLocalParams.lto * 10) / 2;
+      }
    }
 
    LLCP_DEBUG("Starting LLCP timer with duration %d", nDuration);
