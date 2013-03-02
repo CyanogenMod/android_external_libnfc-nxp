@@ -23,6 +23,7 @@
  */
 
 /*include files*/
+#include <cutils/log.h>
 #include <phOsalNfc.h>
 #include <phLibNfcStatus.h>
 #include <phLibNfc.h>
@@ -256,7 +257,7 @@ static NFCSTATUS phFriNfc_LlcpTransport_DiscoveryAnswer(phFriNfc_LlcpTransport_t
    uint8_t           nTid, nSap;
 
    /* Test if a send is pending */
-   if(!psTransport->bSendPending)
+   if(!testAndSetSendPending(psTransport))
    {
       /* Set the header */
       psTransport->sLlcpHeader.dsap  = PHFRINFC_LLCP_SAP_SDP;
@@ -292,9 +293,6 @@ static NFCSTATUS phFriNfc_LlcpTransport_DiscoveryAnswer(phFriNfc_LlcpTransport_t
 
       /* Update buffer length to match real TLV size */
       sInfoBuffer.length = nTlvOffset;
-
-      /* Send Pending */
-      psTransport->bSendPending = TRUE;
 
       /* Send SNL frame */
       result =  phFriNfc_Llcp_Send(psTransport->pLlcp,
@@ -530,6 +528,20 @@ static void phFriNfc_LlcpTransport__Recv_CB(void            *pContext,
    }
 }
 
+bool_t testAndSetSendPending(phFriNfc_LlcpTransport_t* transport) {
+    bool_t currentValue;
+    pthread_mutex_lock(&transport->mutex);
+    currentValue = transport->bSendPending;
+    transport->bSendPending = TRUE;
+    pthread_mutex_unlock(&transport->mutex);
+    return currentValue;
+}
+
+void clearSendPending(phFriNfc_LlcpTransport_t* transport) {
+    pthread_mutex_lock(&transport->mutex);
+    transport->bSendPending = FALSE;
+    pthread_mutex_unlock(&transport->mutex);
+}
 
 /* TODO: comment function Transport recv CB */
 static void phFriNfc_LlcpTransport_Send_CB(void            *pContext,
@@ -538,35 +550,40 @@ static void phFriNfc_LlcpTransport_Send_CB(void            *pContext,
    phFriNfc_LlcpTransport_t         *psTransport = (phFriNfc_LlcpTransport_t*)pContext;
    NFCSTATUS                        result = NFCSTATUS_FAILED;
    phNfc_sData_t                    sFrmrBuffer;
-   phFriNfc_Llcp_Send_CB_t          pfSavedCb;
+   phFriNfc_Llcp_LinkSend_CB_t      pfSavedCb;
    void                             *pSavedContext;
    phFriNfc_LlcpTransport_Socket_t  *pCurrentSocket = NULL;
    uint8_t                          index;
 
+   // Store callbacks and socket index, so they can safely be
+   // overwritten by any code in the callback itself.
+   pfSavedCb = psTransport->pfLinkSendCb;
+   pSavedContext = psTransport->pLinkSendContext;
+   psTransport->pfLinkSendCb = NULL;
+   psTransport->pLinkSendContext = NULL;
+   index = psTransport->socketIndex;
+
    /* 1 - Reset the FLAG send pending*/
-   psTransport->bSendPending = FALSE;
+   clearSendPending(psTransport);
 
    /* 2 - Handle pending error responses */
-
    if(psTransport->bFrmrPending)
    {
-      /* Reset FRMR pending */
-      psTransport->bFrmrPending = FALSE;
+      if (!testAndSetSendPending(psTransport)) {
+         /* Reset FRMR pending */
+         psTransport->bFrmrPending = FALSE;
 
-      /* Send Frmr */
-      sFrmrBuffer.buffer = psTransport->FrmrInfoBuffer;
-      sFrmrBuffer.length = 0x04; /* Size of FRMR Information field */
+         /* Send Frmr */
+         sFrmrBuffer.buffer = psTransport->FrmrInfoBuffer;
+         sFrmrBuffer.length = 0x04; /* Size of FRMR Information field */
 
-      /* Send Pending */
-      psTransport->bSendPending = TRUE;
-
-      result =  phFriNfc_Llcp_Send(psTransport->pLlcp,
+         result =  phFriNfc_Llcp_Send(psTransport->pLlcp,
                                    &psTransport->sLlcpHeader,
                                    NULL,
                                    &sFrmrBuffer,
                                    phFriNfc_LlcpTransport_Send_CB,
                                    psTransport);
-
+      }
    }
    else if(psTransport->bDmPending)
    {
@@ -581,17 +598,11 @@ static void phFriNfc_LlcpTransport_Send_CB(void            *pContext,
    }
 
    /* 3 - Call the original callback */
-
-   if (psTransport->pfLinkSendCb != NULL)
+   if (pfSavedCb != NULL)
    {
-      pfSavedCb = psTransport->pfLinkSendCb;
-      pSavedContext = psTransport->pLinkSendContext;
-
-      psTransport->pfLinkSendCb = NULL;
-      psTransport->pLinkSendContext = NULL;
-
-      (*pfSavedCb)(pSavedContext, status);
+      (*pfSavedCb)(pSavedContext, index, status);
    }
+
 
    /* 4 - Handle pending send operations */
 
@@ -634,9 +645,6 @@ static void phFriNfc_LlcpTransport_Send_CB(void            *pContext,
       }
 
    } while(index != psTransport->socketIndex);
-
-   /* Save the new index */
-   psTransport->socketIndex = index;
 }
 
 
@@ -796,7 +804,8 @@ NFCSTATUS phFriNfc_LlcpTransport_LinkSend( phFriNfc_LlcpTransport_t         *Llc
                                            phFriNfc_Llcp_sPacketHeader_t    *psHeader,
                                            phFriNfc_Llcp_sPacketSequence_t  *psSequence,
                                            phNfc_sData_t                    *psInfo,
-                                           phFriNfc_Llcp_Send_CB_t          pfSend_CB,
+                                           phFriNfc_Llcp_LinkSend_CB_t      pfSend_CB,
+                                           uint8_t                          socketIndex,
                                            void                             *pContext )
 {
    NFCSTATUS status;
@@ -808,6 +817,7 @@ NFCSTATUS phFriNfc_LlcpTransport_LinkSend( phFriNfc_LlcpTransport_t         *Llc
    /* Save callback details */
    LlcpTransport->pfLinkSendCb = pfSend_CB;
    LlcpTransport->pLinkSendContext = pContext;
+   LlcpTransport->socketIndex = socketIndex;
 
    /* Call the link-level send function */
    status = phFriNfc_Llcp_Send(LlcpTransport->pLlcp, psHeader, psSequence, psInfo, phFriNfc_LlcpTransport_Send_CB, (void*)LlcpTransport);
@@ -885,7 +895,7 @@ NFCSTATUS phFriNfc_LlcpTransport_SendFrameReject(phFriNfc_LlcpTransport_t       
       psTransport->FrmrInfoBuffer[3] = (vsa<<4)|vra ;
 
       /* Test if a send is pending */
-      if(psTransport->bSendPending)
+      if(testAndSetSendPending(psTransport))
       {
          psTransport->bFrmrPending = TRUE;
          status = NFCSTATUS_PENDING;
@@ -894,9 +904,6 @@ NFCSTATUS phFriNfc_LlcpTransport_SendFrameReject(phFriNfc_LlcpTransport_t       
       {
          sFrmrBuffer.buffer =  psTransport->FrmrInfoBuffer;
          sFrmrBuffer.length =  0x04; /* Size of FRMR Information field */
-
-         /* Send Pending */
-         psTransport->bSendPending = TRUE;
 
          /* Send FRMR frame */
          status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
@@ -927,7 +934,7 @@ NFCSTATUS phFriNfc_LlcpTransport_SendDisconnectMode(phFriNfc_LlcpTransport_t* ps
    NFCSTATUS                       status = NFCSTATUS_SUCCESS;
 
    /* Test if a send is pending */
-   if(psTransport->bSendPending)
+   if(testAndSetSendPending(psTransport))
    {
       /* DM pending */
       psTransport->bDmPending        = TRUE;
@@ -950,9 +957,6 @@ NFCSTATUS phFriNfc_LlcpTransport_SendDisconnectMode(phFriNfc_LlcpTransport_t* ps
       psTransport->DmInfoBuffer[2] = dmOpCode;
       psTransport->sDmPayload.buffer    = &psTransport->DmInfoBuffer[2];
       psTransport->sDmPayload.length    = PHFRINFC_LLCP_DM_LENGTH;
-
-      /* Send Pending */
-      psTransport->bSendPending = TRUE;
 
       /* Send DM frame */
       status =  phFriNfc_Llcp_Send(psTransport->pLlcp,
@@ -1075,7 +1079,7 @@ static NFCSTATUS phFriNfc_LlcpTransport_DiscoverServicesEx(phFriNfc_LlcpTranspor
    uint32_t          nTlvOffset;
 
    /* Test if a send is pending */
-   if(!psTransport->bSendPending)
+   if(!testAndSetSendPending(psTransport))
    {
       /* Set the header */
       psTransport->sLlcpHeader.dsap  = PHFRINFC_LLCP_SAP_SDP;
@@ -1110,9 +1114,6 @@ static NFCSTATUS phFriNfc_LlcpTransport_DiscoverServicesEx(phFriNfc_LlcpTranspor
 
       /* Update buffer length to match real TLV size */
       sInfoBuffer.length = nTlvOffset;
-
-      /* Send Pending */
-      psTransport->bSendPending = TRUE;
 
       /* Send SNL frame */
       result =  phFriNfc_Llcp_Send(psTransport->pLlcp,
