@@ -52,7 +52,6 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_SendLlcp_CB(void*        p
    uint8_t                           index;
    uint8_t                           socketFound = FALSE;
    NFCSTATUS                         result;
-
    /* Get Send CB context */
    psTransport = (phFriNfc_LlcpTransport_t*)pContext;
 
@@ -227,7 +226,6 @@ NFCSTATUS phFriNfc_LlcpTransport_ConnectionOriented_HandlePendingOperations(phFr
          pSocket->pSocketErrCb(pSocket->pContext, PHFRINFC_LLCP_ERR_DISCONNECTED);
       }
    }
-
    return result;
 }
 
@@ -2053,11 +2051,6 @@ NFCSTATUS phLibNfc_LlcpTransport_ConnectionOriented_Disconnect(phFriNfc_LlcpTran
        }
    }
 
-   /* Set the socket Header */
-   pLlcpSocket->sLlcpHeader.dsap  = pLlcpSocket->socket_dSap;
-   pLlcpSocket->sLlcpHeader.ptype = PHFRINFC_LLCP_PTYPE_DISC;
-   pLlcpSocket->sLlcpHeader.ssap  = pLlcpSocket->socket_sSap;
-
    /* Test if a send is pending */
    if( testAndSetSendPending(pLlcpSocket->psTransport))
    {
@@ -2066,6 +2059,11 @@ NFCSTATUS phLibNfc_LlcpTransport_ConnectionOriented_Disconnect(phFriNfc_LlcpTran
    }
    else
    {
+      /* Set the socket Header */
+      pLlcpSocket->sLlcpHeader.dsap  = pLlcpSocket->socket_dSap;
+      pLlcpSocket->sLlcpHeader.ptype = PHFRINFC_LLCP_PTYPE_DISC;
+      pLlcpSocket->sLlcpHeader.ssap  = pLlcpSocket->socket_sSap;
+
       status =  phFriNfc_LlcpTransport_LinkSend(pLlcpSocket->psTransport,
                                    &pLlcpSocket->sLlcpHeader,
                                    NULL,

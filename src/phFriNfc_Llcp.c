@@ -162,13 +162,13 @@ static NFCSTATUS phFriNfc_Llcp_InternalDeactivate( phFriNfc_Llcp_t *Llcp )
       /* Stop timer */
       phOsalNfc_Timer_Stop(Llcp->hSymmTimer);
 
+      Llcp->psSendHeader = NULL;
+      Llcp->psSendSequence = NULL;
       /* Return delayed send operation in error, in any */
       if (Llcp->psSendInfo != NULL)
       {
          phFriNfc_Llcp_Deallocate(Llcp->psSendInfo);
          Llcp->psSendInfo = NULL;
-         Llcp->psSendHeader = NULL;
-         Llcp->psSendSequence = NULL;
       }
       if (Llcp->pfSendCB != NULL)
       {
@@ -560,7 +560,6 @@ static NFCSTATUS phFriNfc_Llcp_InternalActivate( phFriNfc_Llcp_t *Llcp,
          phFriNfc_Llcp_ResetLTO(Llcp);
       }
    }
-
    /* Notify upper layer, if Activation failed CB called by Deactivate */
    if (status == NFCSTATUS_SUCCESS)
    {
@@ -869,7 +868,6 @@ static bool_t phFriNfc_Llcp_HandlePendingSend ( phFriNfc_Llcp_t *Llcp )
    NFCSTATUS                        result;
    uint8_t                          bDeallocate = FALSE;
    uint8_t                          return_value = FALSE;
-
    /* Handle pending disconnection request */
    if (Llcp->bDiscPendingFlag == TRUE)
    {
@@ -1339,6 +1337,10 @@ NFCSTATUS phFriNfc_Llcp_Activate( phFriNfc_Llcp_t *Llcp )
    /* Update state */
    Llcp->state = PHFRINFC_LLCP_STATE_ACTIVATION;
 
+   /* Reset any headers to send */
+   Llcp->psSendHeader = NULL;
+   Llcp->psSendSequence = NULL;
+
    /* Forward check request to MAC layer */
    return phFriNfc_LlcpMac_Activate(&Llcp->MAC);
 }
@@ -1413,7 +1415,6 @@ NFCSTATUS phFriNfc_Llcp_Send( phFriNfc_Llcp_t                  *Llcp,
                               void                             *pContext )
 {
    NFCSTATUS result;
-
    /* Check parameters */
    if ((Llcp == NULL) || (psHeader == NULL) || (pfSend_CB == NULL))
    {
