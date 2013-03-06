@@ -687,7 +687,7 @@ NFCSTATUS phFriNfc_LlcpTransport_Reset (phFriNfc_LlcpTransport_t      *pLlcpTran
          pLlcpTransport->pSocketTable[i].pAcceptContext                 = NULL;
          pLlcpTransport->pSocketTable[i].pRejectContext                 = NULL;
          pLlcpTransport->pSocketTable[i].pConnectContext                = NULL;
-         pLlcpTransport->pSocketTable[i].pDisonnectContext              = NULL;
+         pLlcpTransport->pSocketTable[i].pDisconnectContext             = NULL;
          pLlcpTransport->pSocketTable[i].pSendContext                   = NULL;
          pLlcpTransport->pSocketTable[i].pRecvContext                   = NULL;
          pLlcpTransport->pSocketTable[i].pSocketErrCb                   = NULL;

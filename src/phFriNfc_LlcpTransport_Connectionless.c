@@ -164,7 +164,7 @@ static void phFriNfc_LlcpTransport_Connectionless_Abort(phFriNfc_LlcpTransport_S
    pLlcpSocket->pfSocketListen_Cb = NULL;
    pLlcpSocket->pConnectContext = NULL;
    pLlcpSocket->pfSocketConnect_Cb = NULL;
-   pLlcpSocket->pDisonnectContext = NULL;
+   pLlcpSocket->pDisconnectContext = NULL;
    pLlcpSocket->pfSocketDisconnect_Cb = NULL;
 }
 

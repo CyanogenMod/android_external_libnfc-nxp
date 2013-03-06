@@ -296,10 +296,10 @@ static void phFriNfc_LlcpTransport_ConnectionOriented_Abort(phFriNfc_LlcpTranspo
    pLlcpSocket->pConnectContext = NULL;
    if (pLlcpSocket->pfSocketDisconnect_Cb != NULL)
    {
-      pLlcpSocket->pfSocketDisconnect_Cb(pLlcpSocket->pDisonnectContext, NFCSTATUS_ABORTED);
+      pLlcpSocket->pfSocketDisconnect_Cb(pLlcpSocket->pDisconnectContext, NFCSTATUS_ABORTED);
       pLlcpSocket->pfSocketDisconnect_Cb = NULL;
    }
-   pLlcpSocket->pDisonnectContext = NULL;
+   pLlcpSocket->pDisconnectContext = NULL;
 
    pLlcpSocket->pfSocketRecvFrom_Cb = NULL;
    pLlcpSocket->pfSocketListen_Cb = NULL;
@@ -866,7 +866,7 @@ static void Handle_DisconnetModeFrame(phFriNfc_LlcpTransport_t      *psTransport
                /* Call Disconnect CB */
                if (psLocalLlcpSocket->pfSocketDisconnect_Cb != NULL)
                {
-                  psLocalLlcpSocket->pfSocketDisconnect_Cb(psLocalLlcpSocket->pDisonnectContext,NFCSTATUS_SUCCESS);
+                  psLocalLlcpSocket->pfSocketDisconnect_Cb(psLocalLlcpSocket->pDisconnectContext,NFCSTATUS_SUCCESS);
                   psLocalLlcpSocket->pfSocketDisconnect_Cb = NULL;
                }
 
@@ -2016,7 +2016,7 @@ NFCSTATUS phLibNfc_LlcpTransport_ConnectionOriented_Disconnect(phFriNfc_LlcpTran
 
    /* Store the Disconnect callback  and context*/
    pLlcpSocket->pfSocketDisconnect_Cb = pDisconnect_RspCb;
-   pLlcpSocket->pDisonnectContext = pContext;
+   pLlcpSocket->pDisconnectContext = pContext;
 
    /* Set the socket in connecting state */
    pLlcpSocket->eSocket_State = phFriNfc_LlcpTransportSocket_eSocketDisconnecting;
@@ -2077,8 +2077,8 @@ NFCSTATUS phLibNfc_LlcpTransport_ConnectionOriented_Disconnect(phFriNfc_LlcpTran
       {
          clearSendPending(pLlcpSocket->psTransport);
          LLCP_PRINT("Release Disconnect callback");
-         pLlcpSocket->pfSocketConnect_Cb = NULL;
-         pLlcpSocket->pConnectContext = NULL;
+         pLlcpSocket->pfSocketDisconnect_Cb = NULL;
+         pLlcpSocket->pDisconnectContext = NULL;
       }
    }
 

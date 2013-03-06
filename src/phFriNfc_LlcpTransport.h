@@ -225,7 +225,7 @@ struct phFriNfc_LlcpTransport_Socket
    void                                          *pAcceptContext;
    void                                          *pRejectContext;
    void                                          *pConnectContext;
-   void                                          *pDisonnectContext;
+   void                                          *pDisconnectContext;
    void                                          *pSendContext;
    void                                          *pRecvContext;
    void                                          *pContext;
