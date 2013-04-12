@@ -470,6 +470,7 @@ NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle,
     }
     else 
     {
+        phLibNfc_eSE_ActivationMode originalMode = pLibContext->sSeContext.eActivatedMode;
         switch(eActivation_mode)
         {
             case phLibNfc_SE_ActModeVirtual: 
@@ -655,6 +656,8 @@ NFCSTATUS phLibNfc_SE_SetMode ( phLibNfc_Handle             hSE_Handle,
         }
         else
         {
+            // Restore original mode
+            pLibContext->sSeContext.eActivatedMode = originalMode;
             Status = NFCSTATUS_FAILED;
         }
     }
