@@ -194,7 +194,14 @@ NFCSTATUS phLibNfc_Mgt_ConfigureDiscovery (
             }
             else
             {
-                RetVal=NFCSTATUS_FAILED;
+                if (PHNFCSTATUS(RetVal) == NFCSTATUS_BUSY)
+                {
+                    RetVal = NFCSTATUS_BUSY;
+                }
+                else
+                {
+                    RetVal=NFCSTATUS_FAILED;
+                }
             }
 
         }
