@@ -162,13 +162,13 @@ static NFCSTATUS phFriNfc_Llcp_InternalDeactivate( phFriNfc_Llcp_t *Llcp )
       /* Stop timer */
       phOsalNfc_Timer_Stop(Llcp->hSymmTimer);
 
+      Llcp->psSendHeader = NULL;
+      Llcp->psSendSequence = NULL;
       /* Return delayed send operation in error, in any */
       if (Llcp->psSendInfo != NULL)
       {
          phFriNfc_Llcp_Deallocate(Llcp->psSendInfo);
          Llcp->psSendInfo = NULL;
-         Llcp->psSendHeader = NULL;
-         Llcp->psSendSequence = NULL;
       }
       if (Llcp->pfSendCB != NULL)
       {
@@ -560,7 +560,6 @@ static NFCSTATUS phFriNfc_Llcp_InternalActivate( phFriNfc_Llcp_t *Llcp,
          phFriNfc_Llcp_ResetLTO(Llcp);
       }
    }
-
    /* Notify upper layer, if Activation failed CB called by Deactivate */
    if (status == NFCSTATUS_SUCCESS)
    {
@@ -702,7 +701,8 @@ static void phFriNfc_Llcp_LinkStatus_CB( void                              *pCon
 
 static void phFriNfc_Llcp_ResetLTO( phFriNfc_Llcp_t *Llcp )
 {
-   uint32_t nDuration;
+   uint32_t nDuration = 0;
+   uint8_t bIsReset = 0;
 
    /* Stop timer */
    phOsalNfc_Timer_Stop(Llcp->hSymmTimer);
@@ -720,6 +720,7 @@ static void phFriNfc_Llcp_ResetLTO( phFriNfc_Llcp_t *Llcp )
    else if (Llcp->state != PHFRINFC_LLCP_STATE_DEACTIVATION &&
             Llcp->state != PHFRINFC_LLCP_STATE_RESET_INIT)
    {
+      bIsReset = 1;
       /* Not yet in OPERATION state, perform first reset */
       if (Llcp->eRole == phFriNfc_LlcpMac_ePeerTypeInitiator)
       {
@@ -740,11 +741,22 @@ static void phFriNfc_Llcp_ResetLTO( phFriNfc_Llcp_t *Llcp )
    }
    else
    {
-      /* Must answer before the local announced LTO */
-      /* NOTE: to ensure the answer is completely sent before LTO, the
-               timer is triggered _before_ LTO expiration */
-      /* TODO: make sure time scope is enough, and avoid use of magic number */
-      nDuration = (Llcp->sLocalParams.lto * 10) / 2;
+      if (bIsReset)
+      {
+          /* Immediately bounce SYMM back - it'll take
+           * a while for the host to come up with something,
+           * and maybe the remote is faster.
+           */
+          nDuration = 1;
+      }
+      else
+      {
+          /* Must answer before the local announced LTO */
+          /* NOTE: to ensure the answer is completely sent before LTO, the
+                  timer is triggered _before_ LTO expiration */
+          /* TODO: make sure time scope is enough, and avoid use of magic number */
+          nDuration = (Llcp->sLocalParams.lto * 10) / 2;
+      }
    }
 
    LLCP_DEBUG("Starting LLCP timer with duration %d", nDuration);
@@ -856,7 +868,6 @@ static bool_t phFriNfc_Llcp_HandlePendingSend ( phFriNfc_Llcp_t *Llcp )
    NFCSTATUS                        result;
    uint8_t                          bDeallocate = FALSE;
    uint8_t                          return_value = FALSE;
-
    /* Handle pending disconnection request */
    if (Llcp->bDiscPendingFlag == TRUE)
    {
@@ -1326,6 +1337,10 @@ NFCSTATUS phFriNfc_Llcp_Activate( phFriNfc_Llcp_t *Llcp )
    /* Update state */
    Llcp->state = PHFRINFC_LLCP_STATE_ACTIVATION;
 
+   /* Reset any headers to send */
+   Llcp->psSendHeader = NULL;
+   Llcp->psSendSequence = NULL;
+
    /* Forward check request to MAC layer */
    return phFriNfc_LlcpMac_Activate(&Llcp->MAC);
 }
@@ -1400,7 +1415,6 @@ NFCSTATUS phFriNfc_Llcp_Send( phFriNfc_Llcp_t                  *Llcp,
                               void                             *pContext )
 {
    NFCSTATUS result;
-
    /* Check parameters */
    if ((Llcp == NULL) || (psHeader == NULL) || (pfSend_CB == NULL))
    {

@@ -30,6 +30,7 @@
 #include <phFriNfc_Llcp.h>
 
 static void phFriNfc_LlcpTransport_Connectionless_SendTo_CB(void*        pContext,
+                                                            uint8_t      socketIndex,
                                                             NFCSTATUS    status);
 
 NFCSTATUS phFriNfc_LlcpTransport_Connectionless_HandlePendingOperations(phFriNfc_LlcpTransport_Socket_t *pSocket)
@@ -51,6 +52,7 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_HandlePendingOperations(phFriNfc
                                    NULL,
                                    &pSocket->sSocketSendBuffer,
                                    phFriNfc_LlcpTransport_Connectionless_SendTo_CB,
+                                   pSocket->index,
                                    pSocket);
    }
    else
@@ -125,6 +127,7 @@ void Handle_Connectionless_IncommingFrame(phFriNfc_LlcpTransport_t      *pLlcpTr
 
 /* TODO: comment function phFriNfc_LlcpTransport_Connectionless_SendTo_CB */
 static void phFriNfc_LlcpTransport_Connectionless_SendTo_CB(void*        pContext,
+                                                            uint8_t      socketIndex,
                                                             NFCSTATUS    status)
 {
    phFriNfc_LlcpTransport_Socket_t *         pLlcpSocket = (phFriNfc_LlcpTransport_Socket_t*)pContext;
@@ -161,7 +164,7 @@ static void phFriNfc_LlcpTransport_Connectionless_Abort(phFriNfc_LlcpTransport_S
    pLlcpSocket->pfSocketListen_Cb = NULL;
    pLlcpSocket->pConnectContext = NULL;
    pLlcpSocket->pfSocketConnect_Cb = NULL;
-   pLlcpSocket->pDisonnectContext = NULL;
+   pLlcpSocket->pDisconnectContext = NULL;
    pLlcpSocket->pfSocketDisconnect_Cb = NULL;
 }
 
@@ -271,6 +274,7 @@ NFCSTATUS phFriNfc_LlcpTransport_Connectionless_SendTo(phFriNfc_LlcpTransport_So
                                    NULL,
                                    psBuffer,
                                    phFriNfc_LlcpTransport_Connectionless_SendTo_CB,
+                                   pLlcpSocket->index,
                                    pLlcpSocket);
    }
 

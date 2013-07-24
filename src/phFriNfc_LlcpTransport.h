@@ -32,6 +32,7 @@
 #include <phFriNfc_LlcpUtils.h>
 #ifdef ANDROID
 #include <string.h>
+#include <pthread.h>
 #endif
 
 
@@ -224,7 +225,7 @@ struct phFriNfc_LlcpTransport_Socket
    void                                          *pAcceptContext;
    void                                          *pRejectContext;
    void                                          *pConnectContext;
-   void                                          *pDisonnectContext;
+   void                                          *pDisconnectContext;
    void                                          *pSendContext;
    void                                          *pRecvContext;
    void                                          *pContext;
@@ -251,12 +252,13 @@ struct phFriNfc_LlcpTransport
    phFriNfc_LlcpTransport_Socket_t       pSocketTable[PHFRINFC_LLCP_NB_SOCKET_MAX];
    phFriNfc_Llcp_CachedServiceName_t     pCachedServiceNames[PHFRINFC_LLCP_SDP_ADVERTISED_NB];
    phFriNfc_Llcp_t                       *pLlcp;
+   pthread_mutex_t                       mutex;
    bool_t                                bSendPending;
    bool_t                                bRecvPending;
    bool_t                                bDmPending;
    bool_t                                bFrmrPending;
 
-   phFriNfc_Llcp_Send_CB_t               pfLinkSendCb;
+   phFriNfc_Llcp_LinkSend_CB_t           pfLinkSendCb;
    void                                  *pLinkSendContext;
 
    uint8_t                               socketIndex;
@@ -296,6 +298,10 @@ struct phFriNfc_LlcpTransport
 ################################################################################
 */
 
+bool_t testAndSetSendPending(phFriNfc_LlcpTransport_t* transport);
+
+void clearSendPending(phFriNfc_LlcpTransport_t* transport);
+
  /**
 * \ingroup grp_fri_nfc
 * \brief <b>Create a socket on a LLCP-connected device</b>.
@@ -322,7 +328,8 @@ NFCSTATUS phFriNfc_LlcpTransport_LinkSend( phFriNfc_LlcpTransport_t         *Llc
                                            phFriNfc_Llcp_sPacketHeader_t    *psHeader,
                                            phFriNfc_Llcp_sPacketSequence_t  *psSequence,
                                            phNfc_sData_t                    *psInfo,
-                                           phFriNfc_Llcp_Send_CB_t          pfSend_CB,
+                                           phFriNfc_Llcp_LinkSend_CB_t      pfSend_CB,
+                                           uint8_t                          socketIndex,
                                            void                             *pContext );
 
 

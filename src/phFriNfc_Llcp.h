@@ -221,6 +221,12 @@ typedef void (*phFriNfc_Llcp_LinkStatus_CB_t) (
    phFriNfc_Llcp_eLinkStatus_t      eLinkStatus
 );
 
+typedef void (*phFriNfc_Llcp_LinkSend_CB_t) (
+   void                             *pContext,
+   uint8_t                          socketIndex,
+   NFCSTATUS                        status
+);
+
 typedef void (*phFriNfc_Llcp_Send_CB_t) (
    void                             *pContext,
    NFCSTATUS                        status

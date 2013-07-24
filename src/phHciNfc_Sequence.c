@@ -458,7 +458,7 @@ phHciNfc_FSM_Validate(
             } /* End of State Validation Switch */
             if( NFC_FSM_IN_PROGRESS == psHciContext->hci_state.transition )
             {
-                status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_INVALID_STATE);
+                status = PHNFCSTVAL(CID_NFC_HCI, NFCSTATUS_BUSY);
             }
             break;
         }
