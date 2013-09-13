@@ -237,6 +237,11 @@ NFCSTATUS phHal4Nfc_Connect(
         }
 
     }
+    if(NFCSTATUS_PENDING != RetStatus)
+    {
+        Hal4Ctxt->sUpperLayerInfo.psUpperLayerCtxt = NULL;
+        Hal4Ctxt->sTgtConnectInfo.pUpperConnectCb = NULL;
+    }
     return RetStatus;
 }
 

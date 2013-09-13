@@ -493,13 +493,10 @@ void phHal4Nfc_TargetDiscoveryComplete(
                             Count++;
                         }
                     }
-                    if ( !(Sak & NFCIP_BITMASK) )
-                    {
-                        // Always add a separate 3A target on a separate
-                        // handle, so the upper layers can connect to it.
-                        aRemoteDevTypes[Count] = phHal_eISO14443_3A_PICC;
-                        Count++;
-                    }
+                    // Always add a separate 3A target on a separate
+                    // handle, so the upper layers can connect to it.
+                    aRemoteDevTypes[Count] = phHal_eISO14443_3A_PICC;
+                    Count++;
                 }
                 /*Check for P2P target passive*/
                 if((Sak & NFCIP_BITMASK) && 
