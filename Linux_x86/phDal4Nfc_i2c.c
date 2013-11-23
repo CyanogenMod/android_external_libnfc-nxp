@@ -41,8 +41,6 @@
 #include <string.h>
 #endif
 
-#include <linux/pn544.h>
-
 typedef struct
 {
    int  nHandle;
@@ -266,6 +264,7 @@ FUNCTION: phDal4Nfc_i2c_reset
 PURPOSE:  Reset the PN544, using the VEN pin
 
 -----------------------------------------------------------------------------*/
+#define PN544_SET_PWR _IOW(0xe9, 0x01, unsigned int)
 int phDal4Nfc_i2c_reset(long level)
 {
     DAL_DEBUG("phDal4Nfc_i2c_reset, VEN level = %ld", level);
