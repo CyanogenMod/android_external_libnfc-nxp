@@ -82,7 +82,7 @@ PURPOSE:  The application could have opened the link itself. So we just need
 
 void phDal4Nfc_i2c_set_open_from_handle(phHal_sHwReference_t * pDalHwContext)
 {
-   gI2cPortContext.nHandle = (int) pDalHwContext->p_board_driver;
+   gI2cPortContext.nHandle = (int)(intptr_t) pDalHwContext->p_board_driver;
    DAL_ASSERT_STR(gI2cPortContext.nHandle >= 0, "Bad passed com port handle");
    gI2cPortContext.nOpened = 1;
 }
@@ -156,7 +156,7 @@ NFCSTATUS phDal4Nfc_i2c_open_and_configure(pphDal4Nfc_sConfig_t pConfig, void **
    }
 
    gI2cPortContext.nOpened = 1;
-   *pLinkHandle = (void*)gI2cPortContext.nHandle;
+   *pLinkHandle = (void*)(intptr_t)gI2cPortContext.nHandle;
 
    DAL_PRINT("Open succeed\n");
 

@@ -132,6 +132,8 @@ LOCAL_CFLAGS += -I$(LOCAL_PATH)/inc
 LOCAL_CFLAGS += -I$(LOCAL_PATH)/Linux_x86
 LOCAL_CFLAGS += -I$(LOCAL_PATH)/src
 
+LOCAL_CFLAGS += -Wno-unused-parameter
+
 LOCAL_MODULE:= libnfc
 LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := libcutils libnfc_ndef libdl libhardware liblog

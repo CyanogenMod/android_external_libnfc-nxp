@@ -155,7 +155,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 							info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-							(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+							(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1] = 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -170,7 +170,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 							info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-							(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+							(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1]= 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -187,7 +187,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 								info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-								(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+								(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1] = 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -203,7 +203,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 								info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-								(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+								(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1] = 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -219,7 +219,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 								info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-								(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+								(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1] = 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -235,7 +235,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 								info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-								(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+								(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1] = 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -251,7 +251,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 								info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-								(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+								(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1] = 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -268,7 +268,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 								info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-								(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+								(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1] = 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -283,7 +283,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 								info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-								(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
+								(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx].psRemoteDevInfo;
 						gpphLibContext->Discov_handle[DeviceIndx1] = 
 							gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -299,7 +299,7 @@ void phLibNfc_NotificationRegister_Resp_Cb (
 						gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo=
 								info.psDiscoveryInfo->ppRemoteDevInfo[DeviceIndx];
 						gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev =
-								(uint32_t)gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo;
+								(phLibNfc_Handle)gpphLibContext->psRemoteDevList[DeviceIndx1].psRemoteDevInfo;
 						gpphLibContext->sNfcIp_Context.Rem_Initiator_Handle=
 								gpphLibContext->psRemoteDevList[DeviceIndx1].hTargetDev;
 						DeviceIndx1++;
@@ -756,7 +756,7 @@ STATIC void phLibNfc_RemoteDev_Connect_Cb(
         else if(PHNFCSTATUS(status)==NFCSTATUS_SUCCESS)
         {
             /* Copy the Remote device address as connected handle*/
-            gpphLibContext->Connected_handle =(uint32_t) pRmtdev_info;
+            gpphLibContext->Connected_handle = (uintptr_t)pRmtdev_info;
             /* Update the state to connected and return status as SUCCESS*/
             gpphLibContext->LibNfcState.next_state = eLibNfcHalStateConnect;
             Connect_status = NFCSTATUS_SUCCESS;
@@ -774,7 +774,7 @@ STATIC void phLibNfc_RemoteDev_Connect_Cb(
         /* Call the upper layer callback*/      
         gpphLibContext->CBInfo.pClientConnectCb(
                     gpphLibContext->CBInfo.pClientConCntx,
-                    (uint32_t)pRmtdev_info,
+                    (phLibNfc_Handle)pRmtdev_info,
                     (phLibNfc_sRemoteDevInformation_t*)pRmtdev_info,
                     Connect_status);
     }
@@ -948,7 +948,7 @@ STATIC void phLibNfc_RemoteDev_Disconnect_cb(
     }
     /* Call the upper layer Callback */
     (*pUpper_NtfCb)(pUpper_Context,
-                    (uint32_t)reg_handle,
+                    (phLibNfc_Handle)reg_handle,
                     DisCnct_status);
     return;
 }
@@ -1197,7 +1197,7 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
                     PHDBG_INFO("LibNfc:Transceive Complete");
                     /* Notify the Transceive Completion to upper layer */
                     gpphLibContext->CBInfo.pClientTransceiveCb(pUpper_Context,
-                                (uint32_t)pRmtdev_info,  
+                                (phLibNfc_Handle)pRmtdev_info,
                                 trans_resp,
                                 trans_status);
                 }
@@ -1210,7 +1210,7 @@ void phLibNfc_RemoteDev_Transceive_Cb(void *context,
                     PHDBG_INFO("LibNfc:Transceive Complete");
                     /* Notify the Transceive Completion to upper layer */
                     gpphLibContext->CBInfo.pClientTransceiveCb(pUpper_Context,
-                                (uint32_t)pRmtdev_info,  
+                                (phLibNfc_Handle)pRmtdev_info,
                                 trans_resp,
                                 trans_status);
                 }

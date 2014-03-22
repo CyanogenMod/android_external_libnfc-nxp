@@ -67,7 +67,7 @@ typedef struct phDal4Nfc_message_queue
  * \retval -1                                   Can not allocate memory or can not init mutex.
 *  \retval handle                               The handle on the message queue.
  */
-int phDal4Nfc_msgget ( key_t key, int msgflg )
+intptr_t phDal4Nfc_msgget ( key_t key, int msgflg )
 {
    phDal4Nfc_message_queue_t * pQueue;
    pQueue = (phDal4Nfc_message_queue_t *) phOsalNfc_GetMemory(sizeof(phDal4Nfc_message_queue_t));
@@ -78,7 +78,7 @@ int phDal4Nfc_msgget ( key_t key, int msgflg )
       return -1;
    if (sem_init (&pQueue->nProcessSemaphore, 0, 0) == -1)
       return -1;
-   return ((int)pQueue);
+   return ((intptr_t)pQueue);
 }
 
 /**
@@ -93,7 +93,7 @@ int phDal4Nfc_msgget ( key_t key, int msgflg )
  * \retval 0                                    If success.
  * \retval -1                                   Bad passed parameter
  */
-int phDal4Nfc_msgctl ( int msqid, int cmd, void *buf )
+int phDal4Nfc_msgctl ( intptr_t msqid, int cmd, void *buf )
 {
    phDal4Nfc_message_queue_t * pQueue;
    phDal4Nfc_message_queue_item_t * p;
@@ -136,7 +136,7 @@ int phDal4Nfc_msgctl ( int msqid, int cmd, void *buf )
  * \retval 0                                    If success.
  * \retval -1                                   Bad passed parameter, or can not allocate memory
  */
-int phDal4Nfc_msgsnd (int msqid, void * msgp, size_t msgsz, int msgflg)
+int phDal4Nfc_msgsnd (intptr_t msqid, void * msgp, size_t msgsz, int msgflg)
 {
    phDal4Nfc_message_queue_t * pQueue;
    phDal4Nfc_message_queue_item_t * p;
@@ -187,7 +187,7 @@ int phDal4Nfc_msgsnd (int msqid, void * msgp, size_t msgsz, int msgflg)
  * \retval 0                                    If success.
  * \retval -1                                   Bad passed parameter.
  */
-int phDal4Nfc_msgrcv (int msqid, void * msgp, size_t msgsz, long msgtyp, int msgflg)
+int phDal4Nfc_msgrcv (intptr_t msqid, void * msgp, size_t msgsz, long msgtyp, int msgflg)
 {
    phDal4Nfc_message_queue_t * pQueue;
    phDal4Nfc_message_queue_item_t * p;

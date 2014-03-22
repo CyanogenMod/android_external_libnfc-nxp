@@ -232,7 +232,7 @@ typedef struct phLibNfc_sConfig_t
    /** Device node of the controller */
    const char*               deviceNode;
    /** The client ID (thread ID or message queue ID) */
-   unsigned int              nClientId;
+   intptr_t                  nClientId;
 } phLibNfc_sConfig_t, *pphLibNfc_sConfig_t;
 
 
