@@ -49,7 +49,7 @@
 #define LIBNFC_READONLY_NDEF
 #define PHLIBNFC_MAXNO_OF_SE        (0x02)
 
-typedef uint32_t    phLibNfc_Handle;
+typedef uintptr_t phLibNfc_Handle;
 
 extern const unsigned char *nxp_nfc_full_version;
 

@@ -222,11 +222,11 @@ typedef struct phLibNfc_LibContext
 
     /*To re configure the discovery wheel*/
     phLibNfc_sADD_Cfg_t          sADDconfig;
-    uint32_t                     Connected_handle,
+    uintptr_t                    Connected_handle,
                                  Discov_handle[MAX_REMOTE_DEVICES];
 
     /* To store the previous connected handle in case of Multiple protocol tags */
-    uint32_t Prev_Connected_handle;
+    uintptr_t                    Prev_Connected_handle;
 
     /*Call back function pointers */
 

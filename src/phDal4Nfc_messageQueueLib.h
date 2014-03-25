@@ -41,10 +41,10 @@ typedef struct phDal4Nfc_Message_Wrapper
    phLibNfc_Message_t msg;
 } phDal4Nfc_Message_Wrapper_t;
 
-int phDal4Nfc_msgget(key_t key, int msgflg);
-int phDal4Nfc_msgctl(int msqid, int cmd, void *buf);
-int phDal4Nfc_msgsnd(int msqid, void * msgp, size_t msgsz, int msgflg);
-int phDal4Nfc_msgrcv (int msqid, void * msgp, size_t msgsz, long msgtyp, int msgflg);
+intptr_t phDal4Nfc_msgget(key_t key, int msgflg);
+int phDal4Nfc_msgctl(intptr_t msqid, int cmd, void *buf);
+int phDal4Nfc_msgsnd(intptr_t msqid, void * msgp, size_t msgsz, int msgflg);
+int phDal4Nfc_msgrcv(intptr_t msqid, void * msgp, size_t msgsz, long msgtyp, int msgflg);
 #endif
 
 #endif /*  PHDAL4NFC_MESSAGEQUEUE_H  */

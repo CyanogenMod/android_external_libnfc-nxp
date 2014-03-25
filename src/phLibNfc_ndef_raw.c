@@ -1228,7 +1228,7 @@ void phLibNfc_Reconnect_Mifare_Cb (
                         NFCSTATUS_FAILED:NFCSTATUS_TARGET_LOST);             
                 /* call the upper transceive callback */
                 pClientCb(pUpperLayerContext,
-                        (uint32_t)psRemoteDevInfo,
+                        (phLibNfc_Handle)psRemoteDevInfo,
                         & trans_resp,
                         status);                
             }

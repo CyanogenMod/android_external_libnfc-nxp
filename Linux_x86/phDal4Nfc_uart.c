@@ -97,7 +97,7 @@ PURPOSE:  The application could have opened the link itself. So we just need
 
 void phDal4Nfc_uart_set_open_from_handle(phHal_sHwReference_t * pDalHwContext)
 {
-   gComPortContext.nHandle = (int) pDalHwContext->p_board_driver;
+   gComPortContext.nHandle = (int)(intptr_t) pDalHwContext->p_board_driver;
    DAL_ASSERT_STR(gComPortContext.nHandle >= 0, "Bad passed com port handle");
    gComPortContext.nOpened = 1;
 }
@@ -176,7 +176,7 @@ NFCSTATUS phDal4Nfc_uart_open_and_configure(pphDal4Nfc_sConfig_t pConfig, void *
    }
 
    gComPortContext.nOpened = 1;
-   *pLinkHandle = (void*)gComPortContext.nHandle;
+   *pLinkHandle = (void*)(intptr_t)gComPortContext.nHandle;
 
    /*
     *  Now configure the com port
