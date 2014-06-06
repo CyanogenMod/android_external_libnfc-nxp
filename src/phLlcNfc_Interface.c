@@ -919,7 +919,7 @@ phLlcNfc_RdResp_Cb(
             }
         } else if (NFCSTATUS_READ_FAILED == pCompInfo->status) {
             // partial read - try reading the length byte again
-            ALOGW("LLC length mis-match\n");
+            ALOGV("LLC length mis-match\n");
             ps_frame_info->recv_error_count = (uint8_t)
                                 (ps_frame_info->recv_error_count + 1);
             libnfc_llc_error_count++;
