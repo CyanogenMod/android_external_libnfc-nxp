@@ -306,7 +306,7 @@ phHal4Nfc_Configure_Layers(
 #include <utils/Log.h>
 #include <dlfcn.h>
 
-#define FW_PATH "/system/vendor/firmware/libpn544_fw.so"
+#define FW_PATH "/vendor/firmware/libpn544_fw.so"
 
 const unsigned char *nxp_nfc_full_version = NULL;
 const unsigned char *nxp_nfc_fw = NULL;
